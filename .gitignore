@@ -1,0 +1,29 @@
+# Maven
+target/
+!.mvn/wrapper/maven-wrapper.jar
+
+# IntelliJ / Spring Tools
+.idea/
+*.iml
+*.iws
+
+# Logs
+*.log
+logs/
+
+# Archivos de base de datos y configuración
+*.db
+application-dev.yml
+application-prod.yml
+.env
+
+# Thymeleaf cache
+/src/main/resources/templates/cache/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Archivos temporales
+*.tmp
+*.bak
