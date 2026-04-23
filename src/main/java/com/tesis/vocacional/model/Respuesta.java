@@ -17,9 +17,6 @@ public class Respuesta {
 	private LocalDate fechaRespuesta;
 
 	@ManyToOne
-	private Opcion opcion;
-
-	@ManyToOne
 	private TestUsuarioPregunta pregunta;
 
 	public int getId() {
@@ -36,14 +33,6 @@ public class Respuesta {
 
 	public void setFechaRespuesta(LocalDate fechaRespuesta) {
 		this.fechaRespuesta = fechaRespuesta;
-	}
-
-	public Opcion getOpcion() {
-		return opcion;
-	}
-
-	public void setOpcion(Opcion opcion) {
-		this.opcion = opcion;
 	}
 
 	public TestUsuarioPregunta getPregunta() {

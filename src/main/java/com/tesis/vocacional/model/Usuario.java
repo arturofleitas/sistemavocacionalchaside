@@ -2,7 +2,6 @@ package com.tesis.vocacional.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Usuario extends Persona {
@@ -16,9 +15,6 @@ public class Usuario extends Persona {
 	private Boolean estado;
 
 	private String rol;
-
-	@ManyToOne
-	private Carrera carrera;
 
 	public Usuario() {
 		// TODO Auto-generated constructor stub
@@ -56,12 +52,5 @@ public class Usuario extends Persona {
 		this.rol = rol;
 	}
 
-	public Carrera getCarrera() {
-		return carrera;
-	}
-
-	public void setCarrera(Carrera carrera) {
-		this.carrera = carrera;
-	}
 
 }

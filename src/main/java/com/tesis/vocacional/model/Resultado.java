@@ -19,9 +19,6 @@ public class Resultado {
 	@ManyToOne
 	private TestUsuario test;
 	
-	@ManyToOne
-    private Carrera carrera;
-
 	public int getId() {
 		return id;
 	}
@@ -48,14 +45,6 @@ public class Resultado {
 
 	public void setTest(TestUsuario test) {
 		this.test = test;
-	}
-
-	public Carrera getCarrera() {
-		return carrera;
-	}
-
-	public void setCarrera(Carrera carrera) {
-		this.carrera = carrera;
 	}
 
 	public void setId(int id) {
