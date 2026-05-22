@@ -22,17 +22,18 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-            		.requestMatchers("/login", "/", "/registrarse", "/registro", "/css/**", "/js/**").permitAll()
-                    .requestMatchers("/usuarios/**", "/preguntas/**", "/gestion-test/**").hasRole("ADMIN")
-                    .requestMatchers("/realizar-test/**").hasAnyRole("ESTUDIANTE", "ADMIN")
-                    .anyRequest().authenticated()
+                .requestMatchers("/login", "/", "/registrarse", "/registro", "/css/**", "/js/**").permitAll()
+                .requestMatchers("/usuarios/**", "/preguntas/**", "/gestion-test/**").hasRole("ADMIN")
+                .requestMatchers("/realizar-test/**").hasAnyRole("ESTUDIANTE", "ADMIN")
+                .requestMatchers("/reportes/**").hasAnyRole("ESTUDIANTE", "ADMIN")
+                .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
                 .loginProcessingUrl("/login")
                 .usernameParameter("username")
                 .passwordParameter("password")
-                .defaultSuccessUrl("/home", true)   // ← Después de login exitoso va a /home
+                .defaultSuccessUrl("/home", true)
                 .failureUrl("/login?error=true")
                 .permitAll()
             )

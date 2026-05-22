@@ -64,6 +64,12 @@
 			<optional>true</optional>
 		</dependency>
 
+		<dependency>
+			<groupId>org.thymeleaf.extras</groupId>
+			<artifactId>thymeleaf-extras-java8time</artifactId>
+			<version>3.0.4.RELEASE</version>
+		</dependency>
+
 		<!-- DEVTOOLS -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -87,6 +93,14 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- JASPER -->
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.20.0</version>
+		</dependency>
+
 
 	</dependencies>
 

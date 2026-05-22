@@ -14,6 +14,10 @@ public class TestService {
     public TestService(TestRepository testRepository) {
         this.testRepository = testRepository;
     }
+    
+    public Test buscarPorNombre(String nombre) {
+        return testRepository.findByNombre(nombre).orElse(null);
+    }
 
     public List<Test> listarTodos() {
         return testRepository.findAll();

@@ -1,24 +1,20 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Usuarios - Sistema Vocacional</title>
+    
     <link rel="stylesheet" th:href="@{/css/home.css}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
     <style>
-        .form-card {
+        .form-card, .table-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
-            padding: 10px;
-        }
-        .table-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
-            overflow: hidden;
         }
         .content {
             background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
@@ -28,192 +24,232 @@
         .header-title {
             color: #1e40af;
             font-weight: 700;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
         }
-        .main-container {
-            display: flex;
-            min-height: 100vh;
+        .scrollable-table {
+            max-height: 600px;
+            overflow-y: auto;
         }
-        .sidebar {
-            width: 260px;
-            background: #0d6efd;
-            color: white;
-            padding: 20px 0;
+        .filter-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
-        .sidebar-header {
-            padding: 0 25px 25px;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        .form-card {
+            padding: 1.2rem !important;
         }
-        .sidebar .nav a {
-            display: flex;
-            align-items: center;
-            padding: 14px 25px;
-            color: white;
-            text-decoration: none;
+        .form-card .mb-3 {
+            margin-bottom: 0.8rem !important;
         }
-        .sidebar .nav a:hover,
-        .sidebar .nav a.active {
-            background: rgba(255, 255, 255, 0.2);
-            font-weight: 500;
+        .form-card hr {
+            margin: 0.8rem 0;
         }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Sidebar Azul -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
-            </div>
-            <ul class="nav flex-column">
-                <li><a th:href="@{/home}"><i class="fas fa-home"></i> Inicio</a></li>
-                <li><a th:href="@{/usuarios}" class="active"><i class="fas fa-users"></i> Usuarios</a></li>
-                <li><a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión de Test</a></li>
-                <li><a th:href="@{/preguntas}"><i class="fas fa-question-circle"></i> Preguntas</a></li>
-                <li><a th:href="@{/realizar-test}"><i class="fas fa-play-circle"></i> Realizar Test</a></li>
-                <li><a th:href="@{/reportes}"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                <li><a th:href="@{/configuraciones}"><i class="fas fa-sliders-h"></i> Configuraciones</a></li>
-                <li class="mt-auto"><a href="/logout"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
-            </ul>
+<div class="main-container">
+    <!-- ======================= SIDEBAR ======================= -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
         </div>
-
-        <!-- Contenido Principal -->
-        <div class="content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="header-title">Gestión de Usuarios</h2>
-                <div class="user-info d-flex align-items-center gap-3">
-                    <span class="fw-semibold text-primary">Bienvenido, Administrador</span>
-                    <div class="avatar rounded-circle d-flex align-items-center justify-content-center">
-                        <i class="fas fa-user"></i>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <!-- Columna Izquierda: Formulario -->
-                <div class="col-lg-5">
-                    <div class="form-card">
-                        <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
-                            <!-- Campo oculto para ID (muy importante para editar) -->
-                            <input type="hidden" th:field="*{id}" />
-
-                            <div class="mb-3">
-                                <label class="form-label">Nombre</label>
-                                <input type="text" class="form-control" th:field="*{nombre}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Apellido</label>
-                                <input type="text" class="form-control" th:field="*{apellido}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Cédula</label>
-                                <input type="number" class="form-control" th:field="*{cedula}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Edad</label>
-                                <input type="number" class="form-control" th:field="*{edad}">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Género</label>
-                                <select class="form-select" th:field="*{genero}">
-                                    <option value="Masculino">Masculino</option>
-                                    <option value="Femenino">Femenino</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" th:field="*{email}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Username</label>
-                                <input type="text" class="form-control" th:field="*{username}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Contraseña</label>
-                                <input type="password" class="form-control" th:field="*{password}">
-                                <small class="text-muted" th:if="${usuario.id != null && usuario.id != 0}">
-                                    (Dejar en blanco si no deseas cambiar la contraseña)
-                                </small>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Rol</label>
-                                <select class="form-select" th:field="*{rol}" required>
-                                    <option value="ADMIN">Administrador</option>
-                                    <option value="ESTUDIANTE">Estudiante</option>
-                                </select>
-                            </div>
-
-                            <div class="d-flex gap-3 mt-4">
-                                <button type="button" class="btn btn-secondary flex-fill" onclick="window.location.href='/usuarios'">Cancelar</button>
-                                <button type="submit" class="btn btn-primary flex-fill">
-                                    <span th:if="${usuario.id != null && usuario.id != 0}">Actualizar Usuario</span>
-                                    <span th:else>Guardar Usuario</span>
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Columna Derecha: Tabla de Usuarios -->
-                <div class="col-lg-7">
-                    <div class="table-card">
-                        <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 text-primary">Usuarios Registrados</h5>
-                            <a th:href="@{/usuarios}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-plus"></i> Nuevo Usuario
-                            </a>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre Completo</th>
-                                        <th>Cédula</th>
-                                        <th>Email</th>
-                                        <th>Username</th>
-                                        <th>Rol</th>
-                                        <th class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr th:each="u : ${usuarios}">
-                                        <td th:text="${u.id}"></td>
-                                        <td th:text="${u.nombre} + ' ' + ${u.apellido}"></td>
-                                        <td th:text="${u.cedula}"></td>
-                                        <td th:text="${u.email}"></td>
-                                        <td th:text="${u.username}"></td>
-                                        <td>
-                                            <span class="badge" 
-                                                  th:class="${u.rol == 'ADMIN'} ? 'bg-danger' : 'bg-primary'"
-                                                  th:text="${u.rol}"></span>
-                                        </td>
-                                        <td class="text-center">
-                                            <a th:href="@{/usuarios/editar/{id}(id=${u.id})}" 
-                                               class="btn btn-sm btn-outline-primary me-2">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}" 
-                                               class="btn btn-sm btn-outline-danger"
-                                               onclick="return confirm('¿Estás seguro de eliminar este usuario?')">
-                                                <i class="fas fa-trash"></i>
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mensajes de éxito/error -->
-            <div th:if="${mensaje}" class="alert alert-success mt-4" th:text="${mensaje}"></div>
-            <div th:if="${error}" class="alert alert-danger mt-4" th:text="${error}"></div>
-        </div>
+        <ul class="nav flex-column">
+            <li><a th:href="@{/home}"><i class="fas fa-home"></i> Inicio</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/usuarios}" class="active"><i class="fas fa-users"></i> Usuarios</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión de Test</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/preguntas}"><i class="fas fa-question-circle"></i> Preguntas</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/reportes}"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/configuraciones}"><i class="fas fa-sliders-h"></i> Configuraciones</a></li>
+            <li sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')"><a th:href="@{/realizar-test}"><i class="fas fa-play-circle"></i> Realizar Test</a></li>
+            <li class="mt-auto"><a href="/logout"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+        </ul>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- ======================= CONTENIDO PRINCIPAL ======================= -->
+    <div class="content">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="header-title">Gestión de Usuarios</h2>
+            <div><span class="fw-semibold text-primary">Bienvenido, <span sec:authentication="name"></span></span></div>
+        </div>
+
+        <!-- Bloque para mostrar errores (validación, cédula inválida, duplicados, etc.) -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> <span th:text="${error}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <div class="row g-4">
+            <!-- COLUMNA IZQUIERDA: Formulario compacto -->
+            <div class="col-lg-5">
+                <div class="form-card">
+                    <!-- Título condicional -->
+                    <h5 class="mb-3 text-primary" th:if="${usuario.id == null || usuario.id == 0}">Nuevo Usuario</h5>
+                    <h5 class="mb-3 text-primary" th:if="${usuario.id != null && usuario.id > 0}">Editar Usuario</h5>
+
+                    <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
+                        <input type="hidden" th:field="*{id}" />
+
+                        <!-- DATOS PERSONALES (directos en Usuario por herencia) -->
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Nombre</label>
+                                <input type="text" class="form-control form-control-sm" th:field="*{nombre}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Apellido</label>
+                                <input type="text" class="form-control form-control-sm" th:field="*{apellido}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Cédula</label>
+                                <input type="number" class="form-control form-control-sm" th:field="*{cedula}" required>
+                                <small class="text-muted" style="font-size: 10px;">Solo números, hasta 2.147.483.647</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Edad</label>
+                                <input type="number" class="form-control form-control-sm" th:field="*{edad}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Género</label>
+                                <select class="form-select form-select-sm" th:field="*{genero}" required>
+                                    <option value="">Seleccione</option>
+                                    <option value="MASCULINO">Masculino</option>
+                                    <option value="FEMENINO">Femenino</option>
+                                    <option value="OTRO">Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Teléfono</label>
+                                <input type="text" class="form-control form-control-sm" th:field="*{telefono}">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small">Email</label>
+                                <input type="email" class="form-control form-control-sm" th:field="*{email}" required>
+                            </div>
+                        </div>
+
+                        <hr class="my-2">
+
+                        <!-- DATOS DE CUENTA -->
+                        <div class="row g-2">
+                            <div class="col-md-6">
+                                <label class="form-label small">Username</label>
+                                <input type="text" class="form-control form-control-sm" th:field="*{username}" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Rol</label>
+                                <select class="form-select form-select-sm" th:field="*{rol}" required>
+                                    <option value="ESTUDIANTE">ESTUDIANTE</option>
+                                    <option value="ADMIN">ADMIN</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Contraseña</label>
+                                <input type="password" class="form-control form-control-sm" th:field="*{password}" required>
+                                <small class="text-muted" style="font-size: 10px;">Mínimo 6 caracteres</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label small">Estado</label>
+                                <select class="form-select form-select-sm" th:field="*{estado}" required>
+                                    <option value="ACTIVO">Activo</option>
+                                    <option value="INACTIVO">Inactivo</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2 mt-3">
+                            <button type="button" class="btn btn-secondary btn-sm flex-fill" onclick="window.location.href='/usuarios'">Cancelar</button>
+                            <button type="submit" class="btn btn-primary btn-sm flex-fill">Guardar Usuario</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- COLUMNA DERECHA: Tabla de usuarios con filtros -->
+            <div class="col-lg-7">
+                <div class="table-card">
+                    <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary">Usuarios Registrados</h5>
+                        <a th:href="@{/usuarios}" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Nuevo</a>
+                    </div>
+
+                    <!-- Barra de filtros -->
+                    <div class="filter-bar">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-4">
+                                <label for="searchNombre" class="form-label small">Nombre / Apellido</label>
+                                <input type="text" id="searchNombre" class="form-control form-control-sm" placeholder="Ej: Juan Pérez">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="searchUsername" class="form-label small">Username</label>
+                                <input type="text" id="searchUsername" class="form-control form-control-sm" placeholder="Nombre de usuario">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="filterRol" class="form-label small">Rol</label>
+                                <select id="filterRol" class="form-select form-select-sm">
+                                    <option value="">Todos</option>
+                                    <option value="ESTUDIANTE">Estudiante</option>
+                                    <option value="ADMIN">Administrador</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button id="resetFilters" class="btn btn-outline-secondary btn-sm w-100">Limpiar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabla con scroll -->
+                    <div class="scrollable-table">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre completo</th>
+                                <th>Username</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="usuariosBody">
+                                <!-- Mensaje cuando no hay usuarios -->
+                                <tr th:if="${usuarios.isEmpty()}">
+                                    <td colspan="6" class="text-center py-4 text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>No hay usuarios registrados.
+                                    </td>
+                                </tr>
+                                <!-- Filas de usuarios con atributos data-* para filtro -->
+                                <tr th:each="u : ${usuarios}"
+                                    th:attr="data-nombre=${u.nombre + ' ' + u.apellido},
+                                             data-username=${u.username},
+                                             data-rol=${u.rol}">
+                                    <td th:text="${u.id}"></td>
+                                    <td th:text="${u.nombre + ' ' + u.apellido}"></td>
+                                    <td th:text="${u.username}"></td>
+                                    <td>
+                                        <span th:if="${u.rol == 'ADMIN'}" class="badge bg-danger">ADMIN</span>
+                                        <span th:if="${u.rol == 'ESTUDIANTE'}" class="badge bg-success">ESTUDIANTE</span>
+                                    </td>
+                                    <td>
+                                        <span th:if="${u.estado}" class="badge bg-success">Activo</span>
+                                        <span th:unless="${u.estado}" class="badge bg-secondary">Inactivo</span>
+                                    </td>
+                                    <td class="text-center">
+                                        <a th:href="@{/usuarios/editar/{id}(id=${u.id})}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
+                                        <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar este usuario?')"><i class="fas fa-trash"></i></a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        <tr>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/usuarios.js}"></script>
 </body>
 </html>

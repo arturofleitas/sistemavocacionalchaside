@@ -14,6 +14,8 @@ public class Respuesta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
+	private String valor;
+
 	private LocalDate fechaRespuesta;
 
 	@ManyToOne
@@ -25,6 +27,14 @@ public class Respuesta {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public String getValor() {
+		return valor;
+	}
+
+	public void setValor(String valor) {
+		this.valor = valor;
 	}
 
 	public LocalDate getFechaRespuesta() {

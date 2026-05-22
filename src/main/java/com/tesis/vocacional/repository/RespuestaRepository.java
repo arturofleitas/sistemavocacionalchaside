@@ -1,9 +1,22 @@
 package com.tesis.vocacional.repository;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import com.tesis.vocacional.model.Respuesta;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
-public interface RespuestaRepository extends JpaRepository<Respuesta, Integer>{
+import java.util.List;
 
+@Repository
+public interface RespuestaRepository extends JpaRepository<Respuesta, Integer> {
+
+    // Obtener todas las respuestas de un resultado específico
+    // Navegamos: Resultado -> TestUsuario -> TestUsuarioPregunta -> Respuesta
+    @Query("SELECT r FROM Respuesta r " +
+           "JOIN FETCH r.pregunta tup " +
+           "JOIN FETCH tup.pregunta p " +
+           "WHERE tup.testUsuario.id = :testUsuarioId " +
+           "ORDER BY p.id ASC")
+    List<Respuesta> findByTestUsuarioId(@Param("testUsuarioId") Integer testUsuarioId);
 }

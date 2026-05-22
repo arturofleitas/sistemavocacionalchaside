@@ -61,6 +61,10 @@ public class UsuarioService {
         System.out.println("→ Creado correctamente con ID: " + nuevo.getId());
         return nuevo;
     }
+    
+    public Usuario buscarPorUsername(String username) {
+        return usuarioRepository.findByUsername(username).orElse(null);
+    }
 
     public Usuario buscarPorId(int id) {
         return usuarioRepository.findById(id).orElse(null);

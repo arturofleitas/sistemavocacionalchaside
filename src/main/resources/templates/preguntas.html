@@ -5,10 +5,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Preguntas - Sistema Vocacional</title>
+    
+    <!-- CSS Global y Bootstrap -->
     <link rel="stylesheet" th:href="@{/css/home.css}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
+    <!-- Estilos específicos de la página -->
     <style>
         .form-card, .table-card {
             background: rgba(255, 255, 255, 0.95);
@@ -29,138 +32,192 @@
             max-height: 550px;
             overflow-y: auto;
         }
+        .filter-bar {
+            background: white;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
     </style>
 </head>
 <body>
-    <div class="main-container">
-        <!-- Sidebar Azul (mismo estilo que todas tus interfaces) -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
+<div class="main-container">
+    <!-- ======================= SIDEBAR ======================= -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
+        </div>
+        <ul class="nav flex-column">
+            <li><a th:href="@{/home}"><i class="fas fa-home"></i> Inicio</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/usuarios}"><i class="fas fa-users"></i> Usuarios</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión de Test</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/preguntas}" class="active"><i class="fas fa-question-circle"></i> Preguntas</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/reportes}"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/configuraciones}"><i class="fas fa-sliders-h"></i> Configuraciones</a></li>
+            <li sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')"><a th:href="@{/realizar-test}"><i class="fas fa-play-circle"></i> Realizar Test</a></li>
+            <li class="mt-auto"><a href="/logout"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+        </ul>
+    </div>
+
+    <!-- ======================= CONTENIDO PRINCIPAL ======================= -->
+    <div class="content">
+        <!-- Encabezado -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="header-title">Gestión de Preguntas</h2>
+            <div class="user-info d-flex align-items-center gap-3">
+                <span class="fw-semibold text-primary">Bienvenido, <span sec:authentication="name"></span></span>
             </div>
-            <ul class="nav flex-column">
-                <li><a th:href="@{/home}"><i class="fas fa-home"></i> Inicio</a></li>
-                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/usuarios}"><i class="fas fa-users"></i> Usuarios</a></li>
-                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión de Test</a></li>
-                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/preguntas}" class="active"><i class="fas fa-question-circle"></i> Preguntas</a></li>
-                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/reportes}"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/configuraciones}"><i class="fas fa-sliders-h"></i> Configuraciones</a></li>
-                <li sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')"><a th:href="@{/realizar-test}"><i class="fas fa-play-circle"></i> Realizar Test</a></li>
-                <li class="mt-auto"><a href="/logout"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
-            </ul>
         </div>
 
-        <!-- Contenido Principal -->
-        <div class="content">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2 class="header-title">Gestión de Preguntas</h2>
-                <div class="user-info d-flex align-items-center gap-3">
-                    <span class="fw-semibold text-primary">Bienvenido, <span sec:authentication="name"></span></span>
+        <div class="row g-4">
+            <!-- COLUMNA IZQUIERDA: Formulario para crear/editar pregunta -->
+            <div class="col-lg-5">
+                <div class="form-card p-4">
+                    <!-- Título dinámico: Nueva o Editar -->
+                    <h5 class="mb-4 text-primary" th:if="${pregunta.id == null || pregunta.id == 0}">Nueva Pregunta</h5>
+                    <h5 class="mb-4 text-primary" th:if="${pregunta.id != null && pregunta.id > 0}">Editar Pregunta</h5>
+
+                    <!-- Formulario que se envía a /preguntas/guardar -->
+                    <form th:action="@{/preguntas/guardar}" th:object="${pregunta}" method="post">
+                        <input type="hidden" th:field="*{id}" />
+
+                        <!-- Selector del Test al que pertenece la pregunta -->
+                        <div class="mb-3">
+                            <label class="form-label">Test al que pertenece</label>
+                            <select class="form-select" th:field="*{test}" required>
+                                <option value="">-- Seleccione un Test --</option>
+                                <option th:each="t : ${tests}" th:value="${t.id}" th:text="${t.nombre}"></option>
+                            </select>
+                        </div>
+
+                        <!-- Texto de la pregunta (textarea) -->
+                        <div class="mb-3">
+                            <label class="form-label">Texto de la Pregunta</label>
+                            <textarea class="form-control" rows="4" th:field="*{texto}" required></textarea>
+                        </div>
+
+                        <!-- Categoría: solo se guarda la letra (C, H, A, S, I, D, E) -->
+                        <div class="mb-3">
+                            <label class="form-label">Categoría (C H A S I D E)</label>
+                            <select class="form-select" th:field="*{categoria}" required>
+                                <option value="C">C - Administrativas y Contables</option>
+                                <option value="H">H - Humanísticas, Jurídicas y Sociales</option>
+                                <option value="A">A - Artísticas</option>
+                                <option value="S">S - Ciencias de la Salud</option>
+                                <option value="I">I - Ingenierías, Técnicas y Computación</option>
+                                <option value="D">D - Defensa y Seguridad</option>
+                                <option value="E">E - Ciencias Agrarias, Naturales y Biológicas</option>
+                            </select>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="d-flex gap-3">
+                            <button type="button" class="btn btn-secondary flex-fill" onclick="window.location.href='/preguntas'">Cancelar</button>
+                            <button type="submit" class="btn btn-primary flex-fill">Guardar Pregunta</button>
+                        </div>
+                    </form>
                 </div>
             </div>
 
-            <div class="row g-4">
-                <!-- Formulario para crear/editar pregunta -->
-                <div class="col-lg-5">
-                    <div class="form-card p-4">
-                        <h5 class="mb-4 text-primary" th:if="${pregunta.id == null || pregunta.id == 0}">Nueva Pregunta</h5>
-                        <h5 class="mb-4 text-primary" th:if="${pregunta.id != null && pregunta.id > 0}">Editar Pregunta</h5>
+            <!-- COLUMNA DERECHA: Listado de preguntas con filtros -->
+            <div class="col-lg-7">
+                <div class="table-card">
+                    <!-- Cabecera con título y botón nueva pregunta -->
+                    <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 text-primary">Preguntas Registradas</h5>
+                        <a th:href="@{/preguntas}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Nueva Pregunta
+                        </a>
+                    </div>
 
-                        <form th:action="@{/preguntas/guardar}" th:object="${pregunta}" method="post">
-                            <input type="hidden" th:field="*{id}" />
-
-                            <!-- Selección del Test al que pertenece la pregunta -->
-                            <div class="mb-3">
-                                <label class="form-label">Test al que pertenece</label>
-                                <select class="form-select" th:field="*{test}" required>
-                                    <option value="">-- Seleccione un Test --</option>
+                    <!-- BARRA DE FILTROS (solo HTML, el JS está en archivo externo) -->
+                    <div class="filter-bar">
+                        <div class="row g-3">
+                            <!-- Filtro por texto de la pregunta -->
+                            <div class="col-md-4">
+                                <label for="searchText" class="form-label">Buscar en pregunta</label>
+                                <input type="text" id="searchText" class="form-control" placeholder="Ej: contabilidad, salud...">
+                            </div>
+                            <!-- Filtro por categoría (letra) -->
+                            <div class="col-md-3">
+                                <label for="filterCategoria" class="form-label">Categoría</label>
+                                <select id="filterCategoria" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option value="C">C - Administrativas</option>
+                                    <option value="H">H - Humanísticas</option>
+                                    <option value="A">A - Artísticas</option>
+                                    <option value="S">S - Ciencias de la Salud</option>
+                                    <option value="I">I - Ingenierías</option>
+                                    <option value="D">D - Defensa</option>
+                                    <option value="E">E - Agrarias</option>
+                                </select>
+                            </div>
+                            <!-- Filtro por test (se llena con datos del servidor) -->
+                            <div class="col-md-3">
+                                <label for="filterTest" class="form-label">Test</label>
+                                <select id="filterTest" class="form-select">
+                                    <option value="">Todos</option>
+                                    <!-- Opciones generadas dinámicamente por Thymeleaf -->
                                     <option th:each="t : ${tests}" th:value="${t.id}" th:text="${t.nombre}"></option>
                                 </select>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Texto de la Pregunta</label>
-                                <textarea class="form-control" rows="4" th:field="*{texto}" required></textarea>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button id="resetFilters" class="btn btn-outline-secondary w-100">Limpiar filtros</button>
                             </div>
-
-                            <div class="mb-3">
-                                <label class="form-label">Categoría (C H A S I D E)</label>
-                                <select class="form-select" th:field="*{categoria}" required>
-                                    <option value="C">C - Administrativas y Contables</option>
-                                    <option value="H">H - Humanísticas, Jurídicas y Sociales</option>
-                                    <option value="A">A - Artísticas</option>
-                                    <option value="S">S - Ciencias de la Salud</option>
-                                    <option value="I">I - Ingenierías, Técnicas y Computación</option>
-                                    <option value="D">D - Defensa y Seguridad</option>
-                                    <option value="E">E - Ciencias Agrarias, Naturales y Biológicas</option>
-                                </select>
-                            </div>
-
-                            <div class="d-flex gap-3">
-                                <button type="button" class="btn btn-secondary flex-fill" onclick="window.location.href='/preguntas'">Cancelar</button>
-                                <button type="submit" class="btn btn-primary flex-fill">Guardar Pregunta</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Tabla de Preguntas -->
-                <div class="col-lg-7">
-                    <div class="table-card">
-                        <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 text-primary">Preguntas Registradas</h5>
-                            <a th:href="@{/preguntas}" class="btn btn-sm btn-primary">
-                                <i class="fas fa-plus"></i> Nueva Pregunta
-                            </a>
-                        </div>
+                    <!-- TABLA DE PREGUNTAS (scrollable) -->
+                    <div class="scrollable-table" style="max-height: 500px; overflow-y: auto;">
+                        <table class="table table-hover mb-0" id="preguntasTable">
+                            <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
+                            <tr>
+                                <th>ID</th>
+                                <th>Test</th>
+                                <th>Pregunta</th>
+                                <th>Categoría</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                            </thead>
+                            <tbody id="preguntasBody">
+                                <!-- Mensaje cuando no existen preguntas -->
+                                <tr th:if="${preguntas.isEmpty()}">
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="fas fa-inbox fa-3x mb-3"></i><br>
+                                        Aún no hay preguntas registradas.<br>
+                                        <small>Utiliza el formulario de la izquierda para agregar la primera.</small>
+                                    </td>
+                                </tr>
 
-                        <div class="scrollable-table" style="max-height: 550px; overflow-y: auto;">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Test</th>
-                                        <th>Pregunta</th>
-                                        <th>Categoría</th>
-                                        <th class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Mensaje cuando no hay preguntas (evita error) -->
-                                    <tr th:if="${preguntas.isEmpty()}">
-                                        <td colspan="5" class="text-center py-5 text-muted">
-                                            <i class="fas fa-inbox fa-3x mb-3"></i><br>
-                                            Aún no hay preguntas registradas.<br>
-                                            <small>Utiliza el formulario de la izquierda para agregar la primera.</small>
-                                        </td>
-                                    </tr>
-
-                                    <!-- Lista de preguntas con protección contra null -->
-                                    <tr th:each="p : ${preguntas}">
-                                        <td th:text="${p.id}"></td>
-                                        <!-- Uso de safe navigation ?. para evitar error si test es null -->
-                                        <td th:text="${p.test?.nombre} ?: 'Sin asignar'"></td>
-                                        <td th:text="${p.texto}"></td>
-                                        <td><span class="badge bg-primary" th:text="${p.categoria}"></span></td>
-                                        <td class="text-center">
-                                            <a th:href="@{/preguntas/editar/{id}(id=${p.id})}" 
-                                               class="btn btn-sm btn-outline-primary me-2">
-                                                <i class="fas fa-edit"></i> Editar
-                                            </a>
-                                            <a th:href="@{/preguntas/eliminar/{id}(id=${p.id})}" 
-                                               class="btn btn-sm btn-outline-danger"
-                                               onclick="return confirm('¿Eliminar esta pregunta?')">Eliminar</a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                <!-- Iteración sobre todas las preguntas -->
+                                <!-- Se agregan atributos data-* para facilitar el filtrado desde JS -->
+                                <tr th:each="p : ${preguntas}" th:attr="data-test-id=${p.test?.id}, data-categoria=${p.categoria}">
+                                    <td th:text="${p.id}"></td>
+                                    <td th:text="${p.test?.nombre} ?: 'Sin asignar'"></td>
+                                    <td class="pregunta-texto" th:text="${p.texto}"></td>
+                                    <td><span class="badge bg-primary" th:text="${p.categoria}"></span></td>
+                                    <td class="text-center">
+                                        <a th:href="@{/preguntas/editar/{id}(id=${p.id})}" class="btn btn-sm btn-outline-primary me-2">
+                                            <i class="fas fa-edit"></i> Editar
+                                        </a>
+                                        <a th:href="@{/preguntas/eliminar/{id}(id=${p.id})}" class="btn btn-sm btn-outline-danger"
+                                           onclick="return confirm('¿Eliminar esta pregunta?')">Eliminar</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Archivo JavaScript externo con toda la lógica de filtros -->
+<script th:src="@{/js/preguntas.js}"></script>
 </body>
 </html>
