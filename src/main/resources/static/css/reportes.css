@@ -1,0 +1,146 @@
+/**
+ * reportes.css
+ * Control estético web normal y reglas estrictas de impresión profesional.
+ * Mantiene intacta la interfaz del navegador y aísla el historial en papel.
+ */
+
+/* ==========================================================================
+   1. ESTILOS BASE PARA PANTALLA (Navegador web original - Intacto)
+   ========================================================================== */
+.filter-bar {
+    background: white;
+    border-radius: 20px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.table-responsive-custom {
+    background: white;
+    border-radius: 20px;
+    padding: 1rem;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+.content {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.header-title { 
+    color: #1e40af; 
+    font-weight: 700; 
+}
+
+
+/* ==========================================================================
+   2. REGLAS EXCLUSIVAS DE IMPRESIÓN (Se activan únicamente al presionar Imprimir)
+   ========================================================================== */
+@media print {
+    /* Ocultar de forma absoluta barra lateral, caja de filtros completa, alertas y la cabecera con el botón */
+    .sidebar,
+    .filter-bar,
+    .alert,
+    .content > div.d-flex,
+    .content label,
+    .content input,
+    .content select,
+    .content button {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+        height: 0 !important;
+        width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* Ocultar de manera estricta la columna completa de detalles ("Detalle" / "Ver respuestas") */
+    .table thead tr th:last-child,
+    .table tbody tr td:last-child,
+    #tablaReportes thead tr th:last-child,
+    #tablaReportes tbody tr td:last-child {
+        display: none !important;
+        width: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Blanquear el fondo de pantalla completo eliminando degradados celestes de fondo */
+    html, body, .main-container, .content, .table-responsive-custom, .row {
+        background: white !important;
+        background-color: white !important;
+        color: #334155 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        display: block !important;
+    }
+
+    /* Estilizar el título interno de la tarjeta para que actúe como la cabecera oficial del reporte impreso */
+    .table-responsive-custom h5 {
+        color: #1e40af !important;
+        font-size: 22pt !important;
+        font-weight: 700 !important;
+        border-bottom: 3px solid #1e40af !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 35px !important;
+        display: block !important;
+        margin-top: 10px !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Forzar a la tarjeta blanca de la tabla a expandirse al 100% real de la hoja A4 */
+    .table-responsive-custom {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Romper las envolturas fijas de 500px/400px y remover las barras de scroll internos para listar todas las filas */
+    .table-responsive-custom div,
+    .table-responsive-custom div[style*="max-height"],
+    .table-responsive-custom div[style*="overflow-y"] {
+        max-height: none !important;
+        overflow: visible !important;
+        overflow-y: visible !important;
+    }
+
+    /* Formato unificado administrativo de reporte profesional para la tabla física */
+    .table, #tablaReportes {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: 1px solid #cbd5e1 !important;
+        font-size: 11pt !important;
+        margin-top: 10px !important;
+        display: table !important;
+    }
+
+    /* Cabecera de la tabla en Azul Institucional con tipografía blanca */
+    .table thead tr th, #tablaReportes thead tr th {
+        background-color: #1e40af !important;
+        color: white !important;
+        padding: 12px 14px !important;
+        font-weight: bold !important;
+        text-align: left !important;
+        border: none !important;
+        display: table-cell !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Celdas divisorias estructuradas */
+    .table tbody tr td, #tablaReportes tbody tr td {
+        padding: 12px 14px !important;
+        border-bottom: 1px solid #cbd5e1 !important;
+        color: #334155 !important;
+        display: table-cell !important;
+    }
+
+    /* Alternancia de color gris claro en filas pares para una lectura prolija */
+    .table tbody tr:nth-child(even), #tablaReportes tbody tr:nth-child(even) {
+        background-color: #f8fafc !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}

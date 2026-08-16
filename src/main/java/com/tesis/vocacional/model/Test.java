@@ -1,10 +1,14 @@
 package com.tesis.vocacional.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList; // Importación necesaria
+import java.util.List;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Test {
@@ -17,9 +21,17 @@ public class Test {
 	private Boolean estado;
 
 	private LocalDate fechaCreacion;
+	
+		//Inicializar con ArrayList vacío para evitar el error de desreferenciación
+	@OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Pregunta> preguntas = new ArrayList<>();
+
+		//Inicializar con ArrayList vacío
+	@OneToMany(mappedBy = "test", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<TestUsuario> testUsuarios = new ArrayList<>();
 
 	public Test() {
-		// TODO Auto-generated constructor stub
+		// Constructor vacío
 	}
 
 	public int getId() {
@@ -62,4 +74,35 @@ public class Test {
 		this.fechaCreacion = fechaCreacion;
 	}
 
+	public List<Pregunta> getPreguntas() {
+		return preguntas;
+	}
+
+	//Setter seguro para no romper la referencia de Hibernate
+	public void setPreguntas(List<Pregunta> preguntas) {
+		if (this.preguntas == null) {
+			this.preguntas = preguntas;
+		} else {
+			this.preguntas.clear();
+			if (preguntas != null) {
+				this.preguntas.addAll(preguntas);
+			}
+		}
+	}
+
+	public List<TestUsuario> getTestUsuarios() {
+		return testUsuarios;
+	}
+
+	//Setter seguro para no romper la referencia de Hibernate
+	public void setTestUsuarios(List<TestUsuario> testUsuarios) {
+		if (this.testUsuarios == null) {
+			this.testUsuarios = testUsuarios;
+		} else {
+			this.testUsuarios.clear();
+			if (testUsuarios != null) {
+				this.testUsuarios.addAll(testUsuarios);
+			}
+		}
+	}
 }

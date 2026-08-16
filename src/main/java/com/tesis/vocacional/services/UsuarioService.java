@@ -4,7 +4,8 @@ import com.tesis.vocacional.model.Usuario;
 import com.tesis.vocacional.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import java.time.LocalDate;
+import java.time.Period;
 import java.util.List;
 import java.util.Optional;
 
@@ -14,54 +15,76 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository usuarioRepository;
 
+    /**
+     * Guarda un usuario en el sistema.
+     * Si el ID existe, realiza una actualización. Si el ID no existe, realiza un nuevo registro.
+     *
+     * @param usuario Objeto usuario recibido desde el formulario.
+     * @return Usuario guardado o actualizado.
+     */
     public Usuario guardarUsuario(Usuario usuario) {
-        System.out.println("=== GUARDANDO USUARIO ===");
-        System.out.println("ID recibido: " + usuario.getId());
-        System.out.println("Nombre: " + usuario.getNombre() + " " + usuario.getApellido());
-        System.out.println("Username: " + usuario.getUsername());
-
-        if (usuario.getId() != 0 && usuario.getId() > 0) {
-            System.out.println("→ Modo ACTUALIZACIÓN");
-
-            // Busca el usuario en la BD
-            Optional<Usuario> opt = usuarioRepository.findById(usuario.getId());
-            if (opt.isPresent()) {
-                Usuario existente = opt.get();
-
-                existente.setNombre(usuario.getNombre());
-                existente.setApellido(usuario.getApellido());
-                existente.setCedula(usuario.getCedula());
-                existente.setEmail(usuario.getEmail());
-                existente.setEdad(usuario.getEdad());
-                existente.setGenero(usuario.getGenero());
-                existente.setUsername(usuario.getUsername());
-                existente.setPassword(usuario.getPassword());
-                existente.setRol(usuario.getRol());
-                existente.setEstado(usuario.getEstado());
-
-                Usuario actualizado = usuarioRepository.save(existente);
-                System.out.println("→ Actualizado correctamente con ID: " + actualizado.getId());
-                return actualizado;
+        try {
+            // Validar fecha de nacimiento
+            if (usuario.getFecha_nacimiento() == null) {
+                throw new RuntimeException("La fecha de nacimiento es obligatoria.");
             }
-        }
 
-        // Modo creación
-        System.out.println("→ Modo CREACIÓN");
-        if (usuarioRepository.existsByUsername(usuario.getUsername())) {
-            throw new RuntimeException("El username ya está en uso");
-        }
-        if (usuarioRepository.existsByEmail(usuario.getEmail())) {
-            throw new RuntimeException("El email ya está registrado");
-        }
-        if (usuario.getCedula() != 0 && usuarioRepository.existsByCedula(usuario.getCedula())) {
-            throw new RuntimeException("La cédula ya está registrada");
-        }
+            LocalDate fechaNac = usuario.getFecha_nacimiento().toLocalDate();
+            LocalDate hoy = LocalDate.now();
 
-        Usuario nuevo = usuarioRepository.save(usuario);
-        System.out.println("→ Creado correctamente con ID: " + nuevo.getId());
-        return nuevo;
+            // Verificar que no sea futura
+            if (fechaNac.isAfter(hoy)) {
+                throw new RuntimeException("La fecha de nacimiento no puede ser futura.");
+            }
+
+            // Calcular edad
+            int edad = Period.between(fechaNac, hoy).getYears();
+
+            // Verificar edad mínima (14 años)
+            if (edad < 14) {
+                throw new RuntimeException("Debes tener al menos 14 años para registrarte.");
+            }
+
+            // MODO ACTUALIZACIÓN
+            if (usuario.getId() != 0 && usuario.getId() > 0) {
+                Optional<Usuario> opt = usuarioRepository.findById(usuario.getId());
+                if (opt.isPresent()) {
+                    Usuario existente = opt.get();
+
+                    // Validar username duplicado únicamente si fue modificado
+                    if (!usuario.getUsername().equals(existente.getUsername())
+                            && usuarioRepository.existsByUsername(usuario.getUsername())) {
+                        throw new RuntimeException("El nombre de usuario ya está en uso.");
+                    }
+
+                    // Actualización de datos
+                    existente.setNombre(usuario.getNombre());
+                    existente.setApellido(usuario.getApellido());
+                    existente.setFecha_nacimiento(usuario.getFecha_nacimiento());
+                    existente.setUsername(usuario.getUsername());
+                    existente.setPassword(usuario.getPassword());
+                    existente.setRol(usuario.getRol());
+                    existente.setEstado(usuario.getEstado());
+
+                    return usuarioRepository.save(existente);
+                }
+            }
+
+            // MODO CREACIÓN
+            // Validar username duplicado
+            if (usuarioRepository.existsByUsername(usuario.getUsername())) {
+                throw new RuntimeException("El nombre de usuario ya está en uso.");
+            }
+
+            return usuarioRepository.save(usuario);
+
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Ocurrió un error inesperado al procesar la solicitud.");
+        }
     }
-    
+
     public Usuario buscarPorUsername(String username) {
         return usuarioRepository.findByUsername(username).orElse(null);
     }

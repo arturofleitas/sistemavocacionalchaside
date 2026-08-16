@@ -1,0 +1,183 @@
+/**
+ * detalle-test.css
+ * Estilos para el reporte profesional de evaluación vocacional.
+ * Maneja diseño adaptativo en pantalla y optimización estricta para impresión (A4).
+ */
+
+/* ==========================================
+   1. ESTILOS PARA VISUALIZACIÓN EN PANTALLA
+   ========================================== */
+body {
+    background-color: #f8fafc;
+    color: #334155;
+    font-size: 15px;
+}
+
+/* Línea divisoria del encabezado principal */
+.report-header {
+    border-bottom: 3px solid #1e40af;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+}
+
+/* --- BOTONES DE ACCIÓN AGRANDADOS --- */
+.btn-lg-custom {
+    padding: 12px 24px !important;
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-lg-custom:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 12px -1px rgba(0, 0, 0, 0.12);
+}
+
+/* Tarjeta contenedora de los datos del alumno */
+.info-card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    padding: 24px;
+    margin-bottom: 35px;
+}
+
+/* Rejilla de dos columnas para los metadatos */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+}
+
+/* Títulos pequeños en mayúsculas dentro de la tarjeta */
+.info-item strong {
+    color: #64748b;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 4px;
+}
+
+/* Valores principales dentro de la tarjeta */
+.info-item span {
+    color: #0f172a;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+/* Bloque destacado para el Perfil Vocacional obtenido */
+.badge-perfil {
+    background-color: #eff6ff;
+    color: #1e40af;
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid #bfdbfe;
+    display: inline-block;
+}
+
+/* --- CONTENEDOR Y FUENTE DE TABLA AGRANDADA --- */
+.table-reporte {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e2e8f0;
+}
+
+/* Incremento del tamaño de fuente para las preguntas y respuestas */
+.table-reporte .table {
+    font-size: 1.1rem !important; /* Letras un poco más grandes */
+}
+
+/* Forzar color azul institucional en la cabecera de la tabla */
+.table-reporte thead {
+    background-color: #1e40af !important;
+    color: white !important;
+}
+
+.table-reporte th {
+    padding: 14px 16px !important;
+}
+
+.table-reporte td {
+    padding: 14px 16px !important;
+}
+
+/* Etiquetas estilizadas para las respuestas */
+.badge-si {
+    background-color: #dcfce7;
+    color: #15803d;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+.badge-no {
+    background-color: #ffeeee;
+    color: #b91c1c;
+    font-weight: 700;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 1rem;
+}
+
+
+/* ==========================================
+   2. FILTRO MÁGICO: REGLAS PARA IMPRESIÓN (Ctrl + P)
+   ========================================== */
+@media print {
+    body {
+        background-color: white !important;
+        color: black !important;
+        font-size: 12pt;
+    }
+    
+    .container {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    .no-print {
+        display: none !important;
+    }
+    
+    .info-card {
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin-bottom: 20px !important;
+    }
+    
+    .table-reporte {
+        border: 1px solid #cbd5e1 !important;
+    }
+    
+    .table th {
+        background-color: #1e40af !important;
+        color: white !important;
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact;         
+    }
+    
+    .badge-si {
+        border: 1px solid #15803d !important;
+        background-color: transparent !important;
+        color: #15803d !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    
+    .badge-no {
+        border: 1px solid #b91c1c !important;
+        background-color: transparent !important;
+        color: #b91c1c !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}

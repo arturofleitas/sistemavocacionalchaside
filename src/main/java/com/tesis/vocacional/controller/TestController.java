@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/realizar-test")
@@ -192,21 +193,56 @@ public class TestController {
 			return "redirect:/realizar-test";
 		}
 
-		// Calcular puntajes
-		Map<String, Integer> puntajes = new HashMap<>();
+		// Mapa de áreas (7)
+		List<String> areas = Arrays.asList("C", "H", "A", "S", "I", "D", "E");
+
+		// Inicializar mapas de puntajes para intereses y aptitudes
+		Map<String, Integer> puntajesInteres = new HashMap<>();
+		Map<String, Integer> puntajesAptitud = new HashMap<>();
+		for (String area : areas) {
+			puntajesInteres.put(area, 0);
+			puntajesAptitud.put(area, 0);
+		}
+
+		// Procesar cada respuesta
 		for (int i = 0; i < preguntas.size(); i++) {
 			if ("SI".equalsIgnoreCase(respuestas.get(i))) {
-				String letraCategoria = preguntas.get(i).getCategoria();
-				puntajes.put(letraCategoria, puntajes.getOrDefault(letraCategoria, 0) + 1);
+				Pregunta pregunta = preguntas.get(i);
+				String area = pregunta.getCategoria();
+				String dimension = pregunta.getDimension();
+				if (dimension == null) {
+					// Si no tiene dimensión, se puede manejar como error o asignar por defecto
+					// Por ahora, asumimos que todas son de interés (para no romper)
+					dimension = "INTERES";
+				}
+				if ("INTERES".equalsIgnoreCase(dimension)) {
+					puntajesInteres.put(area, puntajesInteres.get(area) + 1);
+				} else if ("APTITUD".equalsIgnoreCase(dimension)) {
+					puntajesAptitud.put(area, puntajesAptitud.get(area) + 1);
+				}
 			}
 		}
 
-		String letraGanadora = null;
-		int maxPuntaje = -1;
-		for (Map.Entry<String, Integer> entry : puntajes.entrySet()) {
-			if (entry.getValue() > maxPuntaje) {
-				maxPuntaje = entry.getValue();
-				letraGanadora = entry.getKey();
+		// Ordenar áreas por puntaje (descendente) para intereses
+		List<Map.Entry<String, Integer>> interesesOrdenados = new ArrayList<>(puntajesInteres.entrySet());
+		interesesOrdenados.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+		List<Map.Entry<String, Integer>> aptitudesOrdenados = new ArrayList<>(puntajesAptitud.entrySet());
+		aptitudesOrdenados.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+		// Obtener las dos primeras áreas con puntaje > 0 (o todas si hay empate)
+		List<String> interesesPrincipales = new ArrayList<>();
+		for (int i = 0; i < Math.min(2, interesesOrdenados.size()); i++) {
+			if (interesesOrdenados.get(i).getValue() > 0) {
+				interesesPrincipales.add(interesesOrdenados.get(i).getKey());
+			}
+		}
+		// Si no hay intereses > 0, se puede dejar vacío o poner "Ninguno"
+
+		List<String> aptitudesPrincipales = new ArrayList<>();
+		for (int i = 0; i < Math.min(2, aptitudesOrdenados.size()); i++) {
+			if (aptitudesOrdenados.get(i).getValue() > 0) {
+				aptitudesPrincipales.add(aptitudesOrdenados.get(i).getKey());
 			}
 		}
 
@@ -220,22 +256,28 @@ public class TestController {
 		nombreCategoria.put("D", "DEFENSA Y SEGURIDAD");
 		nombreCategoria.put("E", "CIENCIAS AGRARIAS, DE LA NATURALEZA, ZOOLÓGICAS Y BIOLÓGICAS");
 
-		String nombreCompleto = "No se pudo determinar un perfil";
-		if (letraGanadora != null) {
-			nombreCompleto = nombreCategoria.getOrDefault(letraGanadora, "Perfil no reconocido");
-		}
+		// Construir nombres completos para mostrar
+		String interesesNombres = interesesPrincipales.stream().map(nombreCategoria::get)
+				.collect(Collectors.joining(" - "));
+		String aptitudesNombres = aptitudesPrincipales.stream().map(nombreCategoria::get)
+				.collect(Collectors.joining(" - "));
 
 		// Guardar resultado en la base de datos
-		if (testUsuario != null && letraGanadora != null) {
+		if (testUsuario != null && !interesesPrincipales.isEmpty() || !aptitudesPrincipales.isEmpty()) {
 			try {
 				Resultado resultado = new Resultado();
-				resultado.setPerfil(letraGanadora); // o nombreCompleto según prefieras
-				resultado.setPuntaje(maxPuntaje);
+				// Guardar las letras principales (por si se necesita)
+				resultado.setPerfil(
+						String.join(",", interesesPrincipales) + "|" + String.join(",", aptitudesPrincipales));
+				// Guardar los puntajes (opcionalmente como JSON)
+				resultado.setPuntajesInteres(puntajesInteres.toString());
+				resultado.setPuntajesAptitud(puntajesAptitud.toString());
+				// También podemos guardar los nombres completos en campos separados si se
+				// agregaron
 				resultado.setTest(testUsuario);
 				resultado.setFechaRealizacion(LocalDateTime.now());
 				resultadoService.guardar(resultado);
 
-				// Marcar TestUsuario como completado (no se modifica la fecha)
 				testUsuario.setEstado("COMPLETADO");
 				testUsuarioService.guardar(testUsuario);
 			} catch (Exception e) {
@@ -244,13 +286,12 @@ public class TestController {
 			}
 		}
 
-		model.addAttribute("categoriaGanadora", nombreCompleto);
-		model.addAttribute("letraGanadora", letraGanadora);
-		model.addAttribute("maxPuntaje", maxPuntaje);
+		// Pasar datos al modelo
+		model.addAttribute("interesesPrincipales", interesesNombres);
+		model.addAttribute("aptitudesPrincipales", aptitudesNombres);
+		model.addAttribute("puntajesInteres", puntajesInteres);
+		model.addAttribute("puntajesAptitud", puntajesAptitud);
 		model.addAttribute("totalPreguntas", preguntas.size());
-		model.addAttribute("descripcion", "Realiza nuevamente el test para obtener un diagnóstico más preciso.");
-		model.addAttribute("fortalezas", "Consulta con un orientador vocacional.");
-		model.addAttribute("carreras", "Explora diferentes áreas según tus intereses.");
 
 		// Limpiar sesión
 		session.removeAttribute("preguntas");

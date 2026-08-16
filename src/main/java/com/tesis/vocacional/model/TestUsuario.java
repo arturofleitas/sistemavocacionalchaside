@@ -1,12 +1,16 @@
 package com.tesis.vocacional.model;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class TestUsuario {
@@ -23,6 +27,17 @@ public class TestUsuario {
 
 	@ManyToOne
 	private Test test;
+	
+	@OneToMany(mappedBy = "test",
+	           cascade = CascadeType.ALL,
+	           orphanRemoval = true)
+	private List<Resultado> resultados = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "testUsuario",
+	           cascade = CascadeType.ALL,
+	           orphanRemoval = true)
+	private List<TestUsuarioPregunta> testUsuarioPreguntas = new ArrayList<>();
+
 
 	public TestUsuario() {
 		this.fecha = LocalDate.now();
@@ -68,4 +83,21 @@ public class TestUsuario {
 		this.test = test;
 	}
 
+	public List<Resultado> getResultados() {
+		return resultados;
+	}
+
+	public void setResultados(List<Resultado> resultados) {
+		this.resultados = resultados;
+	}
+
+	public List<TestUsuarioPregunta> getTestUsuarioPreguntas() {
+		return testUsuarioPreguntas;
+	}
+
+	public void setTestUsuarioPreguntas(List<TestUsuarioPregunta> testUsuarioPreguntas) {
+		this.testUsuarioPreguntas = testUsuarioPreguntas;
+	}
+	
+	
 }

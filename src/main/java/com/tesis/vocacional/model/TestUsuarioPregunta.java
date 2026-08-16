@@ -5,6 +5,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.CascadeType;
+import java.util.List;
 
 @Entity
 public class TestUsuarioPregunta {
@@ -21,6 +24,9 @@ public class TestUsuarioPregunta {
 
 	@ManyToOne
 	private Pregunta pregunta;
+
+	@OneToMany(mappedBy = "pregunta", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<Respuesta> respuestas;
 
 	public int getId() {
 		return id;
@@ -62,4 +68,11 @@ public class TestUsuarioPregunta {
 		this.pregunta = pregunta;
 	}
 
+	public List<Respuesta> getRespuestas() {
+		return respuestas;
+	}
+
+	public void setRespuestas(List<Respuesta> respuestas) {
+		this.respuestas = respuestas;
+	}
 }

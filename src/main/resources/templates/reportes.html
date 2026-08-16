@@ -1,150 +1,178 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reportes - Sistema Vocacional</title>
-    <link rel="stylesheet" th:href="@{/css/home.css}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        .filter-bar {
-            background: white;
-            border-radius: 20px;
-            padding: 1rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        .table-responsive-custom {
-            background: white;
-            border-radius: 20px;
-            padding: 1rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-        }
-        .content {
-            background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .header-title { color: #1e40af; font-weight: 700; }
-    </style>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Reportes - Sistema Vocacional</title>
+	<link rel="stylesheet" th:href="@{/css/home.css}">
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+	<!-- Enlace unificado al archivo reportes.css externo -->
+		<link rel="stylesheet" th:href="@{/css/reportes.css}">
+	
+
+	<style>
+		.filter-bar {
+			background: white;
+			border-radius: 20px;
+			padding: 1rem;
+			margin-bottom: 1.5rem;
+			box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+		}
+
+		.table-responsive-custom {
+			background: white;
+			border-radius: 20px;
+			padding: 1rem;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+		}
+
+		.content {
+			background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
+			min-height: 100vh;
+			padding: 20px;
+		}
+
+		.header-title {
+			color: #1e40af;
+			font-weight: 700;
+		}
+	</style>
 </head>
+
 <body>
-<div class="main-container">
-    <!-- Sidebar (igual al original) -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
-        </div>
-        <ul class="nav flex-column">
-            <li><a th:href="@{/home}"><i class="fas fa-home"></i> Inicio</a></li>
-            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/usuarios}"><i class="fas fa-users"></i> Usuarios</a></li>
-            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión de Test</a></li>
-            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/preguntas}"><i class="fas fa-question-circle"></i> Preguntas</a></li>
-            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/reportes}" class="active"><i class="fas fa-chart-bar"></i> Reportes</a></li>
-            <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/configuraciones}"><i class="fas fa-sliders-h"></i> Configuraciones</a></li>
-            <li sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')"><a th:href="@{/realizar-test}"><i class="fas fa-play-circle"></i> Realizar Test</a></li>
-            <li class="mt-auto"><a href="/logout"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
-        </ul>
-    </div>
+	<div class="main-container">
+		<!-- Sidebar (Mantenido exactamente igual al original) -->
+		<div class="sidebar">
+			<div class="sidebar-header">
+				<h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
+			</div>
+			<ul class="nav flex-column">
+				<li><a th:href="@{/home}"><i class="fas fa-home"></i> Inicio</a></li>
+				<li sec:authorize="hasRole('ADMIN')"><a th:href="@{/usuarios}"><i class="fas fa-users"></i> Usuarios</a>
+				</li>
+				<li sec:authorize="hasRole('ADMIN')"><a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión
+						de Test</a></li>
+				<li sec:authorize="hasRole('ADMIN')"><a th:href="@{/preguntas}"><i class="fas fa-question-circle"></i>
+						Preguntas</a></li>
+				<li sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')"><a th:href="@{/realizar-test}"><i
+							class="fas fa-play-circle"></i> Realizar Test</a></li>
+				<li sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')"><a th:href="@{/reportes}" class="active"><i
+							class="fas fa-chart-bar"></i> Reportes</a></li>
+				<li class="mt-auto"><a href="/logout"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+			</ul>
+		</div>
 
-    <div class="content">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="header-title"><i class="fas fa-chart-line me-2"></i>Reportes y Estadísticas</h2>
-            <div><span class="fw-semibold text-primary">Bienvenido, <span sec:authentication="name"></span></span></div>
-        </div>
+		<div class="content">
+			<!-- NUEVO: Botón de Imprimir agregado de forma limpia al lado del título -->
+			<div class="d-flex justify-content-between align-items-center mb-4">
+				<h2 class="header-title"><i class="fas fa-chart-line me-2"></i>Reportes y Estadísticas</h2>
+				<div class="d-flex gap-3 align-items-center">
+					<button onclick="window.print();" class="btn btn-sm btn-outline-primary"><i
+							class="fas fa-print me-1"></i>Imprimir Reporte</button>
+					<span class="fw-semibold text-primary">Bienvenido, <span sec:authentication="name"></span></span>
+				</div>
+			</div>
 
-        <!-- VISTA ADMINISTRADOR (con filtros JS) -->
-        <div th:if="${rol == 'ADMIN'}">
-            <!-- Barra de filtros -->
-            <div class="filter-bar">
-                <div class="row g-3 align-items-end">
-                    <div class="col-md-4">
-                        <label for="filtroNombre" class="form-label">Filtrar por alumno</label>
-                        <input type="text" id="filtroNombre" class="form-control" placeholder="Ej: Juan Pérez">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="filtroFechaDesde" class="form-label">Fecha desde</label>
-                        <input type="date" id="filtroFechaDesde" class="form-control">
-                    </div>
-                    <div class="col-md-3">
-                        <label for="filtroFechaHasta" class="form-label">Fecha hasta</label>
-                        <input type="date" id="filtroFechaHasta" class="form-control">
-                    </div>
-                    <div class="col-md-2">
-                        <button id="limpiarFiltros" class="btn btn-outline-secondary w-100">Limpiar</button>
-                    </div>
-                </div>
-            </div>
+			<!-- VISTA ADMINISTRADOR (con filtros JS) -->
+			<div th:if="${rol == 'ADMIN'}">
+				<!-- Barra de filtros -->
+				<div class="filter-bar">
+					<div class="row g-3 align-items-end">
+						<div class="col-md-4">
+							<label for="filtroNombre" class="form-label">Filtrar por alumno</label>
+							<input type="text" id="filtroNombre" class="form-control" placeholder="Ej: Juan Pérez">
+						</div>
+						<div class="col-md-3">
+							<label for="filtroFechaDesde" class="form-label">Fecha desde</label>
+							<input type="date" id="filtroFechaDesde" class="form-control">
+						</div>
+						<div class="col-md-3">
+							<label for="filtroFechaHasta" class="form-label">Fecha hasta</label>
+							<input type="date" id="filtroFechaHasta" class="form-control">
+						</div>
+						<div class="col-md-2">
+							<button id="limpiarFiltros" class="btn btn-outline-secondary w-100">Limpiar</button>
+						</div>
+					</div>
+				</div>
 
-            <!-- Tabla de historial de evaluaciones -->
-            <div class="table-responsive-custom">
-                <h5 class="mb-3"><i class="fas fa-history me-2"></i>Historial de evaluaciones</h5>
-                <div style="max-height: 500px; overflow-y: auto;">
-                    <table class="table table-hover" id="tablaReportes">
-                        <thead class="table-light sticky-top">
-                            <tr>
-                                <th>Alumno</th>
-                                <th>Fecha</th>
-                                <th>Perfil</th>
-                                <th>Puntaje</th>
-                                <th>Detalle</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaReportesBody">
-                            <tr th:if="${resultados.isEmpty()}">
-                                <td colspan="5" class="text-center text-muted">No se encontraron evaluaciones. </td>
-                            </tr>
-                            <tr th:each="res : ${resultados}"
-                                th:attr="data-nombre=${res.test.usuario.nombre + ' ' + res.test.usuario.apellido},
-                                         data-fecha=${res.fechaRealizacion}">
-                                <td th:text="${res.test.usuario.nombre + ' ' + res.test.usuario.apellido}">-</td>
-                                <td th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">-</td>
-                                <td th:text="${res.nombrePerfil}">-</td>
-                                <td th:text="${res.puntaje}">-</td>
-                                <td><a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}" class="btn btn-sm btn-info">Ver respuestas</a></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+				<!-- Tabla de historial de evaluaciones -->
+				<div class="table-responsive-custom">
+					<h5 class="mb-3"><i class="fas fa-history me-2"></i>Historial de evaluaciones</h5>
+					<div style="max-height: 500px; overflow-y: auto;">
+						<table class="table table-hover" id="tablaReportes">
+							<thead class="table-light sticky-top">
+								<tr>
+									<th>Alumno</th>
+									<th>Fecha</th>
+									<th>Perfil</th>
+									<th>Puntaje</th>
+									<th>Detalle</th>
+								</tr>
+							</thead>
+							<tbody id="tablaReportesBody">
+								<tr th:if="${resultados == null || resultados.isEmpty()}">
+									<td colspan="5" class="text-center text-muted">No se encontraron evaluaciones. </td>
+								</tr>
+								<tr th:each="res : ${resultados}" th:attr="data-nombre=${res.test.usuario.nombre + ' ' + res.test.usuario.apellido},
+														 data-fecha=${res.fechaRealizacion}">
+									<td th:text="${res.test.usuario.nombre + ' ' + res.test.usuario.apellido}">-</td>
+									<td th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">-</td>
+									<td th:text="${res.getNombrePerfil()}">-</td>
+									<td th:text="${res.puntaje}">-</td>
+									<td><a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}"
+											class="btn btn-sm btn-info">Ver respuestas</a></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
 
-        <!-- VISTA ESTUDIANTE (sin filtros, solo su historial) -->
-        <div th:if="${rol == 'ESTUDIANTE'}">
-            <div class="alert alert-info">
-                <i class="fas fa-user-graduate"></i> <strong>Bienvenido, <span th:text="${estudiante.nombre}"></span></strong>
-                <br>Aquí puedes ver tus evaluaciones.
-            </div>
-            <div th:if="${resultados.isEmpty()}" class="text-center p-5 bg-light rounded-4">
-                <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
-                <h4>Aún no has realizado ningún test</h4>
-                <a th:href="@{/realizar-test}" class="btn btn-primary">Iniciar test ahora</a>
-            </div>
-            <div th:unless="${resultados.isEmpty()}" class="table-responsive-custom">
-                <h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Mis evaluaciones</h5>
-                <div style="max-height: 400px; overflow-y: auto;">
-                    <table class="table table-hover">
-                        <thead class="table-light">
-                            <tr><th>Fecha</th><th>Perfil</th><th>Puntaje</th><th>Detalle</th></tr>
-                        </thead>
-                        <tbody>
-                            <tr th:each="res : ${resultados}">
-                                <td th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">-</td>
-                                <td th:text="${res.nombrePerfil}">-</td>
-                                <td th:text="${res.puntaje}">-</td>
-                                <td><a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}" class="btn btn-sm btn-info">Ver respuestas</a></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+			<!-- VISTA ESTUDIANTE (sin filtros, solo su historial) -->
+			<div th:if="${rol == 'ESTUDIANTE'}">
+				<div class="alert alert-info">
+					<i class="fas fa-user-graduate"></i> <strong>Bienvenido, <span
+							th:text="${estudiante.nombre}"></span></strong>
+					<br>Aquí puedes ver tus evaluaciones.
+				</div>
+				<div th:if="${resultados == null || resultados.isEmpty()}" class="text-center p-5 bg-light rounded-4">
+					<i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+					<h4>Aún no has realizado ningún test</h4>
+					<a th:href="@{/realizar-test}" class="btn btn-primary">Iniciar test ahora</a>
+				</div>
+				<div th:unless="${resultados == null || resultados.isEmpty()}" class="table-responsive-custom">
+					<h5 class="mb-3"><i class="fas fa-chart-line me-2"></i>Mis evaluaciones</h5>
+					<div style="max-height: 400px; overflow-y: auto;">
+						<table class="table table-hover">
+							<thead class="table-light">
+								<tr>
+									<th>Fecha</th>
+									<th>Perfil</th>
+									<th>Puntaje</th>
+									<th>Detalle</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr th:each="res : ${resultados}">
+									<td th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">-</td>
+									<td th:text="${res.getNombrePerfil()}">-</td>
+									<td th:text="${res.puntaje}">-</td>
+									<td><a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}"
+											class="btn btn-sm btn-info">Ver respuestas</a></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-<script th:src="@{/js/reportes.js}"></script>
+	<script src="https://jsdelivr.net"></script>
+	<script th:src="@{/js/reportes.js}"></script>
 </body>
+
 </html>

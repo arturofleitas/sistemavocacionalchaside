@@ -13,14 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
-/**
- * Controlador de reportes y estadísticas del sistema de test vocacional.
- * Diferencias según el rol: - ADMIN: Ve todos los tests realizados (todos los
- * usuarios) + estadísticas globales. - ESTUDIANTE: Ve solo sus propios tests.
- * Los filtros (por nombre de alumno y rango de fechas) se realizan en el
- * cliente (JavaScript) sobre la tabla ya cargada, lo que simplifica el backend
- * y evita problemas de consultas dinámicas.
- */
 @Controller
 @RequestMapping("/reportes")
 public class ReportesController {
@@ -33,11 +25,6 @@ public class ReportesController {
 		this.usuarioService = usuarioService;
 	}
 
-	/**
-	 * Muestra la página de reportes según el rol del usuario autenticado.
-	 * @param model Modelo de Spring para pasar atributos a la vista.
-	 * @return Nombre de la plantilla Thymeleaf (reportes.html)
-	 */
 	@GetMapping
 	public String mostrarReportes(Model model) {
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -45,18 +32,22 @@ public class ReportesController {
 		System.out.println("=== REPORTES ===");
 		System.out.println("Usuario autenticado: " + username);
 		Usuario usuarioActual = usuarioService.buscarPorUsername(username);
+		
 		if (usuarioActual == null) {
 			System.out.println("ERROR: Usuario no encontrado en BD");
 			return "redirect:/login";
 		}
+		
 		String rol = usuarioActual.getRol();
 		System.out.println("Rol: " + rol);
 
 		if ("ADMIN".equals(rol)) {
-			// ... carga admin
 			System.out.println("Cargando vista ADMIN");
+			// Llamada corregida según tu estructura actual del service
+			List<Resultado> todosLosResultados = resultadoService.obtenerTodosConUsuarioYTest();
+			model.addAttribute("resultados", todosLosResultados);
+			model.addAttribute("rol", "ADMIN");
 		} else {
-			// ... carga estudiante
 			System.out.println("Cargando vista ESTUDIANTE");
 			List<Resultado> resultados = resultadoService.obtenerPorUsuarioId(usuarioActual.getId());
 			System.out.println("Resultados encontrados: " + resultados.size());

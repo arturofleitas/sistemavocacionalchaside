@@ -35,15 +35,21 @@
             const fechaHasta = filtroFechaHasta.value;
 
             allRows.forEach(row => {
-                // Obtener atributos data-* de la fila
+                // Obtener atributos data-* de la fila y normalizar a minúsculas
                 const nombreAlumno = row.getAttribute('data-nombre')?.toLowerCase() || '';
                 let fechaISO = row.getAttribute('data-fecha') || '';
-                // La fecha puede venir con hora, tomamos solo la parte de fecha (antes de la T)
-                fechaISO = fechaISO.split('T')[0];
+                
+                // La fecha puede venir con hora (formato LocalDateTime ISO), tomamos solo la parte de fecha (antes de la T)
+                if (fechaISO.includes('T')) {
+                    fechaISO = fechaISO.split('T')[0];
+                }
 
                 let visible = true;
 
+                // Validación por nombre
                 if (textoNombre && !nombreAlumno.includes(textoNombre)) visible = false;
+                
+                // Validación por rango de fechas (comparación de cadenas YYYY-MM-DD)
                 if (visible && fechaDesde && fechaISO < fechaDesde) visible = false;
                 if (visible && fechaHasta && fechaISO > fechaHasta) visible = false;
 
@@ -64,7 +70,7 @@
             });
         }
 
-        // Ejecutar al inicio por si hay valores por defecto (ninguno)
+        // Ejecutar al inicio por si hay valores por defecto
         aplicarFiltros();
     });
 })();

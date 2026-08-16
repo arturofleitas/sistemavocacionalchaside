@@ -14,6 +14,7 @@ public class Pregunta {
 
 	private String texto;
 	private String categoria;
+	private String dimension;
 
 	@ManyToOne
 	private Test test;
@@ -40,6 +41,15 @@ public class Pregunta {
 
 	public void setCategoria(String categoria) {
 		this.categoria = categoria;
+	}
+	
+
+	public String getDimension() {
+		return dimension;
+	}
+
+	public void setDimension(String dimension) {
+		this.dimension = dimension;
 	}
 
 	public Test getTest() {

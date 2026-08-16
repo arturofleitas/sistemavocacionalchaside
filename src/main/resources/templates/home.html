@@ -2,100 +2,222 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Panel de Control - Sistema Vocacional</title>
-	<link rel="stylesheet" th:href="@{/css/home.css}">
-	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control - Sistema Vocacional</title>
+
+    <!-- Único archivo CSS -->
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 </head>
 
 <body>
-	<div class="main-container">
-		<!-- Menú Lateral Azul -->
-		<div class="sidebar">
-			<div class="sidebar-header">
-				<h4><i class="fas fa-clipboard-check"></i> Sistema Vocacional</h4>
-			</div>
-			<ul class="nav flex-column">
-				<li><a th:href="@{/home}" class="active"><i class="fas fa-home"></i> Inicio</a></li>
 
-				<!-- SOLO ADMIN -->
-				<li sec:authorize="hasRole('ADMIN')">
-					<a th:href="@{/usuarios}"><i class="fas fa-users"></i> Usuarios</a>
-				</li>
-				<li sec:authorize="hasRole('ADMIN')">
-					<a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión de Test</a>
-				</li>
-				<li sec:authorize="hasRole('ADMIN')">
-					<a th:href="@{/preguntas}"><i class="fas fa-question-circle"></i> Preguntas</a>
-				</li>
+    <div class="main-container">
 
-				<!-- VISIBLE PARA ADMIN Y ESTUDIANTE -->
-				<li sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')">
-					<a th:href="@{/realizar-test}"><i class="fas fa-play-circle"></i> Realizar Test</a>
-				</li>
-				<li sec:authorize="hasAnyRole('ADMIN','ESTUDIANTE')"><a th:href="@{/reportes}"><i
-							class="fas fa-chart-bar"></i> Reportes</a></li>
-				<li sec:authorize="hasRole('ADMIN')">
-					<a th:href="@{/configuraciones}"><i class="fas fa-sliders-h"></i> Configuraciones</a>
-				</li>
+        <!-- MENÚ LATERAL (visible en desktop, oculto en móvil) -->
+        <div class="sidebar d-none d-md-flex">
 
-				<li class="mt-auto">
-					<a href="/logout"><i class="fas fa-sign-out-alt"></i> Salir</a>
-				</li>
-			</ul>
-		</div>
+            <div class="sidebar-header">
+                <h4>
+                    <i class="fas fa-clipboard-check"></i>
+                    Sistema Vocacional
+                </h4>
+            </div>
 
-		<!-- Contenido Principal -->
-		<div class="content">
-			<!-- Header -->
-			<div class="header">
-				<h2>Panel de Control</h2>
-				<div class="user-info">
-					<span>Bienvenido, Administrador</span>
-					<div class="avatar"><i class="fas fa-user"></i></div>
-				</div>
-			</div>
+            <ul class="nav flex-column">
 
-			<div class="welcome-banner">
-				<h3>Bienvenido al Sistema de Evaluación Vocacional</h3>
-				<p>Administra usuarios, crea tests, registra preguntas y analiza resultados desde un solo lugar.</p>
-			</div>
+                <li>
+                    <a th:href="@{/home}" class="active">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
 
-			<!-- Estadísticas -->
-			<div class="stats-grid">
-				<div class="stat-card">
-					<h3>128</h3>
-					<p>Usuarios Registrados</p>
-				</div>
-				<div class="stat-card">
-					<h3>5</h3>
-					<p>Tests Activos</p>
-				</div>
-				<div class="stat-card">
-					<h3>320</h3>
-					<p>Tests Realizados</p>
-				</div>
-				<div class="stat-card">
-					<h3>78%</h3>
-					<p>Promedio Tecnológico</p>
-				</div>
-			</div>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/usuarios}">
+                        <i class="fas fa-users"></i> Usuarios
+                    </a>
+                </li>
 
-			<!-- Accesos Rápidos -->
-			<div class="quick-access">
-				<h5>Accesos Rápidos</h5>
-				<div class="quick-buttons">
-					<button class="btn-blue"><i class="fas fa-user-plus"></i> Nuevo Usuario</button>
-					<button class="btn-blue"><i class="fas fa-file-alt"></i> Crear Test</button>
-					<button class="btn-blue"><i class="fas fa-plus"></i> Agregar Preguntas</button>
-					<button class="btn-blue"><i class="fas fa-play"></i> Iniciar Evaluación</button>
-					<button class="btn-blue"><i class="fas fa-chart-pie"></i> Ver Reportes</button>
-				</div>
-			</div>
-		</div>
-	</div>
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/gestion-test}">
+                        <i class="fas fa-cogs"></i> Gestión de Test
+                    </a>
+                </li>
+
+                <li sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/preguntas}">
+                        <i class="fas fa-question-circle"></i> Preguntas
+                    </a>
+                </li>
+
+                <li sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')">
+                    <a th:href="@{/realizar-test}">
+                        <i class="fas fa-play-circle"></i> Realizar Test
+                    </a>
+                </li>
+
+                <li sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')">
+                    <a th:href="@{/reportes}">
+                        <i class="fas fa-chart-bar"></i> Reportes
+                    </a>
+                </li>
+
+                <li class="mt-auto">
+                    <a th:href="@{/logout}">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="content">
+
+            <!-- HEADER -->
+            <div class="header">
+
+                <div style="display: flex; align-items: center; gap: 12px;">
+                    <!-- Botón hamburguesa (visible solo en móvil) -->
+                    <button class="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMobile">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h2>Panel de Control</h2>
+                </div>
+
+                <div class="user-info">
+
+                    <span>
+                        Bienvenido,
+                        <strong sec:authentication="name"></strong>
+                    </span>
+
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- BANNER -->
+            <div class="welcome-banner">
+
+                <h3>Bienvenido al Sistema de Evaluación Vocacional</h3>
+
+                <p>
+                    Administra usuarios, crea tests, registra preguntas y analiza
+                    resultados desde un solo lugar.
+                </p>
+
+            </div>
+
+            <!-- ESTADÍSTICAS (solo admin) -->
+            <div class="stats-grid" sec:authorize="hasRole('ADMIN')">
+
+                <div class="stat-card">
+                    <h3>128</h3>
+                    <p>Usuarios Registrados</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>5</h3>
+                    <p>Tests Activos</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>320</h3>
+                    <p>Tests Realizados</p>
+                </div>
+
+                <div class="stat-card">
+                    <h3>78%</h3>
+                    <p>Promedio Tecnológico</p>
+                </div>
+
+            </div>
+
+            <!-- ACCESOS RÁPIDOS ADMIN -->
+            <div class="quick-access" sec:authorize="hasRole('ADMIN')">
+
+                <h5>Accesos Rápidos</h5>
+
+                <div class="quick-buttons">
+
+                    <a th:href="@{/usuarios}" class="btn-blue">
+                        <i class="fas fa-user-plus"></i>
+                        Nuevo Usuario
+                    </a>
+
+                    <a th:href="@{/gestion-test}" class="btn-blue">
+                        <i class="fas fa-file-alt"></i>
+                        Crear Test
+                    </a>
+
+                    <a th:href="@{/preguntas}" class="btn-blue">
+                        <i class="fas fa-plus"></i>
+                        Agregar Preguntas
+                    </a>
+
+                    <a th:href="@{/realizar-test}" class="btn-blue">
+                        <i class="fas fa-play"></i>
+                        Iniciar Evaluación
+                    </a>
+
+                    <a th:href="@{/reportes}" class="btn-blue">
+                        <i class="fas fa-chart-pie"></i>
+                        Ver Reportes
+                    </a>
+
+                </div>
+            </div>
+
+            <!-- PANEL ESTUDIANTE -->
+            <div class="quick-access" sec:authorize="hasRole('ESTUDIANTE')">
+
+                <h5>Acceso del Estudiante</h5>
+
+                <div class="quick-buttons">
+
+                    <a th:href="@{/realizar-test}" class="btn-blue">
+                        <i class="fas fa-play-circle"></i>
+                        Realizar Evaluación
+                    </a>
+
+                    <a th:href="@{/reportes}" class="btn-blue">
+                        <i class="fas fa-chart-bar"></i>
+                        Mis Reportes
+                    </a>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- OFFCANVAS (Menú móvil) -->
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="sidebarMobile">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title"><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li><a th:href="@{/home}" class="active"><i class="fas fa-home"></i> Inicio</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/usuarios}"><i class="fas fa-users"></i> Usuarios</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/gestion-test}"><i class="fas fa-cogs"></i> Gestión de Test</a></li>
+                <li sec:authorize="hasRole('ADMIN')"><a th:href="@{/preguntas}"><i class="fas fa-question-circle"></i> Preguntas</a></li>
+                <li sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')"><a th:href="@{/realizar-test}"><i class="fas fa-play-circle"></i> Realizar Test</a></li>
+                <li sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')"><a th:href="@{/reportes}"><i class="fas fa-chart-bar"></i> Reportes</a></li>
+                <li class="mt-auto"><a th:href="@{/logout}"><i class="fas fa-sign-out-alt"></i> Salir</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Scripts de Bootstrap -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>

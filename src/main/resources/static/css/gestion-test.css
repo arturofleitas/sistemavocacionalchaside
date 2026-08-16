@@ -1,0 +1,115 @@
+/**
+ * gestion-test.css
+ * Control de estilos exclusivo para impresión de reportes de Tests Registrados.
+ * Sigue el patrón unificado del reporte de detalles y gestión de usuarios.
+ */
+
+@media print {
+    /* 1. Ocultar componentes web interactivos del plano del papel */
+    .no-print,
+    .columna-formulario-izquierda,
+    .columna-acciones,
+    .sidebar,
+    .cabecera-tabla,
+    .user-info {
+        display: none !important;
+        opacity: 0 !important;
+        visibility: hidden !important;
+    }
+
+    /* 2. Limpiar fondos, degradados de pantalla y resetear a blanco puro */
+    body, .content {
+        background: white !important;
+        background-color: white !important;
+        color: #334155 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+    }
+
+    /* 3. Estructura de cabecera con patrón unificado (Línea azul inferior) */
+    .content > div.d-flex.justify-content-between {
+        border-bottom: 3px solid #1e40af !important;
+        padding-bottom: 12px !important;
+        margin-bottom: 35px !important;
+        display: flex !important;
+    }
+
+    .content h2.header-title {
+        color: #1e40af !important;
+        font-weight: 700 !important;
+        font-size: 22pt !important;
+        margin: 0 !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* 4. Forzar expansión horizontal completa en formato de hoja A4 */
+    .columna-tabla-derecha {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    /* 5. Desactivar contenedores decorativos web */
+    .table-card {
+        box-shadow: none !important;
+        border: none !important;
+        background: transparent !important;
+        padding: 0 !important;
+    }
+
+    /* 6. Garantizar la visibilidad completa de la tabla en la previsualización */
+    .table-responsive {
+        overflow: visible !important;
+        overflow-x: visible !important;
+    }
+
+    /* 7. Tabla con el patrón idéntico al detalle del test */
+    .table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: 1px solid #e2e8f0 !important;
+        font-size: 11pt !important;
+        background-color: white !important;
+    }
+
+    /* Cabecera de la tabla en Azul Institucional con texto blanco */
+    .table thead tr th {
+        background-color: #1e40af !important;
+        color: white !important;
+        padding: 12px 14px !important;
+        font-weight: bold !important;
+        text-align: left !important;
+        border: none !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Celdas divisorias estilizadas */
+    .table tbody tr td {
+        padding: 12px 14px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
+        color: #334155 !important;
+    }
+
+    /* Alternancia de color en las filas para lectura profesional */
+    .table tbody tr:nth-child(even) {
+        background-color: #f8fafc !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* 8. Convertir badges de color de Bootstrap a texto plano e idéntico */
+    .text-badge-estado {
+        background: transparent !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+        font-weight: 600 !important;
+        border: none !important;
+        font-size: 11pt !important;
+    }
+}

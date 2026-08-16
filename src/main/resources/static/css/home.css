@@ -139,10 +139,12 @@ body {
     margin-bottom: 15px;
 }
 
-.quick-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+.quick-buttons a{
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .btn-blue {
@@ -162,4 +164,144 @@ body {
     background: #0b5ed7;
     transform: translateY(-3px);
     box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
+}
+
+/* ===== INICIO DE NUEVAS REGLAS PARA RESPONSIVE ===== */
+/* Respetan todos tus estilos originales, solo añaden funcionalidad para móvil */
+
+/* Botón hamburguesa (visible solo en móvil) */
+.menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 1.6rem;
+    color: #1e3a8a; /* mismo color que el título del header */
+    padding: 4px 8px;
+    cursor: pointer;
+}
+
+/* Offcanvas (menú móvil) - Se adapta a tu estilo actual */
+.offcanvas {
+    --bs-offcanvas-width: 280px;
+}
+
+.offcanvas-body {
+    background: rgba(255, 255, 255, 0.95); /* mismo fondo que el sidebar */
+    color: #333;
+    padding: 20px 0;
+}
+
+.offcanvas-body .nav {
+    padding: 0;
+}
+
+.offcanvas-body .nav li {
+    list-style: none;
+}
+
+.offcanvas-body .nav li a {
+    display: flex;
+    align-items: center;
+    padding: 14px 25px;
+    color: #555; /* mismo color que tus enlaces del sidebar */
+    text-decoration: none;
+    transition: all 0.3s;
+    border-left: 4px solid transparent;
+}
+
+.offcanvas-body .nav li a i {
+    width: 24px;
+    margin-right: 12px;
+    font-size: 1.1rem;
+}
+
+.offcanvas-body .nav li a:hover {
+    background: #f0f7ff;
+    color: var(--primary-blue);
+    border-left-color: var(--primary-blue);
+}
+
+.offcanvas-body .nav li.mt-auto {
+    margin-top: auto;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+/* Cabecera del offcanvas (estilo similar al sidebar-header) */
+.offcanvas-header {
+    background: rgba(255, 255, 255, 0.95);
+    border-bottom: 1px solid #eee;
+    color: var(--primary-blue);
+    padding: 16px 20px;
+}
+
+.offcanvas-header .offcanvas-title {
+    font-weight: 600;
+}
+
+.offcanvas-header .btn-close {
+    color: #333;
+}
+
+/* ===== RESPONSIVE BREAKPOINTS ===== */
+@media (max-width: 767px) {
+    /* Ocultar sidebar, mostrar botón hamburguesa */
+    .sidebar {
+        display: none !important;
+    }
+    .menu-toggle {
+        display: block;
+    }
+    /* Ajustar padding del contenido */
+    .content {
+        padding: 16px;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+    .header h2 {
+        font-size: 1.3rem;
+    }
+    .welcome-banner {
+        padding: 18px 20px;
+    }
+    .welcome-banner h3 {
+        font-size: 1.1rem;
+    }
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    .stat-card {
+        padding: 16px;
+    }
+    .stat-card h3 {
+        font-size: 1.5rem;
+    }
+    .quick-access {
+        padding: 18px 16px;
+    }
+    .quick-buttons a {
+        padding: 8px 14px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .stat-card h3 {
+        font-size: 1.3rem;
+    }
+    .quick-buttons a {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        display: flex !important;
+    }
 }

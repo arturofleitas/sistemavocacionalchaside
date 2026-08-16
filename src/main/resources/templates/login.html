@@ -12,53 +12,95 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
+            padding: 1rem 0;
         }
+        
         .login-card {
             border-radius: 20px;
             box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 2rem 1.25rem;
+        }
+        
+        /* Ajustes para móviles */
+        @media (max-width: 576px) {
+            .login-card {
+                padding: 2rem 1rem;
+            }
+            
+            .form-control {
+                font-size: 16px;  /* Evita zoom en iOS */
+                padding: 12px 14px;
+            }
+            
+            .form-label {
+                font-size: 14px;
+            }
+            
+            .btn {
+                font-size: 16px;
+                padding: 12px;
+            }
+            
+            .alert {
+                font-size: 0.95rem;
+                padding: 0.5rem 0.75rem;
+            }
+        }
+        
+        /* Ajustes para tablets */
+        @media (min-width: 577px) and (max-width: 992px) {
+            .login-card {
+                padding: 2.5rem 2rem;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-md-5 col-lg-4">
-                <div class="card login-card p-4">
+            <div class="col-11 col-sm-10 col-md-6 col-lg-4">
+                <div class="card login-card">
                     <div class="text-center mb-4">
-                        <h3 class="text-primary">Sistema Vocacional CHASIDE</h3>
-                        <p class="text-muted">Iniciar Sesión</p>
+                        <h3 class="text-primary" style="font-size: clamp(1.5rem, 5vw, 2.5rem);">
+                            Sistema Vocacional CHASIDE
+                        </h3>
+                        <p class="text-muted" style="font-size: clamp(0.9rem, 2vw, 1rem);">
+                            Iniciar Sesión
+                        </p>
                     </div>
 
                     <!-- Mensajes de error o éxito -->
-                    <div th:if="${param.error}" class="alert alert-danger text-center">
-                        Usuario o contraseña incorrectos
+                    <div th:if="${param.error}" class="alert alert-danger text-center py-2 px-3" style="font-size: 0.95rem;">
+                        <i class="fas fa-exclamation-circle me-1"></i> Usuario o contraseña incorrectos
                     </div>
-                    <div th:if="${param.logout}" class="alert alert-success text-center">
-                        Has cerrado sesión correctamente
+                    <div th:if="${param.logout}" class="alert alert-success text-center py-2 px-3" style="font-size: 0.95rem;">
+                        <i class="fas fa-check-circle me-1"></i> Has cerrado sesión correctamente
                     </div>
-                    <div th:if="${param.registered}" class="alert alert-success text-center">
-                        ¡Registro exitoso! Ahora puedes iniciar sesión
+                    <div th:if="${param.registered}" class="alert alert-success text-center py-2 px-3" style="font-size: 0.95rem;">
+                        <i class="fas fa-check-circle me-1"></i> ¡Registro exitoso! Ahora puedes iniciar sesión
                     </div>
 
                     <form th:action="@{/login}" method="post">
-                        <div class="mb-3">
-                            <label class="form-label">Usuario</label>
-                            <input type="text" name="username" class="form-control" required>
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Usuario</label>
+                            <input type="text" name="username" class="form-control" required placeholder="Ingresa tu usuario">
                         </div>
                         <div class="mb-4">
-                            <label class="form-label">Contraseña</label>
-                            <input type="password" name="password" class="form-control" required>
+                            <label class="form-label fw-semibold">Contraseña</label>
+                            <input type="password" name="password" class="form-control" required placeholder="Ingresa tu contraseña">
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100 mb-3">Ingresar</button>
+                        <button type="submit" class="btn btn-primary w-100 py-2 py-sm-3 mb-4 fw-semibold">
+                            <i class="fas fa-sign-in-alt me-2"></i> Ingresar
+                        </button>
                     </form>
 
                     <!-- Enlace de registro para estudiantes -->
                     <div class="text-center">
                         <p class="mb-0">
                             ¿No tienes cuenta? 
-                            <a href="/registrarse" class="text-primary fw-semibold">
-                                Regístrate como Estudiante
+                            <a href="/registrarse" class="text-primary fw-semibold d-block py-2" style="font-size: 1.05rem;">
+                                <i class="fas fa-user-plus me-1"></i> Regístrate como Estudiante
                             </a>
                         </p>
                     </div>

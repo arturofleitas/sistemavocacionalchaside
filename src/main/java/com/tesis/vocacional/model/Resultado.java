@@ -15,11 +15,23 @@ public class Resultado {
 
 	private String perfil; // letra: C, H, A, S, I, D, E
 	private int puntaje;
+	private String interesesPrincipales; // ej: "C,H"
+	private String aptitudesPrincipales; // ej: "I,S"
+	private String puntajesInteres; 
+	private String puntajesAptitud;
 
 	@ManyToOne
 	private TestUsuario test;
 
 	private LocalDateTime fechaRealizacion;
+
+	public static Map<String, String> getNombrecategoria() {
+		return nombreCategoria;
+	}
+
+	public void setFechaFormateada(String fechaFormateada) {
+		this.fechaFormateada = fechaFormateada;
+	}
 
 	// Campo transitorio (no se guarda en BD) para fecha formateada
 	@Transient
@@ -74,6 +86,38 @@ public class Resultado {
 
 	public void setPuntaje(int puntaje) {
 		this.puntaje = puntaje;
+	}
+
+	public String getInteresesPrincipales() {
+		return interesesPrincipales;
+	}
+
+	public void setInteresesPrincipales(String interesesPrincipales) {
+		this.interesesPrincipales = interesesPrincipales;
+	}
+
+	public String getAptitudesPrincipales() {
+		return aptitudesPrincipales;
+	}
+
+	public void setAptitudesPrincipales(String aptitudesPrincipales) {
+		this.aptitudesPrincipales = aptitudesPrincipales;
+	}
+
+	public String getPuntajesInteres() {
+		return puntajesInteres;
+	}
+
+	public void setPuntajesInteres(String puntajesInteres) {
+		this.puntajesInteres = puntajesInteres;
+	}
+
+	public String getPuntajesAptitud() {
+		return puntajesAptitud;
+	}
+
+	public void setPuntajesAptitud(String puntajesAptitud) {
+		this.puntajesAptitud = puntajesAptitud;
 	}
 
 	public TestUsuario getTest() {

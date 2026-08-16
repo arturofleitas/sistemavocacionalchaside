@@ -1,5 +1,6 @@
 package com.tesis.vocacional.model;
 
+import java.sql.Date;
 import java.time.LocalDate;
 
 import jakarta.persistence.Column;
@@ -23,16 +24,7 @@ public class Persona {
 	@Column(nullable = false)
 	private String apellido;
 
-	@Column(unique = true, nullable = false)
-	private int cedula;
-
-	private String email;
-
-	private int telefono;
-
-	private int edad;
-
-	private String genero;
+	private Date fecha_nacimiento;
 
 	private LocalDate fechaRegistro;
 
@@ -64,44 +56,12 @@ public class Persona {
 		this.apellido = apellido;
 	}
 
-	public int getCedula() {
-		return cedula;
+	public Date getFecha_nacimiento() {
+		return fecha_nacimiento;
 	}
 
-	public void setCedula(int cedula) {
-		this.cedula = cedula;
-	}
-
-	public String getEmail() {
-		return email;
-	}
-
-	public void setEmail(String email) {
-		this.email = email;
-	}
-
-	public int getTelefono() {
-		return telefono;
-	}
-
-	public void setTelefono(int telefono) {
-		this.telefono = telefono;
-	}
-
-	public int getEdad() {
-		return edad;
-	}
-
-	public void setEdad(int edad) {
-		this.edad = edad;
-	}
-
-	public String getGenero() {
-		return genero;
-	}
-
-	public void setGenero(String genero) {
-		this.genero = genero;
+	public void setFecha_nacimiento(Date fecha_nacimiento) {
+		this.fecha_nacimiento = fecha_nacimiento;
 	}
 
 	public LocalDate getFechaRegistro() {
