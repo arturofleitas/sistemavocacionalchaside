@@ -1,5 +1,6 @@
 package com.tesis.vocacional.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,6 +13,8 @@ public class Pregunta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
+	@Column(nullable = false, unique = true)
+	private Integer numero;
 	private String texto;
 	private String categoria;
 	private String dimension;
@@ -25,6 +28,14 @@ public class Pregunta {
 
 	public void setId(int id) {
 		this.id = id;
+	}
+
+	public Integer getNumero() {
+		return numero;
+	}
+
+	public void setNumero(Integer numero) {
+		this.numero = numero;
 	}
 
 	public String getTexto() {
@@ -42,7 +53,6 @@ public class Pregunta {
 	public void setCategoria(String categoria) {
 		this.categoria = categoria;
 	}
-	
 
 	public String getDimension() {
 		return dimension;

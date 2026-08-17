@@ -1,12 +1,56 @@
 /* ==========================================================================
-   REGLAS EXCLUSIVAS DE IMPRESIÓN REESTRUCTURADAS (SOLUCIÓN DEFINITIVA)
+   ESTILOS ESPECÍFICOS PARA LA GESTIÓN DE PREGUNTAS
+   ========================================================================== */
+
+/* ===== TARJETAS ===== */
+.form-card,
+.table-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
+}
+
+/* ===== CONTENIDO ===== */
+.content {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
+    min-height: 100vh;
+    padding: 30px;
+}
+
+.header-title {
+    color: #1e40af;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+/* ===== TABLA ===== */
+.scrollable-table {
+    max-height: 550px;
+    overflow-y: auto;
+}
+
+.filter-bar {
+    background: white;
+    border-radius: 15px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+}
+
+/* ==========================================================================
+   REGLAS EXCLUSIVAS DE IMPRESIÓN
    ========================================================================== */
 @media print {
-    /* 1. Forzar ocultamiento absoluto del formulario de registro y la barra lateral */
+    /* 1. Ocultar componentes web interactivos */
+    .no-print,
     .sidebar,
-    .content > .row > div:first-child, /* Oculta de forma estricta la primera columna (Formulario) */
+    .columna-formulario-izquierda,
     .form-card,
-    .alert {
+    .alert,
+    .filter-bar,
+    .cabecera-tabla,
+    .columna-acciones,
+    .user-info {
         display: none !important;
         opacity: 0 !important;
         visibility: hidden !important;
@@ -16,23 +60,7 @@
         margin: 0 !important;
     }
 
-    /* 2. Ocultar la barra de filtros y las acciones web (+ Nueva Pregunta e Imprimir) */
-    .filter-bar,
-    .table-card .p-4.border-bottom.bg-light {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        height: 0 !important;
-        padding: 0 !important;
-    }
-
-    /* 3. Ocultar la columna de acciones (Editar / Eliminar) del listado */
-    #preguntasTable thead tr th:last-child,
-    #preguntasTable tbody tr td:last-child {
-        display: none !important;
-    }
-
-    /* 4. Resetear el lienzo del navegador a blanco puro */
+    /* 2. Limpiar fondos y resetear a blanco */
     html, body, .content, .main-container, .row {
         background: white !important;
         background-color: white !important;
@@ -42,7 +70,7 @@
         box-shadow: none !important;
     }
 
-    /* 5. Cabecera con el patrón unificado (Línea azul inferior) */
+    /* 3. Cabecera con línea azul inferior */
     .content > div.d-flex.justify-content-between {
         border-bottom: 3px solid #1e40af !important;
         padding-bottom: 12px !important;
@@ -59,8 +87,7 @@
         print-color-adjust: exact !important;
     }
 
-    /* 6. Forzar a la segunda columna de la tabla a ocupar el 100% de la hoja A4 */
-    .content > .row > div:last-child,
+    /* 4. Forzar la tabla a ocupar todo el ancho */
     .columna-tabla-derecha {
         width: 100% !important;
         max-width: 100% !important;
@@ -70,7 +97,7 @@
         display: block !important;
     }
 
-    /* 7. Eliminar sombras y decoraciones web de la tarjeta */
+    /* 5. Eliminar sombras y decoraciones */
     .table-card {
         box-shadow: none !important;
         border: none !important;
@@ -78,14 +105,13 @@
         padding: 0 !important;
     }
 
-    /* 8. Eliminar el scrollbar interno para desplegar todas las preguntas en vertical */
+    /* 6. Eliminar scroll para mostrar todas las filas */
     .scrollable-table {
         max-height: none !important;
         overflow: visible !important;
-        overflow-y: visible !important;
     }
 
-    /* 9. Tabla con patrón idéntico (Cabecera azul oscuro y texto blanco) */
+    /* 7. Tabla con cabecera azul institucional */
     #preguntasTable {
         width: 100% !important;
         border-collapse: collapse !important;
@@ -111,14 +137,13 @@
         color: #334155 !important;
     }
 
-    /* Alternancia de color en las filas para lectura formal */
     #preguntasTable tbody tr:nth-child(even) {
         background-color: #f8fafc !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
-    /* 10. Limpiar el badge de categoría de color a texto plano */
+    /* 8. Badge de categoría en texto plano */
     .text-badge-categoria {
         background: transparent !important;
         color: #0f172a !important;
@@ -126,5 +151,124 @@
         font-weight: 600 !important;
         border: none !important;
         font-size: 11pt !important;
+    }
+}
+
+/* ============================================================
+   RESPONSIVE ESPECÍFICO
+   ============================================================ */
+
+@media (max-width: 767px) {
+    .content {
+        padding: 16px;
+    }
+
+    .header-title {
+        font-size: 1.3rem;
+        margin-bottom: 0;
+    }
+
+    /* El formulario ocupa todo el ancho */
+    .columna-formulario-izquierda {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* La tabla ocupa todo el ancho */
+    .columna-tabla-derecha {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        margin-top: 20px;
+    }
+
+    /* Filtros se apilan verticalmente */
+    .filter-bar .row .col-md-4,
+    .filter-bar .row .col-md-3,
+    .filter-bar .row .col-md-2 {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 8px;
+    }
+
+    .filter-bar .row .col-md-2 {
+        margin-bottom: 0;
+    }
+
+    /* Formulario más compacto */
+    .form-card {
+        padding: 1.2rem !important;
+    }
+
+    .form-card .mb-3 {
+        margin-bottom: 0.8rem !important;
+    }
+
+    .form-card .d-flex.gap-3 {
+        flex-direction: column;
+    }
+
+    .form-card .d-flex.gap-3 .btn {
+        width: 100%;
+    }
+
+    /* Tabla con scroll horizontal */
+    .scrollable-table {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        min-width: 600px;
+        font-size: 0.9rem;
+    }
+
+    .table thead tr th,
+    .table tbody tr td {
+        padding: 8px 10px !important;
+    }
+
+    /* Cabecera de la tabla */
+    .cabecera-tabla {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .cabecera-tabla .d-flex.gap-2 {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .cabecera-tabla .d-flex.gap-2 .btn {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .content {
+        padding: 12px;
+    }
+
+    .header-title {
+        font-size: 1.1rem;
+    }
+
+    .cabecera-tabla .d-flex.gap-2 .btn {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    .form-card {
+        padding: 1rem !important;
+    }
+
+    .table {
+        font-size: 0.8rem;
+    }
+
+    .table thead tr th,
+    .table tbody tr td {
+        padding: 6px 8px !important;
     }
 }

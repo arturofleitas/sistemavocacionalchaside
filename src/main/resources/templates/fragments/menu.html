@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <!-- ===== SIDEBAR PARA ESCRITORIO ===== -->
+    <div th:fragment="sidebar" class="sidebar d-none d-md-flex flex-column">
+        <div class="sidebar-header">
+            <h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
+        </div>
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a th:href="@{/home}" class="nav-link" 
+                   th:classappend="${currentUri != null && currentUri.contains('/home')} ? 'active' : ''">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/usuarios}" class="nav-link"
+                   th:classappend="${currentUri != null && currentUri.contains('/usuarios')} ? 'active' : ''">
+                    <i class="fas fa-users"></i> Usuarios
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/gestion-test}" class="nav-link"
+                   th:classappend="${currentUri != null && currentUri.contains('/gestion-test')} ? 'active' : ''">
+                    <i class="fas fa-cogs"></i> Gestión de Test
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                <a th:href="@{/preguntas}" class="nav-link"
+                   th:classappend="${currentUri != null && currentUri.contains('/preguntas')} ? 'active' : ''">
+                    <i class="fas fa-question-circle"></i> Preguntas
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')">
+                <a th:href="@{/realizar-test}" class="nav-link"
+                   th:classappend="${currentUri != null && currentUri.contains('/realizar-test')} ? 'active' : ''">
+                    <i class="fas fa-play-circle"></i> Realizar Test
+                </a>
+            </li>
+            <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')">
+                <a th:href="@{/reportes}" class="nav-link"
+                   th:classappend="${currentUri != null && currentUri.contains('/reportes')} ? 'active' : ''">
+                    <i class="fas fa-chart-bar"></i> Reportes
+                </a>
+            </li>
+            <li class="nav-item mt-auto">
+                <a th:href="@{/logout}" class="nav-link">
+                    <i class="fas fa-sign-out-alt"></i> Salir
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- ===== OFFCANVAS PARA MÓVIL ===== -->
+    <div th:fragment="offcanvas" class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title"><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a th:href="@{/home}" class="nav-link"
+                       th:classappend="${currentUri != null && currentUri.contains('/home')} ? 'active' : ''">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/usuarios}" class="nav-link"
+                       th:classappend="${currentUri != null && currentUri.contains('/usuarios')} ? 'active' : ''">
+                        <i class="fas fa-users"></i> Usuarios
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/gestion-test}" class="nav-link"
+                       th:classappend="${currentUri != null && currentUri.contains('/gestion-test')} ? 'active' : ''">
+                        <i class="fas fa-cogs"></i> Gestión de Test
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasRole('ADMIN')">
+                    <a th:href="@{/preguntas}" class="nav-link"
+                       th:classappend="${currentUri != null && currentUri.contains('/preguntas')} ? 'active' : ''">
+                        <i class="fas fa-question-circle"></i> Preguntas
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')">
+                    <a th:href="@{/realizar-test}" class="nav-link"
+                       th:classappend="${currentUri != null && currentUri.contains('/realizar-test')} ? 'active' : ''">
+                        <i class="fas fa-play-circle"></i> Realizar Test
+                    </a>
+                </li>
+                <li class="nav-item" sec:authorize="hasAnyRole('ADMIN', 'ESTUDIANTE')">
+                    <a th:href="@{/reportes}" class="nav-link"
+                       th:classappend="${currentUri != null && currentUri.contains('/reportes')} ? 'active' : ''">
+                        <i class="fas fa-chart-bar"></i> Reportes
+                    </a>
+                </li>
+                <li class="nav-item mt-auto">
+                    <a th:href="@{/logout}" class="nav-link">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

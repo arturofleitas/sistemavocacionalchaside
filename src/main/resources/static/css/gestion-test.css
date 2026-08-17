@@ -1,15 +1,16 @@
 /**
  * gestion-test.css
- * Control de estilos exclusivo para impresión de reportes de Tests Registrados.
- * Sigue el patrón unificado del reporte de detalles y gestión de usuarios.
+ * Control de estilos para la gestión de tests (impresión y responsive específico).
  */
 
+/* ============================================================
+   ESTILOS PARA IMPRESIÓN
+   ============================================================ */
 @media print {
-    /* 1. Ocultar componentes web interactivos del plano del papel */
+    /* Ocultar componentes web interactivos */
     .no-print,
     .columna-formulario-izquierda,
     .columna-acciones,
-    .sidebar,
     .cabecera-tabla,
     .user-info {
         display: none !important;
@@ -17,7 +18,6 @@
         visibility: hidden !important;
     }
 
-    /* 2. Limpiar fondos, degradados de pantalla y resetear a blanco puro */
     body, .content {
         background: white !important;
         background-color: white !important;
@@ -25,14 +25,6 @@
         padding: 0 !important;
         margin: 0 !important;
         box-shadow: none !important;
-    }
-
-    /* 3. Estructura de cabecera con patrón unificado (Línea azul inferior) */
-    .content > div.d-flex.justify-content-between {
-        border-bottom: 3px solid #1e40af !important;
-        padding-bottom: 12px !important;
-        margin-bottom: 35px !important;
-        display: flex !important;
     }
 
     .content h2.header-title {
@@ -44,7 +36,6 @@
         print-color-adjust: exact !important;
     }
 
-    /* 4. Forzar expansión horizontal completa en formato de hoja A4 */
     .columna-tabla-derecha {
         width: 100% !important;
         max-width: 100% !important;
@@ -54,7 +45,6 @@
         display: block !important;
     }
 
-    /* 5. Desactivar contenedores decorativos web */
     .table-card {
         box-shadow: none !important;
         border: none !important;
@@ -62,13 +52,11 @@
         padding: 0 !important;
     }
 
-    /* 6. Garantizar la visibilidad completa de la tabla en la previsualización */
     .table-responsive {
         overflow: visible !important;
         overflow-x: visible !important;
     }
 
-    /* 7. Tabla con el patrón idéntico al detalle del test */
     .table {
         width: 100% !important;
         border-collapse: collapse !important;
@@ -77,7 +65,6 @@
         background-color: white !important;
     }
 
-    /* Cabecera de la tabla en Azul Institucional con texto blanco */
     .table thead tr th {
         background-color: #1e40af !important;
         color: white !important;
@@ -89,21 +76,18 @@
         print-color-adjust: exact !important;
     }
 
-    /* Celdas divisorias estilizadas */
     .table tbody tr td {
         padding: 12px 14px !important;
         border-bottom: 1px solid #e2e8f0 !important;
         color: #334155 !important;
     }
 
-    /* Alternancia de color en las filas para lectura profesional */
     .table tbody tr:nth-child(even) {
         background-color: #f8fafc !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
-    /* 8. Convertir badges de color de Bootstrap a texto plano e idéntico */
     .text-badge-estado {
         background: transparent !important;
         color: #0f172a !important;
@@ -111,5 +95,116 @@
         font-weight: 600 !important;
         border: none !important;
         font-size: 11pt !important;
+    }
+}
+
+/* ============================================================
+   ESTILOS ESPECÍFICOS DE LA PÁGINA
+   ============================================================ */
+
+/* Tarjetas */
+.form-card, .table-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
+}
+
+.header-title {
+    color: #1e40af;
+    font-weight: 700;
+    margin-bottom: 25px;
+}
+
+/* ============================================================
+   RESPONSIVE ESPECÍFICO
+   ============================================================ */
+
+@media (max-width: 767px) {
+    .header-title {
+        font-size: 1.3rem;
+        margin-bottom: 0;
+    }
+
+    .columna-formulario-izquierda {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+    }
+
+    .columna-tabla-derecha {
+        flex: 0 0 100% !important;
+        max-width: 100% !important;
+        margin-top: 20px;
+    }
+
+    .cabecera-tabla {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .cabecera-tabla .d-flex.gap-2 {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        width: 100%;
+    }
+
+    .cabecera-tabla .d-flex.gap-2 .btn {
+        font-size: 0.8rem;
+        padding: 4px 10px;
+    }
+
+    .form-card {
+        padding: 1.2rem !important;
+    }
+
+    .form-card .mb-3,
+    .form-card .mb-4 {
+        margin-bottom: 0.8rem !important;
+    }
+
+    .form-card .d-flex.gap-3 {
+        flex-direction: column;
+    }
+
+    .form-card .d-flex.gap-3 .btn {
+        width: 100%;
+    }
+
+    .table-responsive {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .table {
+        min-width: 600px;
+        font-size: 0.9rem;
+    }
+
+    .table thead tr th,
+    .table tbody tr td {
+        padding: 8px 10px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-title {
+        font-size: 1.1rem;
+    }
+
+    .cabecera-tabla .d-flex.gap-2 .btn {
+        font-size: 0.75rem;
+        padding: 4px 8px;
+    }
+
+    .form-card {
+        padding: 1rem !important;
+    }
+
+    .table {
+        font-size: 0.8rem;
+    }
+
+    .table thead tr th,
+    .table tbody tr td {
+        padding: 6px 8px !important;
     }
 }

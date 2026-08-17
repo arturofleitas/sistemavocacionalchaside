@@ -18,5 +18,5 @@ public interface ResultadoRepository extends JpaRepository<Resultado, Integer> {
     List<Resultado> findByUsuarioId(@Param("usuarioId") Integer usuarioId);
 
     @Query("SELECT COUNT(DISTINCT r.test.usuario.id) FROM Resultado r")
-    long countUsuariosConTests();   // ← ESTE FALTABA
+    long countUsuariosConTests();  
 }
