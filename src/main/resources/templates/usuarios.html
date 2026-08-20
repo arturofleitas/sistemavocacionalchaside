@@ -1,51 +1,33 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Meta viewport corregida para evitar zoom en iOS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Gestión de Usuarios - Sistema Vocacional</title>
 
-    <!-- Meta tags anti-caché -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
-    <!-- 1. Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
-          rel="stylesheet" 
-          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
-          crossorigin="anonymous">
-
-    <!-- 2. Font Awesome -->
-    <link rel="stylesheet" 
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
-          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
-          crossorigin="anonymous" 
-          referrerpolicy="no-referrer" />
-
-    <!-- 3. home.css (estilos globales) -->
-    <link rel="stylesheet" th:href="@{/css/home.css} + '?v=' + ${#dates.createNow().getTime()}">
-
-    <!-- 4. usuarios.css (estilos específicos de esta página) -->
-    <link rel="stylesheet" th:href="@{/css/usuarios.css} + '?v=' + ${#dates.createNow().getTime()}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <link rel="stylesheet" th:href="@{/css/usuarios.css}">
 </head>
-
 <body>
-    <div class="main-container">
 
-        <!-- ===== SIDEBAR (escritorio) ===== -->
-        <!-- Reutiliza el fragmento sidebar de menu.html -->
-        <div th:replace="~{fragments/menu :: sidebar}"></div>
+    <div class="app-container" id="appContainer">
 
-        <!-- ===== CONTENIDO PRINCIPAL ===== -->
-        <div class="content" id="pagina-usuarios">
+        <!-- Sidebar -->
+        <div th:replace="fragments/menu :: sidebar"></div>
 
-            <!-- HEADER -->
-            <div class="header">
-                <div style="display: flex; align-items: center; gap: 12px;">
-                    <!-- Botón hamburguesa (visible solo en móvil) para abrir el offcanvas -->
-                    <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
+        <!-- Contenido principal -->
+        <main class="main-content" id="pagina-usuarios">
+
+            <!-- Cabecera -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <button class="btn-toggle-sidebar d-none d-md-inline-block" type="button" onclick="toggleSidebar()">
                         <i class="fas fa-bars"></i>
                     </button>
                     <h2>Gestión de Usuarios</h2>
@@ -54,175 +36,173 @@
                     <span>Bienvenido, <strong sec:authentication="name"></strong></span>
                     <div class="avatar"><i class="fas fa-user"></i></div>
                 </div>
-            </div>
+            </header>
 
-            <!-- ===== OFFCANVAS (móvil) ===== -->
-            <!-- Reutiliza el fragmento offcanvas de menu.html -->
-            <div th:replace="~{fragments/menu :: offcanvas}"></div>
+            <!-- Offcanvas (móvil) -->
+            <div th:replace="fragments/menu :: offcanvas"></div>
 
-            <!-- ===== MENSAJE DE ERROR ===== -->
+            <!-- Mensajes de error -->
             <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> <span th:text="${error}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- ===== CONTENIDO (formulario + tabla) ===== -->
-            <div class="row g-4">
-                <!-- COLUMNA IZQUIERDA: Formulario -->
-                <div class="col-lg-5">
-                    <div class="form-card">
-                        <h5 class="mb-3 text-primary" th:if="${usuario.id == null || usuario.id == 0}">Nuevo Usuario</h5>
-                        <h5 class="mb-3 text-primary" th:if="${usuario.id != null && usuario.id > 0}">Editar Usuario</h5>
+            <!-- Formulario (se usará con Thymeleaf o se renderizará con JS) -->
+            <section class="form-card">
+                <h5 th:if="${usuario.id == null || usuario.id == 0}">Nuevo Usuario</h5>
+                <h5 th:if="${usuario.id != null && usuario.id > 0}">Editar Usuario</h5>
 
-                        <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
-                            <input type="hidden" th:field="*{id}" />
+                <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
+                    <input type="hidden" th:field="*{id}" />
 
-                            <!-- DATOS PERSONALES -->
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <label class="form-label small">Nombre</label>
-                                    <input type="text" class="form-control form-control-sm" th:field="*{nombre}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Apellido</label>
-                                    <input type="text" class="form-control form-control-sm" th:field="*{apellido}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Fecha de Nacimiento</label>
-                                    <input type="date" class="form-control form-control-sm" th:field="*{fecha_nacimiento}" required>
-                                </div>
-                            </div>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" class="form-control" th:field="*{nombre}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Apellido</label>
+                            <input type="text" class="form-control" th:field="*{apellido}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" th:field="*{fecha_nacimiento}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Username</label>
+                            <input type="text" class="form-control" th:field="*{username}" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Rol</label>
+                            <select class="form-select" th:field="*{rol}" required>
+                                <option value="ESTUDIANTE">ESTUDIANTE</option>
+                                <option value="ADMIN">ADMIN</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Contraseña</label>
+                            <input type="password" class="form-control" th:field="*{password}" required>
+                            <small>Mínimo 6 caracteres</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select class="form-select" th:field="*{estado}" required>
+                                <option th:value="true">Activo</option>
+                                <option th:value="false">Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
 
-                            <hr class="my-2">
+                    <div class="form-actions">
+                        <button type="button" class="btn btn-secondary" onclick="window.location.href='/usuarios'">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Usuario</button>
+                    </div>
+                </form>
+            </section>
 
-                            <!-- DATOS DE CUENTA -->
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <label class="form-label small">Username</label>
-                                    <input type="text" class="form-control form-control-sm" th:field="*{username}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Rol</label>
-                                    <select class="form-select form-select-sm" th:field="*{rol}" required>
-                                        <option value="ESTUDIANTE">ESTUDIANTE</option>
-                                        <option value="ADMIN">ADMIN</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Contraseña</label>
-                                    <input type="password" class="form-control form-control-sm" th:field="*{password}" required>
-                                    <small class="text-muted" style="font-size: 10px;">Mínimo 6 caracteres</small>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Estado</label>
-                                    <select class="form-select form-select-sm" th:field="*{estado}" required>
-                                        <option th:value="true">Activo</option>
-                                        <option th:value="false">Inactivo</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="d-flex gap-2 mt-3">
-                                <button type="button" class="btn btn-secondary btn-sm flex-fill" onclick="window.location.href='/usuarios'">Cancelar</button>
-                                <button type="submit" class="btn btn-primary btn-sm flex-fill">Guardar Usuario</button>
-                            </div>
-                        </form>
+            <!-- Tabla de usuarios -->
+            <section class="table-card">
+                <div class="table-header">
+                    <h5>Usuarios Registrados</h5>
+                    <div class="table-toolbar">
+                        <button onclick="window.print();" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-print"></i> Imprimir
+                        </button>
+                        <a th:href="@{/usuarios}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus"></i> Nuevo
+                        </a>
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: Tabla de usuarios -->
-                <div class="col-lg-7">
-                    <div class="table-card">
-                        <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0 text-primary">Usuarios Registrados</h5>
-                            <div class="d-flex gap-2">
-                                <button onclick="window.print();" class="btn btn-sm btn-outline-primary no-print-item">
-                                    <i class="fas fa-print me-1"></i>Imprimir
-                                </button>
-                                <a th:href="@{/usuarios}" class="btn btn-sm btn-primary no-print-item">
-                                    <i class="fas fa-plus"></i> Nuevo
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- FILTROS -->
-                        <div class="filter-bar print-hidden-block">
-                            <div class="row g-2 align-items-end">
-                                <div class="col-md-4">
-                                    <label for="searchNombre" class="form-label small">Nombre / Apellido</label>
-                                    <input type="text" id="searchNombre" class="form-control form-control-sm" placeholder="Ej: Juan Pérez">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="searchUsername" class="form-label small">Username</label>
-                                    <input type="text" id="searchUsername" class="form-control form-control-sm" placeholder="Nombre de usuario">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filterRol" class="form-label small">Rol</label>
-                                    <select id="filterRol" class="form-select form-select-sm">
-                                        <option value="">Todos</option>
-                                        <option value="ESTUDIANTE">Estudiante</option>
-                                        <option value="ADMIN">Administrador</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <button id="resetFilters" class="btn btn-outline-secondary btn-sm w-100">Limpiar</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- TABLA CON SCROLL -->
-                        <div class="scrollable-table print-scroll-remover">
-                            <table class="table table-sm table-hover mb-0 print-bordered-table">
-                                <thead class="table-light" style="position: sticky; top: 0; z-index: 1;">
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Nombre completo</th>
-                                        <th>Username</th>
-                                        <th>Rol</th>
-                                        <th>Estado</th>
-                                        <th class="print-actions-hidden">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usuariosBody">
-                                    <!-- Mensaje cuando no hay usuarios -->
-                                    <tr th:if="${usuarios.isEmpty()}">
-                                        <td colspan="6" class="text-center py-4 text-muted">
-                                            <i class="fas fa-inbox fa-2x mb-2"></i><br>No hay usuarios registrados.
-                                        </td>
-                                    </tr>
-                                    <!-- Filas de usuarios -->
-                                    <tr th:each="u : ${usuarios}" 
-                                        th:attr="data-nombre=${u.nombre + ' ' + u.apellido},
-                                             data-username=${u.username},
-                                             data-rol=${u.rol}">
-                                        <td th:text="${u.id}"></td>
-                                        <td th:text="${u.nombre + ' ' + u.apellido}"></td>
-                                        <td th:text="${u.username}"></td>
-                                        <td>
-                                            <span th:if="${u.rol == 'ADMIN'}" class="badge bg-danger print-badge-clean">ADMIN</span>
-                                            <span th:if="${u.rol == 'ESTUDIANTE'}" class="badge bg-success print-badge-clean">ESTUDIANTE</span>
-                                        </td>
-                                        <td>
-                                            <span th:if="${u.estado}" class="badge bg-success print-badge-clean">Activo</span>
-                                            <span th:unless="${u.estado}" class="badge bg-secondary print-badge-clean">Inactivo</span>
-                                        </td>
-                                        <td class="text-center print-actions-hidden">
-                                            <a th:href="@{/usuarios/editar/{id}(id=${u.id})}" class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></a>
-                                            <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}" class="btn btn-sm btn-outline-danger" onclick="return confirm('¿Eliminar este usuario?')"><i class="fas fa-trash"></i></a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="filter-bar">
+                    <div class="filter-row">
+                        <input type="text" id="searchNombre" placeholder="Buscar por nombre..." class="form-control form-control-sm">
+                        <input type="text" id="searchUsername" placeholder="Username..." class="form-control form-control-sm">
+                        <select id="filterRol" class="form-select form-select-sm">
+                            <option value="">Todos los roles</option>
+                            <option value="ESTUDIANTE">Estudiante</option>
+                            <option value="ADMIN">Administrador</option>
+                        </select>
+                        <button id="resetFilters" class="btn btn-outline-secondary btn-sm">Limpiar</button>
                     </div>
                 </div>
-            </div>
-        </div>
+
+                <div class="table-responsive-wrapper">
+                    <table class="table table-hover table-sm">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre completo</th>
+                                <th>Username</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th class="text-end">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usuariosBody">
+                            <tr th:if="${usuarios.isEmpty()}">
+                                <td colspan="6" class="text-center py-4 text-muted">
+                                    <i class="fas fa-inbox fa-2x d-block mb-2"></i>No hay usuarios registrados.
+                                </td>
+                            </tr>
+                            <tr th:each="u : ${usuarios}" 
+                                th:attr="data-nombre=${u.nombre + ' ' + u.apellido},
+                                     data-username=${u.username},
+                                     data-rol=${u.rol}">
+                                <td th:text="${u.id}"></td>
+                                <td th:text="${u.nombre + ' ' + u.apellido}"></td>
+                                <td th:text="${u.username}"></td>
+                                <td>
+                                    <span th:if="${u.rol == 'ADMIN'}" class="badge bg-danger">ADMIN</span>
+                                    <span th:if="${u.rol == 'ESTUDIANTE'}" class="badge bg-success">ESTUDIANTE</span>
+                                </td>
+                                <td>
+                                    <span th:if="${u.estado}" class="badge bg-success">Activo</span>
+                                    <span th:unless="${u.estado}" class="badge bg-secondary">Inactivo</span>
+                                </td>
+                                <td class="text-end">
+                                    <a th:href="@{/usuarios/editar/{id}(id=${u.id})}" class="btn btn-sm btn-outline-primary me-1">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a th:href="@{/usuarios/eliminar/{id}(id=${u.id})}" class="btn btn-sm btn-outline-danger"
+                                       onclick="return confirm('¿Eliminar este usuario?')">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/usuarios.js}"></script>
-</body>
+    <script>
+        function toggleSidebar() {
+            var container = document.getElementById('appContainer');
+            container.classList.toggle('sidebar-collapsed');
+            var isCollapsed = container.classList.contains('sidebar-collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
 
+        window.addEventListener('load', function() {
+            var container = document.getElementById('appContainer');
+            var collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (collapsed) {
+                container.classList.add('sidebar-collapsed');
+            }
+        });
+
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                document.body.style.display = 'none';
+                document.body.offsetHeight;
+                document.body.style.display = '';
+            }
+        });
+    </script>
+</body>
 </html>

@@ -41,4 +41,8 @@ public class TestService {
 			testRepository.delete(test); // Al borrar el objeto completo, JPA ejecuta las cascadas hacia abajo
 		}
 	}
+	
+	public long countActivos() {
+	    return testRepository.countByEstadoTrue();
+	}
 }

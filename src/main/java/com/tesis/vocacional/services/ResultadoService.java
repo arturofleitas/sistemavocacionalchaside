@@ -39,4 +39,8 @@ public class ResultadoService {
     public Resultado buscarPorId(Integer id) {
         return resultadoRepository.findById(id).orElse(null);
     }
+    
+    public long count() {
+        return resultadoRepository.count();
+    }
 }

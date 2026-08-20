@@ -1,9 +1,11 @@
 package com.tesis.vocacional.controller;
 
 import com.tesis.vocacional.model.Pregunta;
+import com.tesis.vocacional.model.Respuesta;
 import com.tesis.vocacional.model.Resultado;
 import com.tesis.vocacional.model.Test;
 import com.tesis.vocacional.model.TestUsuario;
+import com.tesis.vocacional.model.TestUsuarioPregunta;
 import com.tesis.vocacional.model.Usuario;
 import com.tesis.vocacional.services.*;
 import jakarta.servlet.http.HttpSession;
@@ -26,16 +28,19 @@ import java.util.stream.Collectors;
 @RequestMapping("/realizar-test")
 public class TestController {
 
-    // Dependencias inyectadas por constructor (mejor práctica)
+    // Dependencias inyectadas por constructor
     private final PreguntaService preguntaService;
     private final UsuarioService usuarioService;
     private final TestService testService;
     private final TestUsuarioService testUsuarioService;
+    private final TestUsuarioPreguntaService testUsuarioPreguntaService;
+    private final RespuestaService respuestaService;
     private final ResultadoService resultadoService;
 
     // Constantes para evitar repetir literales
     private static final List<String> AREAS = Arrays.asList("C", "H", "A", "S", "I", "D", "E");
     private static final Map<String, String> NOMBRE_CATEGORIA = new HashMap<>();
+
     static {
         NOMBRE_CATEGORIA.put("C", "ADMINISTRATIVAS Y CONTABLES");
         NOMBRE_CATEGORIA.put("H", "HUMANÍSTICAS, CIENCIAS JURÍDICAS Y SOCIALES");
@@ -46,19 +51,26 @@ public class TestController {
         NOMBRE_CATEGORIA.put("E", "CIENCIAS AGRARIAS, DE LA NATURALEZA, ZOOLÓGICAS Y BIOLÓGICAS");
     }
 
-    public TestController(PreguntaService preguntaService, UsuarioService usuarioService,
-                          TestService testService, TestUsuarioService testUsuarioService,
+    /**
+     * Constructor con inyección de todas las dependencias necesarias.
+     */
+    public TestController(PreguntaService preguntaService,
+                          UsuarioService usuarioService,
+                          TestService testService,
+                          TestUsuarioService testUsuarioService,
+                          TestUsuarioPreguntaService testUsuarioPreguntaService,
+                          RespuestaService respuestaService,
                           ResultadoService resultadoService) {
         this.preguntaService = preguntaService;
         this.usuarioService = usuarioService;
         this.testService = testService;
         this.testUsuarioService = testUsuarioService;
+        this.testUsuarioPreguntaService = testUsuarioPreguntaService;
+        this.respuestaService = respuestaService;
         this.resultadoService = resultadoService;
     }
 
-    /**
-     * Inicia un nuevo test. Crea una sesión con las preguntas y un TestUsuario.
-     */
+    /** Inicia un nuevo test. Crea una sesión con las preguntas y un TestUsuario. */
     @GetMapping
     public String iniciarTest(HttpSession session, Model model) {
         List<Pregunta> preguntas = preguntaService.listarTodas();
@@ -81,7 +93,12 @@ public class TestController {
     }
 
     /**
-     * Procesa la respuesta del usuario (Sí/No) y avanza a la siguiente pregunta.
+     * Procesa la respuesta del usuario (Sí/No), la persiste y avanza a la siguiente pregunta.
+     *
+     * @param respuesta Valor de la respuesta ("SI" o "NO").
+     * @param session   Sesión HTTP con el estado actual.
+     * @param model     Modelo para la vista.
+     * @return Redirección o vista de la siguiente pregunta.
      */
     @PostMapping("/responder")
     public String responder(@RequestParam String respuesta, HttpSession session, Model model) {
@@ -105,15 +122,37 @@ public class TestController {
         }
         session.setAttribute("respuestas", respuestas);
 
-        // Persistir respuesta (sin bloquear el flujo si falla)
+        // Persistir la respuesta en la base de datos
         try {
             Pregunta preguntaActual = preguntas.get(indice);
-            // Guardar respuesta en BD (se omite el detalle de TestUsuarioPregunta para brevedad)
-            // ... (código de persistencia existente)
+
+            // Buscar o crear TestUsuarioPregunta (relación entre sesión y pregunta)
+            Optional<TestUsuarioPregunta> optTUP = testUsuarioPreguntaService.buscarPorTestUsuarioYPregunta(testUsuario, preguntaActual);
+            TestUsuarioPregunta tup;
+            if (optTUP.isPresent()) {
+                tup = optTUP.get();
+            } else {
+                tup = new TestUsuarioPregunta();
+                tup.setTestUsuario(testUsuario);
+                tup.setPregunta(preguntaActual);
+                tup = testUsuarioPreguntaService.guardar(tup);
+            }
+
+            // Crear la respuesta (valor booleano)
+            Respuesta respuestaEntity = new Respuesta();
+            respuestaEntity.setPregunta(tup);
+            respuestaEntity.setFechaRespuesta(LocalDate.now());
+            // Convertir "SI" a true, cualquier otra cosa a false
+            respuestaEntity.setValor("SI".equalsIgnoreCase(respuesta));
+            respuestaService.guardar(respuestaEntity);
+
         } catch (Exception e) {
             e.printStackTrace();
+            // En caso de error, no interrumpimos el flujo, pero registramos el problema
+            model.addAttribute("error", "Error al guardar la respuesta: " + e.getMessage());
         }
 
+        // Avanzar al siguiente índice
         indice++;
         session.setAttribute("indiceActual", indice);
 
@@ -123,9 +162,8 @@ public class TestController {
         return mostrarPreguntaActual(session, model);
     }
 
-    /**
-     * Muestra la pregunta actual según el índice de sesión.
-     */
+    /** Muestra la pregunta actual según el índice de sesión.
+     * @return Nombre de la vista "realizar-test". */
     private String mostrarPreguntaActual(HttpSession session, Model model) {
         List<Pregunta> preguntas = obtenerLista(session, "preguntas");
         Integer indice = (Integer) session.getAttribute("indiceActual");
@@ -143,9 +181,8 @@ public class TestController {
         return "realizar-test";
     }
 
-    /**
-     * Permite retroceder a la pregunta anterior.
-     */
+    /** Permite retroceder a la pregunta anterior.
+     * @return Redirección o vista de la pregunta anterior. */
     @PostMapping("/anterior")
     public String anterior(HttpSession session, Model model) {
         List<String> respuestas = obtenerLista(session, "respuestas");
@@ -162,10 +199,9 @@ public class TestController {
         return mostrarPreguntaActual(session, model);
     }
 
-    /**
-     * Finaliza el test, calcula los puntajes de intereses y aptitudes,
+    /** Finaliza el test, calcula los puntajes de intereses y aptitudes,
      * guarda el resultado y muestra la vista de diagnóstico.
-     */
+     * @return Nombre de la vista "test-resultado" o redirección. */
     @GetMapping("/test-resultado")
     public String mostrarResultado(HttpSession session, Model model) {
         List<Pregunta> preguntas = obtenerLista(session, "preguntas");
@@ -220,7 +256,7 @@ public class TestController {
 
                 // Perfil combinado (para uso general)
                 String perfil = interesesPrincipales.stream().findFirst().orElse("") +
-                                (aptitudesPrincipales.stream().findFirst().isPresent() ? "+" + aptitudesPrincipales.get(0) : "");
+                        (aptitudesPrincipales.stream().findFirst().isPresent() ? "+" + aptitudesPrincipales.get(0) : "");
                 resultado.setPerfil(perfil);
 
                 // Puntaje máximo (para ordenar)
@@ -238,14 +274,21 @@ public class TestController {
             }
         }
 
-        // 5. Pasar datos al modelo para la vista
+        List<Map.Entry<String, Integer>> interesesOrdenados = puntajesInteres.entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .collect(Collectors.toList());
+
+        List<Map.Entry<String, Integer>> aptitudesOrdenadas = puntajesAptitud.entrySet().stream()
+                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
+                .collect(Collectors.toList());
+
         model.addAttribute("interesesPrincipales", interesesNombres);
         model.addAttribute("aptitudesPrincipales", aptitudesNombres);
-        model.addAttribute("puntajesInteres", puntajesInteres);
-        model.addAttribute("puntajesAptitud", puntajesAptitud);
+        model.addAttribute("puntajesInteresList", interesesOrdenados);
+        model.addAttribute("puntajesAptitudList", aptitudesOrdenadas);
+        model.addAttribute("nombresCategoria", NOMBRE_CATEGORIA);
         model.addAttribute("totalPreguntas", preguntas.size());
 
-        // Descripción opcional
         String descripcion = "Tu perfil combina intereses en " + interesesNombres.toLowerCase()
                 + " y aptitudes en " + aptitudesNombres.toLowerCase() + ".";
         model.addAttribute("descripcion", descripcion);
@@ -259,13 +302,19 @@ public class TestController {
         return "test-resultado";
     }
 
-    // ==================== MÉTODOS AUXILIARES PRIVADOS ====================
+    //  MÉTODOS AUXILIARES PRIVADOS 
 
+    /** Obtiene el usuario autenticado actualmente.
+     * @return Objeto Usuario.
+     */
     private Usuario obtenerUsuarioAutenticado() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         return usuarioService.buscarPorUsername(auth.getName());
     }
 
+    /** Obtiene o crea el test con nombre "CHASIDE".
+     * @return Objeto Test.
+     */
     private Test obtenerTestCHASIDE() {
         Test test = testService.buscarPorNombre("CHASIDE");
         if (test == null) {
@@ -279,11 +328,18 @@ public class TestController {
         return test;
     }
 
+    /** Método genérico para obtener una lista de la sesión.
+     * @param session Sesión HTTP.
+     * @param key     Clave del atributo.
+     * @param <T>     Tipo de la lista.
+     * @return Lista del tipo especificado. */
     @SuppressWarnings("unchecked")
     private <T> List<T> obtenerLista(HttpSession session, String key) {
         return (List<T>) session.getAttribute(key);
     }
 
+    /** Inicializa un mapa con las 7 áreas vocacionales con valor 0.
+     * @return Mapa con claves C, H, A, S, I, D, E y valor 0. */
     private Map<String, Integer> inicializarMapaPuntajes() {
         Map<String, Integer> mapa = new HashMap<>();
         for (String area : AREAS) {
@@ -292,6 +348,9 @@ public class TestController {
         return mapa;
     }
 
+    /** Obtiene las dos áreas con mayor puntaje (excluyendo las que tienen 0).
+     * @param puntajes Mapa de áreas y puntajes.
+     * @return Lista con las dos áreas principales. */
     private List<String> obtenerTopAreas(Map<String, Integer> puntajes) {
         return puntajes.entrySet().stream()
                 .filter(e -> e.getValue() > 0)

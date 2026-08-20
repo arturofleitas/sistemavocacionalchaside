@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
 </head>
 <body>
-    <!-- ===== SIDEBAR PARA ESCRITORIO ===== -->
+
+    <!-- Sidebar para escritorio (fijo a la izquierda) -->
     <div th:fragment="sidebar" class="sidebar d-none d-md-flex flex-column">
         <div class="sidebar-header">
             <h4><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h4>
@@ -55,8 +56,8 @@
         </ul>
     </div>
 
-    <!-- ===== OFFCANVAS PARA MÓVIL ===== -->
-    <div th:fragment="offcanvas" class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu">
+    <!-- Offcanvas para móvil (se abre desde la izquierda) -->
+    <div th:fragment="offcanvas" class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" style="width: 280px; max-width: 280px;">
         <div class="offcanvas-header">
             <h5 class="offcanvas-title"><i class="fas fa-clipboard-check me-2"></i>Sistema Vocacional</h5>
             <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
@@ -99,7 +100,7 @@
                         <i class="fas fa-chart-bar"></i> Reportes
                     </a>
                 </li>
-                <li class="nav-item mt-auto">
+                <li class="mt-auto">
                     <a th:href="@{/logout}" class="nav-link">
                         <i class="fas fa-sign-out-alt"></i> Salir
                     </a>
@@ -107,5 +108,6 @@
             </ul>
         </div>
     </div>
+
 </body>
 </html>

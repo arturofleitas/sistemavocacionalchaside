@@ -14,7 +14,7 @@ public class Respuesta {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
 
-	private String valor;
+	private Boolean valor;
 
 	private LocalDate fechaRespuesta;
 
@@ -29,11 +29,11 @@ public class Respuesta {
 		this.id = id;
 	}
 
-	public String getValor() {
+	public Boolean getValor() {
 		return valor;
 	}
 
-	public void setValor(String valor) {
+	public void setValor(Boolean valor) {
 		this.valor = valor;
 	}
 

@@ -100,4 +100,8 @@ public class UsuarioService {
     public void eliminarUsuario(int id) {
         usuarioRepository.deleteById(id);
     }
+    
+    public long count() {
+        return usuarioRepository.count();
+    }
 }

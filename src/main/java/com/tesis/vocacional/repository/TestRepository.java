@@ -8,4 +8,5 @@ import com.tesis.vocacional.model.Test;
 
 public interface TestRepository extends JpaRepository<Test, Integer>{
 	Optional<Test> findByNombre(String nombre);
+	 long countByEstadoTrue();
 }
