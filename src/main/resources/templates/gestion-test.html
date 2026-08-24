@@ -6,45 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestión de Test - Sistema Vocacional</title>
 
-    <!-- Meta tags anti-caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
-    <!-- 1. Bootstrap -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
           rel="stylesheet" 
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
           crossorigin="anonymous">
 
-    <!-- 2. Font Awesome -->
     <link rel="stylesheet" 
           href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" 
           integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" 
           crossorigin="anonymous" 
           referrerpolicy="no-referrer" />
 
-    <!-- 3. home.css (estilos globales) -->
     <link rel="stylesheet" th:href="@{/css/home.css} + '?v=' + ${#dates.createNow().getTime()}">
-
-    <!-- 4. gestion-test.css (estilos específicos de esta página) -->
     <link rel="stylesheet" th:href="@{/css/gestion-test.css} + '?v=' + ${#dates.createNow().getTime()}">
 </head>
 
 <body>
     <div class="main-container">
 
-        <!-- ===== SIDEBAR (escritorio) ===== -->
-        <!-- Reutiliza el fragmento sidebar de menu.html -->
         <div th:replace="~{fragments/menu :: sidebar}"></div>
 
-        <!-- ===== CONTENIDO PRINCIPAL ===== -->
         <div class="content">
 
-            <!-- HEADER -->
             <div class="header">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <!-- Botón hamburguesa (visible solo en móvil) para abrir el offcanvas -->
                     <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
                         <i class="fas fa-bars"></i>
                     </button>
@@ -55,19 +44,15 @@
                 </div>
             </div>
 
-            <!-- ===== OFFCANVAS (móvil) ===== -->
-            <!-- Reutiliza el fragmento offcanvas de menu.html -->
             <div th:replace="~{fragments/menu :: offcanvas}"></div>
 
-            <!-- ===== MENSAJE DE ERROR ===== -->
             <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
                 <strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> <span th:text="${error}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- ===== CONTENIDO (formulario + tabla) ===== -->
             <div class="row g-4">
-                <!-- COLUMNA IZQUIERDA: Formulario -->
+
                 <div class="col-lg-5 columna-formulario-izquierda no-print">
                     <div class="form-card p-4">
                         <h5 class="mb-4 text-primary" th:if="${test.id == null || test.id == 0}">Crear Nuevo Test</h5>
@@ -102,46 +87,84 @@
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: Tabla -->
                 <div class="col-lg-7 columna-tabla-derecha">
                     <div class="table-card">
+
                         <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center cabecera-tabla">
                             <h5 class="mb-0 text-primary titulo-tabla">Tests Registrados</h5>
                             <div class="d-flex gap-2 no-print">
-                                <button onclick="window.print();" class="btn btn-sm btn-outline-primary"><i class="fas fa-print me-1"></i>Imprimir</button>
-                                <a th:href="@{/gestion-test}" class="btn btn-sm btn-primary"><i class="fas fa-plus"></i> Nuevo Test</a>
+                                <button onclick="window.print();" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-print me-1"></i>Imprimir
+                                </button>
+                                <a th:href="@{/gestion-test}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus"></i> Nuevo Test
+                                </a>
                             </div>
                         </div>
 
-                        <div class="table-responsive contenedor-tabla-fisica">
-                            <table class="table table-hover mb-0">
+                        <!-- Barra de filtros (ahora dentro de la tarjeta, sobre la tabla) -->
+                        <div class="filter-bar no-print">
+                            <div class="row g-2 g-md-3 align-items-end">
+                                <div class="col-12 col-md-4">
+                                    <label for="filtroNombre" class="form-label">Nombre</label>
+                                    <input type="text" id="filtroNombre" class="form-control" placeholder="Buscar por nombre">
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label for="filtroDescripcion" class="form-label">Descripción</label>
+                                    <input type="text" id="filtroDescripcion" class="form-control" placeholder="Buscar por descripción">
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label for="filtroEstado" class="form-label">Estado</label>
+                                    <select id="filtroEstado" class="form-select">
+                                        <option value="">Todos</option>
+                                        <option value="true">Activo</option>
+                                        <option value="false">Inactivo</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <button id="limpiarFiltros" class="btn btn-outline-secondary w-100">Limpiar</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive contenedor-tabla-fisica" id="tablaTests">
+                            <table class="table table-hover mb-0" id="tablaTestsBody">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Nombre</th>
-                                        <th>Descripción</th>
+                                        <th class="col-descripcion">Descripción</th>
                                         <th>Estado</th>
                                         <th class="text-center columna-acciones no-print">Acciones</th>
                                     </tr>
                                 </thead>
-                                <tbody>
+                                <tbody id="cuerpoTests">
                                     <tr th:if="${tests.isEmpty()}">
                                         <td colspan="4" class="text-center py-5 text-muted">
                                             Aún no hay tests registrados
                                         </td>
                                     </tr>
-                                    <tr th:each="t : ${tests}">
+                                    <tr th:each="t : ${tests}"
+                                        th:attr="data-nombre=${t.nombre},
+                                                 data-descripcion=${t.descripcion},
+                                                 data-estado=${t.estado}">
                                         <td th:text="${t.nombre}"></td>
-                                        <td th:text="${t.descripcion}"></td>
+                                        <td class="col-descripcion" th:text="${t.descripcion}"></td>
                                         <td>
                                             <span class="badge text-badge-estado" th:classappend="${t.estado} ? 'bg-success' : 'bg-secondary'">
                                                 <span th:text="${t.estado ? 'Activo' : 'Inactivo'}"></span>
                                             </span>
                                         </td>
                                         <td class="text-center columna-acciones no-print">
-                                            <a th:href="@{/gestion-test/editar/{id}(id=${t.id})}" class="btn btn-sm btn-outline-primary me-2">Editar</a>
-                                            <a th:href="@{/gestion-test/eliminar/{id}(id=${t.id})}" 
-                                               class="btn btn-sm btn-outline-danger"
-                                               onclick="return confirm('¿Eliminar este test?')">Eliminar</a>
+                                            <a th:href="@{/gestion-test/editar/{id}(id=${t.id})}" class="btn btn-sm btn-outline-primary me-1 me-md-2">
+                                                <i class="fas fa-edit"></i> <span class="d-none d-sm-inline">Editar</span>
+                                            </a>
+                                            <button class="btn btn-sm btn-outline-danger btn-desactivar" 
+                                                    data-id="${t.id}" 
+                                                    data-nombre="${t.nombre}"
+                                                    data-estado="${t.estado}">
+                                                <i class="fas fa-toggle-off"></i>
+                                                <span class="d-none d-sm-inline" th:text="${t.estado ? 'Desactivar' : 'Activar'}"></span>
+                                            </button>
                                         </td>
                                     </tr>
                                 </tbody>
@@ -153,7 +176,11 @@
         </div>
     </div>
 
-    <!-- ===== SCRIPTS ===== -->
+    <button id="btnSubir" class="btn-flotante d-md-none" title="Volver arriba">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/gestion-test.js} + '?v=' + ${#dates.createNow().getTime()}"></script>
 </body>
 </html>

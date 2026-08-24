@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
-    <!-- Meta viewport corregida para evitar zoom en iOS -->
+    <!-- Meta viewport mejorada para evitar zoom en iOS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
     <title>Panel de Control - Sistema Vocacional</title>
 
@@ -14,13 +14,13 @@
 
     <div class="app-container" id="appContainer">
 
-        <!-- Sidebar -->
+        <!-- Sidebar reutilizable (escritorio) -->
         <div th:replace="fragments/menu :: sidebar"></div>
 
         <!-- Contenido principal -->
         <div class="content">
 
-            <!-- Cabecera -->
+            <!-- Cabecera con botones de menú -->
             <div class="header">
                 <div class="header-left" style="display: flex; align-items: center; gap: 12px;">
                     <!-- Botón hamburguesa (móvil) -->
@@ -39,24 +39,58 @@
                 </div>
             </div>
 
-            <!-- Offcanvas (móvil) -->
+            <!-- Offcanvas (menú móvil) -->
             <div th:replace="fragments/menu :: offcanvas"></div>
 
-            <!-- Banner -->
-            <div class="welcome-banner">
+            <!-- Banner condicional según el rol del usuario -->
+            <!-- Banner para administradores -->
+            <div sec:authorize="hasRole('ADMIN')" class="welcome-banner">
                 <h3>Bienvenido al Sistema de Evaluación Vocacional</h3>
                 <p>Administra usuarios, crea tests, registra preguntas y analiza resultados desde un solo lugar.</p>
             </div>
 
-            <!-- Estadísticas -->
-            <div class="stats-grid" sec:authorize="hasRole('ADMIN')">
-                <div class="stat-card"><h3>128</h3><p>Usuarios Registrados</p></div>
-                <div class="stat-card"><h3>5</h3><p>Tests Activos</p></div>
-                <div class="stat-card"><h3>320</h3><p>Tests Realizados</p></div>
-                <div class="stat-card"><h3>78%</h3><p>Promedio Tecnológico</p></div>
+            <!-- Banner para estudiantes (con mensaje y botón de test) -->
+            <div sec:authorize="hasRole('ESTUDIANTE')" class="welcome-student">
+                <div class="icono-titulo">
+                    <i class="fas fa-graduation-cap"></i>
+                    <h3>Para el futuro estudiante</h3>
+                </div>
+                <p>
+                    El proceso de elección de una carrera universitaria implica considerar tus intereses, gustos y aptitudes, así como conocer las posibles alternativas académicas disponibles. Un test de orientación vocacional puede ser una herramienta útil, aunque no definitiva, para tener una primera aproximación a tu búsqueda vocacional.
+                </p>
+                <p>
+                    Con la finalidad de contribuir a este proceso, ponemos a tu disposición, de forma gratuita, el test <strong>CHASIDE</strong>, que consta de <strong>98 preguntas</strong> relacionadas con tus intereses y aptitudes.
+                </p>
+                <ul>
+                    <li><i class="fas fa-book-open"></i> <strong>Leé atentamente</strong> cada pregunta.</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Marcá la respuesta</strong> Sí o No según tu criterio.</li>
+                    <li><i class="fas fa-pencil-alt"></i> <strong>Respondé a todas</strong> las preguntas sin omitir ninguna.</li>
+                </ul>
+                <p style="margin-bottom: 16px;">
+                    En base a tus respuestas, podrás obtener una primera aproximación a tu orientación vocacional, diferenciando intereses y aptitudes.
+                </p>
+                <a th:href="@{/realizar-test}" class="btn-test-ahora">
+                    <i class="fas fa-play-circle"></i> Realizar test ahora
+                </a>
             </div>
 
-            <!-- Accesos rápidos -->
+            <!-- Estadísticas (solo visible para administradores) -->
+            <div class="stats-grid" sec:authorize="hasRole('ADMIN')">
+                <div class="stat-card">
+                    <h3 th:text="${totalUsuarios}">0</h3>
+                    <p>Usuarios Registrados</p>
+                </div>
+                <div class="stat-card">
+                    <h3 th:text="${testsActivos}">0</h3>
+                    <p>Tests Activos</p>
+                </div>
+                <div class="stat-card">
+                    <h3 th:text="${testsRealizados}">0</h3>
+                    <p>Tests Realizados</p>
+                </div>
+            </div>
+
+            <!-- Accesos rápidos (solo administradores) -->
             <div class="quick-access" sec:authorize="hasRole('ADMIN')">
                 <h5>Accesos Rápidos</h5>
                 <div class="quick-buttons">
@@ -71,8 +105,10 @@
         </div>
     </div>
 
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Alterna la visibilidad del sidebar en desktop
         function toggleSidebar() {
             var container = document.getElementById('appContainer');
             container.classList.toggle('sidebar-collapsed');
@@ -80,6 +116,7 @@
             localStorage.setItem('sidebarCollapsed', isCollapsed);
         }
 
+        // Restaura el estado del sidebar al cargar la página
         window.addEventListener('load', function() {
             var container = document.getElementById('appContainer');
             var collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
@@ -88,6 +125,7 @@
             }
         });
 
+        // Fuerza un reflow en navegación con historial para evitar problemas de renderizado
         window.addEventListener('pageshow', function(event) {
             if (event.persisted) {
                 document.body.style.display = 'none';

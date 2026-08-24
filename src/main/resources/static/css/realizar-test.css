@@ -1,173 +1,327 @@
 /* Estilos específicos para la página de realización del test */
 
 /* Contenido principal */
+
 .content {
+
     background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
+
     min-height: 100vh;
+
     padding: 30px;
+
 }
 
 .header-title {
+
     color: #1e40af;
+
     font-weight: 700;
+
 }
 
 /* Tarjeta de la pregunta */
+
 .question-card {
+
     background: white;
+
     border-radius: 20px;
+
     box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
+
     padding: 40px;
+
 }
 
 /* Barra de progreso */
+
 .progress {
+
     height: 12px;
+
 }
 
 /* Contenedor de las opciones Sí / No */
+
 .opciones-container {
+
     display: flex;
+
     justify-content: center;
+
     gap: 30px;
+
     margin: 45px 0;
+
 }
 
 .opcion-card {
+
     cursor: pointer;
+
     width: 180px;
+
     height: 140px;
+
 }
 
 .opcion-card input[type="radio"] {
+
     display: none;
+
 }
 
 .opcion-box {
+
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
+
     justify-content: center;
+
     width: 100%;
+
     height: 100%;
+
     border: 2px solid #dee2e6;
+
     border-radius: 16px;
+
     background-color: #ffffff;
+
     transition: all 0.2s ease-in-out;
+
     gap: 15px;
+
 }
 
 .opcion-texto {
+
     font-weight: 700;
+
     font-size: 1.4rem;
+
     color: #495057;
+
 }
 
 .cuadrado-indicador {
+
     width: 26px;
+
     height: 26px;
+
     border: 2px solid #adb5bd;
+
     border-radius: 6px;
+
     transition: all 0.2s ease;
+
     display: flex;
+
     align-items: center;
+
     justify-content: center;
+
 }
 
 /* Efecto hover */
+
 .opcion-card:hover .opcion-box {
+
     border-color: #0d6efd;
+
     background-color: #f8f9fa;
+
 }
 
 /* Estilos cuando la opción está seleccionada */
+
 .opcion-card input[type="radio"]:checked + .opcion-box {
+
     border-color: #0d6efd;
+
     background-color: #ecf3ff;
+
     box-shadow: 0 8px 20px rgba(13, 110, 253, 0.15);
+
 }
 
 .opcion-card input[type="radio"]:checked + .opcion-box .cuadrado-indicador {
+
     background-color: #0d6efd;
+
     border-color: #0d6efd;
+
 }
 
 .opcion-card input[type="radio"]:checked + .opcion-box .cuadrado-indicador::after {
+
     content: "\f00c";
+
     font-family: "Font Awesome 6 Free";
+
     font-weight: 900;
+
     color: #ffffff;
+
     font-size: 14px;
+
 }
 
 .opcion-card input[type="radio"]:checked + .opcion-box .opcion-texto {
+
     color: #0d6efd;
+
 }
 
-/* ============================================
-   Responsive para tablets
-   ============================================ */
+/* Alerta de validación: margen superior para separación */
+
+#alertaSeleccion {
+
+    margin-top: 16px;
+
+}
+
+/* Responsive para tablets */
+
 @media (max-width: 767px) {
+
     .content {
+
         padding: 16px;
+
     }
+
     .header-title {
+
         font-size: 1.3rem;
+
         margin-bottom: 0;
+
     }
+
     .question-card {
+
         padding: 20px;
+
     }
+
     .opciones-container {
+
         flex-direction: column;
+
         align-items: center;
+
         gap: 20px;
+
         margin: 30px 0;
+
     }
+
     .opcion-card {
+
         width: 160px;
+
         height: 120px;
+
     }
+
     .opcion-texto {
+
         font-size: 1.2rem;
+
     }
+
+    /* Ajuste de la alerta en móvil */
+
+    #alertaSeleccion {
+
+        font-size: 0.95rem;
+
+        padding: 12px;
+
+    }
+
 }
 
 /* Corrección para el desborde del botón "Siguiente" en móvil */
+
 @media (max-width: 480px) {
+
     /* El contenedor que envuelve el botón "Siguiente" (y el span vacío) */
+
     .question-card .d-flex.justify-content-between {
+
         flex-wrap: wrap;
+
         justify-content: flex-end;
+
         gap: 8px;
+
     }
 
     /* Ocultar el span vacío para que no ocupe espacio */
+
     .question-card .d-flex.justify-content-between span {
+
         display: none;
+
     }
 
     /* El botón "Siguiente" ocupará el 100% del ancho disponible */
+
     .question-card .d-flex.justify-content-between .btn {
+
         width: 100%;
+
         max-width: 100%;
+
         text-align: center;
+
         padding: 12px 10px;
+
         font-size: 1rem;
+
         white-space: normal;
+
     }
 
     /* El formulario de "Anterior" se ajusta para que no se superponga */
+
     .question-card form[style*="margin-top: -68px"] {
+
         margin-top: 10px !important;
+
         width: 100% !important;
+
     }
 
     .question-card form[style*="margin-top: -68px"] .btn {
+
         width: 100%;
+
         text-align: center;
+
         padding: 12px 10px;
+
         font-size: 1rem;
+
         white-space: normal;
+
     }
+
+    /* Ajuste adicional de la alerta en pantallas muy pequeñas */
+
+    #alertaSeleccion {
+
+        font-size: 0.85rem;
+
+        padding: 10px;
+
+    }
+
 }

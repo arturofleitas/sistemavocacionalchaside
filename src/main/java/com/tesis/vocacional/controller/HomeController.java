@@ -10,10 +10,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
-/**
- * Controlador para la página de inicio (panel de control).
- * Proporciona los datos estadísticos necesarios para la vista home.
- */
+/**Controlador para la página de inicio (panel de control).
+ * Proporciona los datos estadísticos necesarios para la vista home.*/
 @Controller
 public class HomeController {
 
@@ -25,9 +23,6 @@ public class HomeController {
 
     /**
      * Constructor con inyección de dependencias.
-     * @param usuarioService Servicio para gestionar usuarios.
-     * @param testService Servicio para gestionar tests.
-     * @param resultadoService Servicio para gestionar resultados.
      */
     public HomeController(UsuarioService usuarioService,
                           TestService testService,
@@ -41,7 +36,7 @@ public class HomeController {
      * Muestra la página de inicio del panel de control.
      * Pasa al modelo la URI actual (para resaltar el menú) y las estadísticas del sistema.
      *
-     * @param model Modelo de Spring para pasar datos a la vista.
+     * @param model   Modelo de Spring para pasar datos a la vista.
      * @param request Objeto HttpServletRequest para obtener la URI actual.
      * @return Nombre de la vista "home".
      */
@@ -51,7 +46,7 @@ public class HomeController {
         String currentUri = request.getRequestURI();
         model.addAttribute("currentUri", currentUri);
 
-        // Cargar estadísticas del sistema con manejo de errores
+        // Cargar estadísticas del sistema
         try {
             long totalUsuarios = usuarioService.count();
             long testsActivos = testService.countActivos();
@@ -64,7 +59,7 @@ public class HomeController {
             log.info("Estadísticas cargadas: usuarios={}, tests activos={}, tests realizados={}",
                     totalUsuarios, testsActivos, testsRealizados);
         } catch (Exception e) {
-            // Si falla la consulta, asignar valores por defecto para no romper la vista
+            // Si falla la consulta, asignar valores por defecto
             log.error("Error al cargar estadísticas: {}", e.getMessage());
             model.addAttribute("totalUsuarios", 0);
             model.addAttribute("testsActivos", 0);

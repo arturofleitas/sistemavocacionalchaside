@@ -4,118 +4,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Diagnóstico Vocacional Personalizado</title>
-    <!-- Estilos compartidos -->
-    <link rel="stylesheet" th:href="@{/css/home.css}">
+    <title>Resultado CHASIDE - Sistema Vocacional</title>
+
+    <!-- Meta tags anti-cache -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <!-- Bootstrap y Font Awesome -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Estilos específicos de esta página -->
-    <link rel="stylesheet" th:href="@{/css/test-resultado.css}">
+
+    <!-- Estilos globales y específicos -->
+    <link rel="stylesheet" th:href="@{/css/home.css} + '?v=' + ${#dates.createNow().getTime()}">
+    <link rel="stylesheet" th:href="@{/css/test-resultado.css} + '?v=' + ${#dates.createNow().getTime()}">
 </head>
 
 <body>
-    <div class="main-container" id="topo">
-        <!-- SIDEBAR (se reutiliza el fragmento) -->
+    <div class="main-container">
+
+        <!-- Sidebar (escritorio) -->
         <div th:replace="~{fragments/menu :: sidebar}"></div>
 
+        <!-- Contenido principal -->
         <div class="content">
-            <div class="diagnostico-card">
-                <!-- Encabezado compacto -->
-                <div class="text-center">
-                    <i class="fas fa-brain icono-perfil"></i>
-                    <h4 class="fw-bold mt-1 mb-0">Informe Vocacional</h4>
-                    <p class="text-muted small mb-1">Basado en el test CHASIDE</p>
-                    <hr class="w-25 mx-auto my-1">
+            <div class="container-resultado" 
+                 th:with="categoriaMap=${ {'C':'Administrativas y Contables', 
+                                           'H':'Humanísticas, Ciencias Jurídicas y Sociales', 
+                                           'A':'Artísticas', 
+                                           'S':'Ciencias de la Salud', 
+                                           'I':'Ingenierías, Carreras Técnicas y Computación', 
+                                           'D':'Defensa y Seguridad', 
+                                           'E':'Ciencias Agrarias, de la Naturaleza, Zoológicas y Biológicas'} }">
+
+                <!-- Encabezado -->
+                <div class="header-resultado">
+                    <h1><i class="fas fa-clipboard-check"></i> Informe Vocacional</h1>
+                    <span class="badge-chaside">CHASIDE</span>
                 </div>
 
-                <!-- Perfiles principales en fila horizontal -->
-                <div class="perfiles-fila">
-                    <div class="perfil-item">
-                        <h6><i class="fas fa-heart text-primary"></i> Intereses</h6>
-                        <span class="badge bg-primary badge-perfil" th:text="${interesesPrincipales}">No disponible</span>
+                <!-- Perfil recomendado (combinación de intereses y aptitudes) -->
+                <div class="perfil-destacado">
+                    <div class="etiqueta"><i class="fas fa-bullseye"></i> Perfil recomendado</div>
+                    <h2 th:text="${perfilCombinado} ?: 'Artísticas + Ciencias Agrarias'">Artísticas + Ciencias Agrarias</h2>
+                    <div class="combinado">
+                        <span><i class="fas fa-heart"></i> Interés: <strong th:text="${interesesPrincipales} ?: 'Artísticas · Defensa'">Artísticas · Defensa</strong></span>
+                        <span><i class="fas fa-brain"></i> Aptitud: <strong th:text="${aptitudesPrincipales} ?: 'Agrarias · Administrativas'">Agrarias · Administrativas</strong></span>
                     </div>
-                    <div class="perfil-item">
-                        <h6><i class="fas fa-cogs text-success"></i> Aptitudes</h6>
-                        <span class="badge bg-success badge-perfil" th:text="${aptitudesPrincipales}">No disponible</span>
+                </div>
+
+                <!-- INTERESES -->
+                <div class="seccion">
+                    <h3>
+                        <i class="fas fa-heart" style="color:#0d6efd;"></i> Intereses
+                        <span class="badge-interes">2 áreas principales</span>
+                    </h3>
+                    <div th:each="entry : ${puntajesInteres.entrySet()}" class="item-area">
+                        <span class="letra" th:text="${entry.key}">A</span>
+                        <span class="nombre" th:text="${categoriaMap[entry.key]}">Artísticas</span>
+                        <span class="puntaje" th:text="${entry.value}">7</span>
+                        <div class="barra-fondo">
+                            <div class="barra-llena" th:style="'width: ' + (${entry.value} * 100 / ${maxPuntaje}) + '%'"></div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Descripción -->
-                <div class="descripcion-box" th:if="${descripcion}">
-                    <i class="fas fa-quote-left text-primary me-1"></i>
-                    <span th:text="${descripcion}"></span>
+                <!-- APTITUDES -->
+                <div class="seccion">
+                    <h3>
+                        <i class="fas fa-brain" style="color:#10b981;"></i> Aptitudes
+                        <span class="badge-aptitud">2 áreas principales</span>
+                    </h3>
+                    <div th:each="entry : ${puntajesAptitud.entrySet()}" class="item-area">
+                        <span class="letra" th:text="${entry.key}">E</span>
+                        <span class="nombre" th:text="${categoriaMap[entry.key]}">Ciencias Agrarias</span>
+                        <span class="puntaje" th:text="${entry.value}">3</span>
+                        <div class="barra-fondo">
+                            <div class="barra-llena aptitud" th:style="'width: ' + (${entry.value} * 100 / ${maxPuntajeAptitud}) + '%'"></div>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- Alerta orientativa -->
-                <div class="alert alert-info" role="alert">
-                    <i class="fas fa-lightbulb"></i> Este diagnóstico es una guía orientativa. Tu vocación se construye con experiencia, reflexión y asesoramiento profesional.
-                </div>
-
-				<div class="resultado-columnas">
-				    <!-- Intereses -->
-				    <div class="resultado-columna">
-				        <h6><i class="fas fa-heart text-primary"></i> Intereses</h6>
-				        <div th:each="entry : ${puntajesInteresList}">
-				            <div class="puntaje-item">
-				                <span>
-				                    <span class="area-tag interes" th:text="${entry.key}"></span>
-				                    <span class="nombre-area" th:text="${nombresCategoria[entry.key]}">Área</span>
-				                </span>
-				                <span class="puntaje-valor" th:text="${entry.value}">0</span>
-				            </div>
-				        </div>
-				        <div th:if="${puntajesInteresList == null or puntajesInteresList.isEmpty()}" class="text-muted small">
-				            No hay puntajes registrados.
-				        </div>
-				    </div>
-
-				    <!-- Aptitudes -->
-				    <div class="resultado-columna">
-				        <h6><i class="fas fa-cogs text-success"></i> Aptitudes</h6>
-				        <div th:each="entry : ${puntajesAptitudList}">
-				            <div class="puntaje-item">
-				                <span>
-				                    <span class="area-tag aptitud" th:text="${entry.key}"></span>
-				                    <span class="nombre-area" th:text="${nombresCategoria[entry.key]}">Área</span>
-				                </span>
-				                <span class="puntaje-valor" th:text="${entry.value}">0</span>
-				            </div>
-				        </div>
-				        <div th:if="${puntajesAptitudList == null or puntajesAptitudList.isEmpty()}" class="text-muted small">
-				            No hay puntajes registrados.
-				        </div>
-				    </div>
-				</div>
 
                 <!-- Total preguntas -->
                 <div class="total-preguntas">
-                    <i class="far fa-file-alt"></i> Total preguntas: <span th:text="${totalPreguntas}">98</span>
+                    <i class="far fa-file-alt"></i> Total preguntas: <span th:text="${totalPreguntas} ?: 98">98</span>
+                </div>
+
+                <!-- Mensaje orientativo -->
+                <div class="aviso">
+                    <i class="fas fa-lightbulb"></i>
+                    Este diagnóstico es una guía orientativa. Tu vocación se construye con experiencia, reflexión y asesoramiento profesional.
                 </div>
 
                 <!-- Botones de acción -->
-                <div class="acciones no-print">
-                    <a th:href="@{/home}" class="btn btn-primary"><i class="fas fa-home"></i> Inicio</a>
-                    <a th:href="@{/realizar-test}" class="btn btn-outline-primary"><i class="fas fa-redo"></i> Nuevo test</a>
-                    <!-- Botón con texto actualizado para mayor claridad -->
-                    <button onclick="window.print()" class="btn btn-outline-secondary">
-                        <i class="fas fa-file-pdf"></i> Imprimir Resultado
-                    </button>
+                <div class="acciones">
+                    <a th:href="@{/home}" class="btn-primary"><i class="fas fa-home"></i> Inicio</a>
+                    <a th:href="@{/realizar-test}" class="btn-outline"><i class="fas fa-redo"></i> Nuevo test</a>
+                    <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Imprimir</button>
                 </div>
+
+                <div class="footer-resultado">
+                    Sistema Vocacional CHASIDE · FACITEC
+                </div>
+
             </div>
         </div>
     </div>
 
-    <!-- OFFCANVAS (móvil) -->
+    <!-- Offcanvas (móvil) -->
     <div th:replace="~{fragments/menu :: offcanvas}"></div>
 
-    <!-- BOTÓN FLOTANTE PARA VOLVER ARRIBA -->
-    <div class="scroll-top-btn no-print">
-        <a href="#topo" class="btn btn-primary btn-lg rounded-circle shadow" title="Volver arriba">
-            <i class="fas fa-chevron-up"></i>
-        </a>
-    </div>
-
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
-
 </html>

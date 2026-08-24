@@ -100,7 +100,7 @@ public class UsuarioService {
     public void eliminarUsuario(int id) {
         usuarioRepository.deleteById(id);
     }
-    
+    //Retorna el número total de usuarios registrados en el sistema.
     public long count() {
         return usuarioRepository.count();
     }

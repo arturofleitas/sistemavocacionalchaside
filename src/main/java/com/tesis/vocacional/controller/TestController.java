@@ -21,342 +21,358 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Controlador para la realización del test vocacional CHASIDE.
- * Gestiona el flujo de preguntas, almacenamiento de respuestas y cálculo de resultados.
+ * Controlador para la realización del test vocacional CHASIDE. Gestiona el
+ * flujo de preguntas, almacenamiento de respuestas y cálculo de resultados.
  */
 @Controller
 @RequestMapping("/realizar-test")
 public class TestController {
 
-    // Dependencias inyectadas por constructor
-    private final PreguntaService preguntaService;
-    private final UsuarioService usuarioService;
-    private final TestService testService;
-    private final TestUsuarioService testUsuarioService;
-    private final TestUsuarioPreguntaService testUsuarioPreguntaService;
-    private final RespuestaService respuestaService;
-    private final ResultadoService resultadoService;
+	// Dependencias inyectadas por constructor
+	private final PreguntaService preguntaService;
+	private final UsuarioService usuarioService;
+	private final TestService testService;
+	private final TestUsuarioService testUsuarioService;
+	private final TestUsuarioPreguntaService testUsuarioPreguntaService;
+	private final RespuestaService respuestaService;
+	private final ResultadoService resultadoService;
 
-    // Constantes para evitar repetir literales
-    private static final List<String> AREAS = Arrays.asList("C", "H", "A", "S", "I", "D", "E");
-    private static final Map<String, String> NOMBRE_CATEGORIA = new HashMap<>();
+	// Constantes para evitar repetir literales
+	private static final List<String> AREAS = Arrays.asList("C", "H", "A", "S", "I", "D", "E");
+	private static final Map<String, String> NOMBRE_CATEGORIA = new HashMap<>();
 
-    static {
-        NOMBRE_CATEGORIA.put("C", "ADMINISTRATIVAS Y CONTABLES");
-        NOMBRE_CATEGORIA.put("H", "HUMANÍSTICAS, CIENCIAS JURÍDICAS Y SOCIALES");
-        NOMBRE_CATEGORIA.put("A", "ARTÍSTICAS");
-        NOMBRE_CATEGORIA.put("S", "CIENCIAS DE LA SALUD");
-        NOMBRE_CATEGORIA.put("I", "INGENIERÍAS, CARRERAS TÉCNICAS Y COMPUTACIÓN");
-        NOMBRE_CATEGORIA.put("D", "DEFENSA Y SEGURIDAD");
-        NOMBRE_CATEGORIA.put("E", "CIENCIAS AGRARIAS, DE LA NATURALEZA, ZOOLÓGICAS Y BIOLÓGICAS");
-    }
+	static {
+		NOMBRE_CATEGORIA.put("C", "ADMINISTRATIVAS Y CONTABLES");
+		NOMBRE_CATEGORIA.put("H", "HUMANÍSTICAS, CIENCIAS JURÍDICAS Y SOCIALES");
+		NOMBRE_CATEGORIA.put("A", "ARTÍSTICAS");
+		NOMBRE_CATEGORIA.put("S", "CIENCIAS DE LA SALUD");
+		NOMBRE_CATEGORIA.put("I", "INGENIERÍAS, CARRERAS TÉCNICAS Y COMPUTACIÓN");
+		NOMBRE_CATEGORIA.put("D", "DEFENSA Y SEGURIDAD");
+		NOMBRE_CATEGORIA.put("E", "CIENCIAS AGRARIAS, DE LA NATURALEZA, ZOOLÓGICAS Y BIOLÓGICAS");
+	}
 
-    /**
-     * Constructor con inyección de todas las dependencias necesarias.
-     */
-    public TestController(PreguntaService preguntaService,
-                          UsuarioService usuarioService,
-                          TestService testService,
-                          TestUsuarioService testUsuarioService,
-                          TestUsuarioPreguntaService testUsuarioPreguntaService,
-                          RespuestaService respuestaService,
-                          ResultadoService resultadoService) {
-        this.preguntaService = preguntaService;
-        this.usuarioService = usuarioService;
-        this.testService = testService;
-        this.testUsuarioService = testUsuarioService;
-        this.testUsuarioPreguntaService = testUsuarioPreguntaService;
-        this.respuestaService = respuestaService;
-        this.resultadoService = resultadoService;
-    }
+	/**
+	 * Constructor con inyección de todas las dependencias necesarias.
+	 */
+	public TestController(PreguntaService preguntaService, UsuarioService usuarioService, TestService testService,
+			TestUsuarioService testUsuarioService, TestUsuarioPreguntaService testUsuarioPreguntaService,
+			RespuestaService respuestaService, ResultadoService resultadoService) {
+		this.preguntaService = preguntaService;
+		this.usuarioService = usuarioService;
+		this.testService = testService;
+		this.testUsuarioService = testUsuarioService;
+		this.testUsuarioPreguntaService = testUsuarioPreguntaService;
+		this.respuestaService = respuestaService;
+		this.resultadoService = resultadoService;
+	}
 
-    /** Inicia un nuevo test. Crea una sesión con las preguntas y un TestUsuario. */
-    @GetMapping
-    public String iniciarTest(HttpSession session, Model model) {
-        List<Pregunta> preguntas = preguntaService.listarTodas();
-        Usuario usuario = obtenerUsuarioAutenticado();
-        Test test = obtenerTestCHASIDE();
+	/** Inicia un nuevo test. Crea una sesión con las preguntas y un TestUsuario. */
+	@GetMapping
+	public String iniciarTest(HttpSession session, Model model) {
+		List<Pregunta> preguntas = preguntaService.listarTodas();
+		Usuario usuario = obtenerUsuarioAutenticado();
+		Test test = obtenerTestCHASIDE();
 
-        TestUsuario testUsuario = new TestUsuario();
-        testUsuario.setUsuario(usuario);
-        testUsuario.setTest(test);
-        testUsuario.setEstado("EN_CURSO");
-        testUsuario = testUsuarioService.guardar(testUsuario);
+		TestUsuario testUsuario = new TestUsuario();
+		testUsuario.setUsuario(usuario);
+		testUsuario.setTest(test);
+		testUsuario.setEstado("EN_CURSO");
+		testUsuario = testUsuarioService.guardar(testUsuario);
 
-        // Guardar en sesión
-        session.setAttribute("preguntas", preguntas);
-        session.setAttribute("respuestas", new ArrayList<String>());
-        session.setAttribute("indiceActual", 0);
-        session.setAttribute("testUsuario", testUsuario);
+		// Guardar en sesión
+		session.setAttribute("preguntas", preguntas);
+		session.setAttribute("respuestas", new ArrayList<String>());
+		session.setAttribute("indiceActual", 0);
+		session.setAttribute("testUsuario", testUsuario);
 
-        return mostrarPreguntaActual(session, model);
-    }
+		return mostrarPreguntaActual(session, model);
+	}
 
-    /**
-     * Procesa la respuesta del usuario (Sí/No), la persiste y avanza a la siguiente pregunta.
-     *
-     * @param respuesta Valor de la respuesta ("SI" o "NO").
-     * @param session   Sesión HTTP con el estado actual.
-     * @param model     Modelo para la vista.
-     * @return Redirección o vista de la siguiente pregunta.
-     */
-    @PostMapping("/responder")
-    public String responder(@RequestParam String respuesta, HttpSession session, Model model) {
-        List<String> respuestas = obtenerLista(session, "respuestas");
-        List<Pregunta> preguntas = obtenerLista(session, "preguntas");
-        Integer indice = (Integer) session.getAttribute("indiceActual");
-        TestUsuario testUsuario = (TestUsuario) session.getAttribute("testUsuario");
+	/**
+	 * Procesa la respuesta del usuario (Sí/No), la persiste y avanza a la siguiente
+	 * pregunta.
+	 *
+	 * @param respuesta Valor de la respuesta ("SI" o "NO").
+	 * @param session   Sesión HTTP con el estado actual.
+	 * @param model     Modelo para la vista.
+	 * @return Redirección o vista de la siguiente pregunta.
+	 */
+	@PostMapping("/responder")
+	public String responder(@RequestParam String respuesta, HttpSession session, Model model) {
+		List<String> respuestas = obtenerLista(session, "respuestas");
+		List<Pregunta> preguntas = obtenerLista(session, "preguntas");
+		Integer indice = (Integer) session.getAttribute("indiceActual");
+		TestUsuario testUsuario = (TestUsuario) session.getAttribute("testUsuario");
 
-        if (respuestas == null || preguntas == null || indice == null || testUsuario == null) {
-            return "redirect:/realizar-test";
-        }
-        if (indice >= preguntas.size()) {
-            return "redirect:/realizar-test/test-resultado";
-        }
+		if (respuestas == null || preguntas == null || indice == null || testUsuario == null) {
+			return "redirect:/realizar-test";
+		}
+		if (indice >= preguntas.size()) {
+			return "redirect:/realizar-test/test-resultado";
+		}
 
-        // Guardar respuesta en sesión
-        if (indice < respuestas.size()) {
-            respuestas.set(indice, respuesta);
-        } else {
-            respuestas.add(respuesta);
-        }
-        session.setAttribute("respuestas", respuestas);
+		// Guardar respuesta en sesión
+		if (indice < respuestas.size()) {
+			respuestas.set(indice, respuesta);
+		} else {
+			respuestas.add(respuesta);
+		}
+		session.setAttribute("respuestas", respuestas);
 
-        // Persistir la respuesta en la base de datos
-        try {
-            Pregunta preguntaActual = preguntas.get(indice);
+		// Persistir la respuesta en la base de datos
+		try {
+			Pregunta preguntaActual = preguntas.get(indice);
 
-            // Buscar o crear TestUsuarioPregunta (relación entre sesión y pregunta)
-            Optional<TestUsuarioPregunta> optTUP = testUsuarioPreguntaService.buscarPorTestUsuarioYPregunta(testUsuario, preguntaActual);
-            TestUsuarioPregunta tup;
-            if (optTUP.isPresent()) {
-                tup = optTUP.get();
-            } else {
-                tup = new TestUsuarioPregunta();
-                tup.setTestUsuario(testUsuario);
-                tup.setPregunta(preguntaActual);
-                tup = testUsuarioPreguntaService.guardar(tup);
-            }
+			// Buscar o crear TestUsuarioPregunta (relación entre sesión y pregunta)
+			Optional<TestUsuarioPregunta> optTUP = testUsuarioPreguntaService.buscarPorTestUsuarioYPregunta(testUsuario,
+					preguntaActual);
+			TestUsuarioPregunta tup;
+			if (optTUP.isPresent()) {
+				tup = optTUP.get();
+			} else {
+				tup = new TestUsuarioPregunta();
+				tup.setTestUsuario(testUsuario);
+				tup.setPregunta(preguntaActual);
+				tup = testUsuarioPreguntaService.guardar(tup);
+			}
 
-            // Crear la respuesta (valor booleano)
-            Respuesta respuestaEntity = new Respuesta();
-            respuestaEntity.setPregunta(tup);
-            respuestaEntity.setFechaRespuesta(LocalDate.now());
-            // Convertir "SI" a true, cualquier otra cosa a false
-            respuestaEntity.setValor("SI".equalsIgnoreCase(respuesta));
-            respuestaService.guardar(respuestaEntity);
+			// Crear la respuesta (valor booleano)
+			Respuesta respuestaEntity = new Respuesta();
+			respuestaEntity.setPregunta(tup);
+			respuestaEntity.setFechaRespuesta(LocalDate.now());
+			// Convertir "SI" a true, cualquier otra cosa a false
+			respuestaEntity.setValor("SI".equalsIgnoreCase(respuesta));
+			respuestaService.guardar(respuestaEntity);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            // En caso de error, no interrumpimos el flujo, pero registramos el problema
-            model.addAttribute("error", "Error al guardar la respuesta: " + e.getMessage());
-        }
+		} catch (Exception e) {
+			e.printStackTrace();
+			// En caso de error, no interrumpimos el flujo, pero registramos el problema
+			model.addAttribute("error", "Error al guardar la respuesta: " + e.getMessage());
+		}
 
-        // Avanzar al siguiente índice
-        indice++;
-        session.setAttribute("indiceActual", indice);
+		// Avanzar al siguiente índice
+		indice++;
+		session.setAttribute("indiceActual", indice);
 
-        if (indice == preguntas.size()) {
-            return "redirect:/realizar-test/test-resultado";
-        }
-        return mostrarPreguntaActual(session, model);
-    }
+		if (indice == preguntas.size()) {
+			return "redirect:/realizar-test/test-resultado";
+		}
+		return mostrarPreguntaActual(session, model);
+	}
 
-    /** Muestra la pregunta actual según el índice de sesión.
-     * @return Nombre de la vista "realizar-test". */
-    private String mostrarPreguntaActual(HttpSession session, Model model) {
-        List<Pregunta> preguntas = obtenerLista(session, "preguntas");
-        Integer indice = (Integer) session.getAttribute("indiceActual");
+	/**
+	 * Muestra la pregunta actual según el índice de sesión.
+	 * 
+	 * @return Nombre de la vista "realizar-test".
+	 */
+	private String mostrarPreguntaActual(HttpSession session, Model model) {
+		List<Pregunta> preguntas = obtenerLista(session, "preguntas");
+		Integer indice = (Integer) session.getAttribute("indiceActual");
 
-        if (preguntas == null || indice == null || indice < 0 || indice >= preguntas.size()) {
-            return "redirect:/realizar-test";
-        }
+		if (preguntas == null || indice == null || indice < 0 || indice >= preguntas.size()) {
+			return "redirect:/realizar-test";
+		}
 
-        Pregunta preguntaActual = preguntas.get(indice);
-        model.addAttribute("pregunta", preguntaActual);
-        model.addAttribute("progreso", indice + 1);
-        model.addAttribute("total", preguntas.size());
-        model.addAttribute("esUltimaPregunta", indice == preguntas.size() - 1);
+		Pregunta preguntaActual = preguntas.get(indice);
+		model.addAttribute("pregunta", preguntaActual);
+		model.addAttribute("progreso", indice + 1);
+		model.addAttribute("total", preguntas.size());
+		model.addAttribute("esUltimaPregunta", indice == preguntas.size() - 1);
 
-        return "realizar-test";
-    }
+		return "realizar-test";
+	}
 
-    /** Permite retroceder a la pregunta anterior.
-     * @return Redirección o vista de la pregunta anterior. */
-    @PostMapping("/anterior")
-    public String anterior(HttpSession session, Model model) {
-        List<String> respuestas = obtenerLista(session, "respuestas");
-        Integer indice = (Integer) session.getAttribute("indiceActual");
+	/**
+	 * Permite retroceder a la pregunta anterior.
+	 * 
+	 * @return Redirección o vista de la pregunta anterior.
+	 */
+	@PostMapping("/anterior")
+	public String anterior(HttpSession session, Model model) {
+		List<String> respuestas = obtenerLista(session, "respuestas");
+		Integer indice = (Integer) session.getAttribute("indiceActual");
 
-        if (respuestas == null || indice == null || indice <= 0) {
-            return "redirect:/realizar-test";
-        }
+		if (respuestas == null || indice == null || indice <= 0) {
+			return "redirect:/realizar-test";
+		}
 
-        respuestas.remove(indice - 1);
-        session.setAttribute("respuestas", respuestas);
-        session.setAttribute("indiceActual", --indice);
+		respuestas.remove(indice - 1);
+		session.setAttribute("respuestas", respuestas);
+		session.setAttribute("indiceActual", --indice);
 
-        return mostrarPreguntaActual(session, model);
-    }
+		return mostrarPreguntaActual(session, model);
+	}
 
-    /** Finaliza el test, calcula los puntajes de intereses y aptitudes,
-     * guarda el resultado y muestra la vista de diagnóstico.
-     * @return Nombre de la vista "test-resultado" o redirección. */
-    @GetMapping("/test-resultado")
-    public String mostrarResultado(HttpSession session, Model model) {
-        List<Pregunta> preguntas = obtenerLista(session, "preguntas");
-        List<String> respuestas = obtenerLista(session, "respuestas");
-        TestUsuario testUsuario = (TestUsuario) session.getAttribute("testUsuario");
+	/**
+	 * Finaliza el test, calcula los puntajes de intereses y aptitudes, guarda el
+	 * resultado y muestra la vista de diagnóstico.
+	 * 
+	 * @return Nombre de la vista "test-resultado" o redirección.
+	 */
+	@GetMapping("/test-resultado")
+	public String mostrarResultado(HttpSession session, Model model) {
+		List<Pregunta> preguntas = obtenerLista(session, "preguntas");
+		List<String> respuestas = obtenerLista(session, "respuestas");
+		TestUsuario testUsuario = (TestUsuario) session.getAttribute("testUsuario");
 
-        if (preguntas == null || respuestas == null || respuestas.size() != preguntas.size()) {
-            return "redirect:/realizar-test";
-        }
+		if (preguntas == null || respuestas == null || respuestas.size() != preguntas.size()) {
+			return "redirect:/realizar-test";
+		}
 
-        // 1. Calcular puntajes de intereses y aptitudes
-        Map<String, Integer> puntajesInteres = inicializarMapaPuntajes();
-        Map<String, Integer> puntajesAptitud = inicializarMapaPuntajes();
+		// 1. Calcular puntajes de intereses y aptitudes
+		Map<String, Integer> puntajesInteres = inicializarMapaPuntajes();
+		Map<String, Integer> puntajesAptitud = inicializarMapaPuntajes();
 
-        for (int i = 0; i < preguntas.size(); i++) {
-            if ("SI".equalsIgnoreCase(respuestas.get(i))) {
-                Pregunta p = preguntas.get(i);
-                String area = p.getCategoria();
-                String dimension = p.getDimension() != null ? p.getDimension() : "INTERES";
-                if ("INTERES".equalsIgnoreCase(dimension)) {
-                    puntajesInteres.merge(area, 1, Integer::sum);
-                } else {
-                    puntajesAptitud.merge(area, 1, Integer::sum);
-                }
-            }
-        }
+		for (int i = 0; i < preguntas.size(); i++) {
+			if ("SI".equalsIgnoreCase(respuestas.get(i))) {
+				Pregunta p = preguntas.get(i);
+				String area = p.getCategoria();
+				String dimension = p.getDimension() != null ? p.getDimension() : "INTERES";
+				if ("INTERES".equalsIgnoreCase(dimension)) {
+					puntajesInteres.merge(area, 1, Integer::sum);
+				} else {
+					puntajesAptitud.merge(area, 1, Integer::sum);
+				}
+			}
+		}
 
-        // 2. Obtener las áreas principales (top 2 con puntaje > 0)
-        List<String> interesesPrincipales = obtenerTopAreas(puntajesInteres);
-        List<String> aptitudesPrincipales = obtenerTopAreas(puntajesAptitud);
+		// 2. Obtener las áreas principales (top 2 con puntaje > 0)
+		List<String> interesesPrincipales = obtenerTopAreas(puntajesInteres);
+		List<String> aptitudesPrincipales = obtenerTopAreas(puntajesAptitud);
 
-        // 3. Construir nombres completos para la vista
-        String interesesNombres = interesesPrincipales.stream()
-                .map(NOMBRE_CATEGORIA::get)
-                .collect(Collectors.joining(" - "));
-        String aptitudesNombres = aptitudesPrincipales.stream()
-                .map(NOMBRE_CATEGORIA::get)
-                .collect(Collectors.joining(" - "));
+		// 3. Construir nombres completos para la vista
+		String interesesNombres = interesesPrincipales.stream().map(NOMBRE_CATEGORIA::get)
+				.collect(Collectors.joining(" - "));
+		String aptitudesNombres = aptitudesPrincipales.stream().map(NOMBRE_CATEGORIA::get)
+				.collect(Collectors.joining(" - "));
 
-        // 4. Guardar resultado en base de datos
-        if (testUsuario != null) {
-            try {
-                Resultado resultado = new Resultado();
-                resultado.setTest(testUsuario);
-                resultado.setFechaRealizacion(LocalDateTime.now());
+		// 4. Guardar resultado en base de datos
+		if (testUsuario != null) {
+			try {
+				Resultado resultado = new Resultado();
+				resultado.setTest(testUsuario);
+				resultado.setFechaRealizacion(LocalDateTime.now());
 
-                // Asignar TODOS los campos calculados
-                resultado.setInteresesPrincipales(String.join(",", interesesPrincipales));
-                resultado.setAptitudesPrincipales(String.join(",", aptitudesPrincipales));
-                resultado.setPuntajesInteres(puntajesInteres.toString());
-                resultado.setPuntajesAptitud(puntajesAptitud.toString());
+				resultado.setInteresesPrincipales(String.join(",", interesesPrincipales));
+				resultado.setAptitudesPrincipales(String.join(",", aptitudesPrincipales));
+				resultado.setPuntajesInteres(puntajesInteres.toString());
+				resultado.setPuntajesAptitud(puntajesAptitud.toString());
 
-                // Perfil combinado (para uso general)
-                String perfil = interesesPrincipales.stream().findFirst().orElse("") +
-                        (aptitudesPrincipales.stream().findFirst().isPresent() ? "+" + aptitudesPrincipales.get(0) : "");
-                resultado.setPerfil(perfil);
+				String perfil = interesesPrincipales.stream().findFirst().orElse("")
+						+ (aptitudesPrincipales.stream().findFirst().isPresent() ? "+" + aptitudesPrincipales.get(0)
+								: "");
+				resultado.setPerfil(perfil);
 
-                // Puntaje máximo (para ordenar)
-                int maxPuntaje = puntajesInteres.values().stream().max(Integer::compareTo).orElse(0);
-                resultado.setPuntaje(maxPuntaje);
+				int maxPuntaje = puntajesInteres.values().stream().max(Integer::compareTo).orElse(0);
+				resultado.setPuntaje(maxPuntaje);
 
-                resultadoService.guardar(resultado);
+				resultadoService.guardar(resultado);
+				testUsuario.setEstado("COMPLETADO");
+				testUsuarioService.guardar(testUsuario);
 
-                testUsuario.setEstado("COMPLETADO");
-                testUsuarioService.guardar(testUsuario);
+			} catch (Exception e) {
+				e.printStackTrace();
+				model.addAttribute("errorGuardado", "Error al guardar el resultado: " + e.getMessage());
+			}
+		}
 
-            } catch (Exception e) {
-                e.printStackTrace();
-                model.addAttribute("errorGuardado", "Error al guardar el resultado: " + e.getMessage());
-            }
-        }
+		// 5. Calcular valores máximos para escalar las barras
+		int maxInteres = puntajesInteres.values().stream().max(Integer::compareTo).orElse(1);
+		int maxAptitud = puntajesAptitud.values().stream().max(Integer::compareTo).orElse(1);
 
-        List<Map.Entry<String, Integer>> interesesOrdenados = puntajesInteres.entrySet().stream()
-                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-                .collect(Collectors.toList());
+		// 6. Perfil combinado
+		String perfilCombinado = interesesPrincipales.stream().findFirst().orElse("Sin interés") + " + "
+				+ aptitudesPrincipales.stream().findFirst().orElse("Sin aptitud");
 
-        List<Map.Entry<String, Integer>> aptitudesOrdenadas = puntajesAptitud.entrySet().stream()
-                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-                .collect(Collectors.toList());
+		// 7. Pasar datos al modelo
+		model.addAttribute("interesesPrincipales", interesesNombres);
+		model.addAttribute("aptitudesPrincipales", aptitudesNombres);
+		model.addAttribute("puntajesInteres", puntajesInteres); // <--- NUEVO: mapa para iterar en la vista
+		model.addAttribute("puntajesAptitud", puntajesAptitud); // <--- NUEVO
+		model.addAttribute("maxPuntaje", maxInteres); // <--- NUEVO
+		model.addAttribute("maxPuntajeAptitud", maxAptitud); // <--- NUEVO
+		model.addAttribute("perfilCombinado", perfilCombinado); // <--- NUEVO
+		model.addAttribute("totalPreguntas", preguntas.size());
+		model.addAttribute("nombresCategoria", NOMBRE_CATEGORIA);
 
-        model.addAttribute("interesesPrincipales", interesesNombres);
-        model.addAttribute("aptitudesPrincipales", aptitudesNombres);
-        model.addAttribute("puntajesInteresList", interesesOrdenados);
-        model.addAttribute("puntajesAptitudList", aptitudesOrdenadas);
-        model.addAttribute("nombresCategoria", NOMBRE_CATEGORIA);
-        model.addAttribute("totalPreguntas", preguntas.size());
+		String descripcion = "Tu perfil combina intereses en " + interesesNombres.toLowerCase() + " y aptitudes en "
+				+ aptitudesNombres.toLowerCase() + ".";
+		model.addAttribute("descripcion", descripcion);
 
-        String descripcion = "Tu perfil combina intereses en " + interesesNombres.toLowerCase()
-                + " y aptitudes en " + aptitudesNombres.toLowerCase() + ".";
-        model.addAttribute("descripcion", descripcion);
+		// Limpiar sesión
+		session.removeAttribute("preguntas");
+		session.removeAttribute("respuestas");
+		session.removeAttribute("indiceActual");
+		session.removeAttribute("testUsuario");
 
-        // Limpiar sesión
-        session.removeAttribute("preguntas");
-        session.removeAttribute("respuestas");
-        session.removeAttribute("indiceActual");
-        session.removeAttribute("testUsuario");
+		return "test-resultado";
+	}
 
-        return "test-resultado";
-    }
+	// MÉTODOS AUXILIARES PRIVADOS
 
-    //  MÉTODOS AUXILIARES PRIVADOS 
+	/**
+	 * Obtiene el usuario autenticado actualmente.
+	 * 
+	 * @return Objeto Usuario.
+	 */
+	private Usuario obtenerUsuarioAutenticado() {
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		return usuarioService.buscarPorUsername(auth.getName());
+	}
 
-    /** Obtiene el usuario autenticado actualmente.
-     * @return Objeto Usuario.
-     */
-    private Usuario obtenerUsuarioAutenticado() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return usuarioService.buscarPorUsername(auth.getName());
-    }
+	/**
+	 * Obtiene o crea el test con nombre "CHASIDE".
+	 * 
+	 * @return Objeto Test.
+	 */
+	private Test obtenerTestCHASIDE() {
+		Test test = testService.buscarPorNombre("CHASIDE");
+		if (test == null) {
+			test = new Test();
+			test.setNombre("CHASIDE");
+			test.setDescripcion("Test vocacional basado en categorías C-H-A-S-I-D-E");
+			test.setEstado(true);
+			test.setFechaCreacion(LocalDate.now());
+			test = testService.guardar(test);
+		}
+		return test;
+	}
 
-    /** Obtiene o crea el test con nombre "CHASIDE".
-     * @return Objeto Test.
-     */
-    private Test obtenerTestCHASIDE() {
-        Test test = testService.buscarPorNombre("CHASIDE");
-        if (test == null) {
-            test = new Test();
-            test.setNombre("CHASIDE");
-            test.setDescripcion("Test vocacional basado en categorías C-H-A-S-I-D-E");
-            test.setEstado(true);
-            test.setFechaCreacion(LocalDate.now());
-            test = testService.guardar(test);
-        }
-        return test;
-    }
+	/**
+	 * Método genérico para obtener una lista de la sesión.
+	 * 
+	 * @param session Sesión HTTP.
+	 * @param key     Clave del atributo.
+	 * @param <T>     Tipo de la lista.
+	 * @return Lista del tipo especificado.
+	 */
+	@SuppressWarnings("unchecked")
+	private <T> List<T> obtenerLista(HttpSession session, String key) {
+		return (List<T>) session.getAttribute(key);
+	}
 
-    /** Método genérico para obtener una lista de la sesión.
-     * @param session Sesión HTTP.
-     * @param key     Clave del atributo.
-     * @param <T>     Tipo de la lista.
-     * @return Lista del tipo especificado. */
-    @SuppressWarnings("unchecked")
-    private <T> List<T> obtenerLista(HttpSession session, String key) {
-        return (List<T>) session.getAttribute(key);
-    }
+	/**
+	 * Inicializa un mapa con las 7 áreas vocacionales con valor 0.
+	 * 
+	 * @return Mapa con claves C, H, A, S, I, D, E y valor 0.
+	 */
+	private Map<String, Integer> inicializarMapaPuntajes() {
+		Map<String, Integer> mapa = new HashMap<>();
+		for (String area : AREAS) {
+			mapa.put(area, 0);
+		}
+		return mapa;
+	}
 
-    /** Inicializa un mapa con las 7 áreas vocacionales con valor 0.
-     * @return Mapa con claves C, H, A, S, I, D, E y valor 0. */
-    private Map<String, Integer> inicializarMapaPuntajes() {
-        Map<String, Integer> mapa = new HashMap<>();
-        for (String area : AREAS) {
-            mapa.put(area, 0);
-        }
-        return mapa;
-    }
-
-    /** Obtiene las dos áreas con mayor puntaje (excluyendo las que tienen 0).
-     * @param puntajes Mapa de áreas y puntajes.
-     * @return Lista con las dos áreas principales. */
-    private List<String> obtenerTopAreas(Map<String, Integer> puntajes) {
-        return puntajes.entrySet().stream()
-                .filter(e -> e.getValue() > 0)
-                .sorted((a, b) -> b.getValue().compareTo(a.getValue()))
-                .limit(2)
-                .map(Map.Entry::getKey)
-                .collect(Collectors.toList());
-    }
+	/**
+	 * Obtiene las dos áreas con mayor puntaje (excluyendo las que tienen 0).
+	 * 
+	 * @param puntajes Mapa de áreas y puntajes.
+	 * @return Lista con las dos áreas principales.
+	 */
+	private List<String> obtenerTopAreas(Map<String, Integer> puntajes) {
+		return puntajes.entrySet().stream().filter(e -> e.getValue() > 0)
+				.sorted((a, b) -> b.getValue().compareTo(a.getValue())).limit(2).map(Map.Entry::getKey)
+				.collect(Collectors.toList());
+	}
 }

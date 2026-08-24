@@ -4,7 +4,7 @@
     --accent-blue: #3b82f6;
 }
 
-/* Evita desbordamiento horizontal */
+/* Previene desbordamiento horizontal en toda la página */
 * {
     max-width: 100%;
     box-sizing: border-box;
@@ -23,13 +23,13 @@ body {
     color: #333;
 }
 
-/* Contenedor principal con flex */
+/* Contenedor principal con flex para sidebar y contenido */
 .app-container {
     display: flex;
     min-height: 100vh;
 }
 
-/* Sidebar fijo (escritorio) */
+/* Sidebar fijo a la izquierda (escritorio) */
 .sidebar {
     position: fixed;
     top: 0;
@@ -101,7 +101,7 @@ body {
     min-height: 100vh;
 }
 
-/* Cabecera */
+/* Cabecera con título y datos de usuario */
 .header {
     display: flex;
     justify-content: space-between;
@@ -154,7 +154,7 @@ body {
     color: #0d6efd;
 }
 
-/* Offcanvas (menú móvil) con ancho fijo */
+/* Offcanvas para el menú en móvil */
 .offcanvas {
     --bs-offcanvas-width: 280px;
     width: 280px !important;
@@ -189,7 +189,7 @@ body {
     color: #333;
 }
 
-/* Sidebar colapsado (oculto) */
+/* Sidebar colapsado (oculto en desktop) */
 .app-container.sidebar-collapsed .sidebar {
     display: none !important;
 }
@@ -198,7 +198,7 @@ body {
     margin-left: 0 !important;
 }
 
-/* Elementos de home */
+/* Banner para administradores (original) */
 .welcome-banner {
     background: white;
     padding: 25px;
@@ -211,6 +211,80 @@ body {
     margin-top: 0;
 }
 
+/* Banner para estudiantes (nuevo) */
+.welcome-student {
+    background: white;
+    border-radius: 24px;
+    padding: 28px 30px 32px;
+    box-shadow: 0 8px 30px rgba(13, 110, 253, 0.10);
+    border-left: 6px solid #0d6efd;
+    margin-bottom: 30px;
+}
+.welcome-student .icono-titulo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+}
+.welcome-student .icono-titulo i {
+    font-size: 2rem;
+    color: #0d6efd;
+}
+.welcome-student .icono-titulo h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin: 0;
+}
+.welcome-student p {
+    color: #475569;
+    line-height: 1.6;
+    margin-bottom: 12px;
+    font-size: 1rem;
+}
+.welcome-student ul {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0;
+}
+.welcome-student ul li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    font-size: 0.95rem;
+    color: #1e293b;
+}
+.welcome-student ul li i {
+    width: 24px;
+    color: #0d6efd;
+    font-size: 1.1rem;
+}
+.btn-test-ahora {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: #0d6efd;
+    color: white;
+    padding: 14px 32px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    margin-top: 8px;
+}
+.btn-test-ahora:hover {
+    background: #1e40af;
+    transform: translateY(-2px);
+}
+.btn-test-ahora i {
+    font-size: 1.2rem;
+}
+
+/* Estadísticas (grid de tarjetas) */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -234,10 +308,20 @@ body {
     color: var(--primary-blue);
     margin: 0 0 8px 0;
 }
+.stat-card p {
+    margin: 0;
+    color: #64748b;
+}
 
+/* Accesos rápidos (solo administradores) */
 .quick-access h5 {
     color: #1e3a8a;
     margin-bottom: 15px;
+}
+.quick-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 .quick-buttons a {
     text-decoration: none;
@@ -264,8 +348,10 @@ body {
     box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3);
 }
 
-/* Responsive: móvil */
+/* ===== RESPONSIVE ===== */
+
 @media (max-width: 767px) {
+    /* Sidebar oculto en móvil */
     .sidebar {
         display: none !important;
     }
@@ -282,6 +368,50 @@ body {
     }
     .btn-toggle-sidebar {
         display: none !important;
+    }
+
+    /* Estadísticas: 2 arriba, 1 abajo */
+    .stats-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    .stats-grid .stat-card:nth-child(3) {
+        grid-column: 1 / -1;
+    }
+    .stat-card {
+        padding: 16px 12px;
+    }
+    .stat-card h3 {
+        font-size: 1.8rem;
+    }
+    .stat-card p {
+        font-size: 0.85rem;
+    }
+
+    /* Accesos rápidos: 2 por fila en móvil */
+    .quick-buttons {
+        gap: 10px;
+    }
+    .quick-buttons a {
+        width: calc(50% - 5px);
+        justify-content: center;
+        padding: 10px 12px;
+        font-size: 0.85rem;
+        flex: 0 0 calc(50% - 5px);
+        min-width: 0;
+    }
+
+    /* Banner para estudiantes en móvil */
+    .welcome-student {
+        padding: 20px 18px;
+    }
+    .welcome-student .icono-titulo h3 {
+        font-size: 1.3rem;
+    }
+    .btn-test-ahora {
+        width: 100%;
+        justify-content: center;
     }
 }
 
@@ -301,5 +431,38 @@ body {
         width: 32px;
         height: 32px;
         font-size: 0.8rem;
+    }
+    .stat-card h3 {
+        font-size: 1.5rem;
+    }
+    .quick-buttons a {
+        font-size: 0.8rem;
+        padding: 8px 10px;
+        flex: 0 0 calc(50% - 5px);
+    }
+    .welcome-banner {
+        padding: 16px 18px;
+    }
+    .welcome-banner h3 {
+        font-size: 1.1rem;
+    }
+    .welcome-student {
+        padding: 16px 14px;
+    }
+    .welcome-student .icono-titulo i {
+        font-size: 1.6rem;
+    }
+    .welcome-student .icono-titulo h3 {
+        font-size: 1.1rem;
+    }
+    .welcome-student p {
+        font-size: 0.9rem;
+    }
+    .welcome-student ul li {
+        font-size: 0.85rem;
+    }
+    .btn-test-ahora {
+        font-size: 0.9rem;
+        padding: 12px 24px;
     }
 }
