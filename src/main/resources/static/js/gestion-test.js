@@ -1,4 +1,4 @@
-// gestion-test.js - Lógica de filtros y botón flotante para la gestión de tests
+// gestion-test.js - Lógica de filtros, botón flotante y confirmación de estado
 
 (function() {
     'use strict';
@@ -13,15 +13,14 @@
 
         if (!tablaBody) return;
 
-        // Obtener todas las filas de la tabla (excepto la fila de "no hay datos")
         const allRows = Array.from(tablaBody.querySelectorAll('tr')).filter(row => {
             return !(row.querySelectorAll('td').length === 1 && row.querySelector('.text-muted'));
         });
 
         function aplicarFiltros() {
-            const nombre = filtroNombre.value.toLowerCase().trim();
-            const descripcion = filtroDescripcion.value.toLowerCase().trim();
-            const estado = filtroEstado.value;
+            const nombre = filtroNombre ? filtroNombre.value.toLowerCase().trim() : '';
+            const descripcion = filtroDescripcion ? filtroDescripcion.value.toLowerCase().trim() : '';
+            const estado = filtroEstado ? filtroEstado.value : '';
 
             allRows.forEach(row => {
                 const rowNombre = row.getAttribute('data-nombre')?.toLowerCase() || '';
@@ -38,18 +37,18 @@
             });
         }
 
-        // Eventos para filtros
-        filtroNombre.addEventListener('input', aplicarFiltros);
-        filtroDescripcion.addEventListener('input', aplicarFiltros);
-        filtroEstado.addEventListener('change', aplicarFiltros);
+        if (filtroNombre) filtroNombre.addEventListener('input', aplicarFiltros);
+        if (filtroDescripcion) filtroDescripcion.addEventListener('input', aplicarFiltros);
+        if (filtroEstado) filtroEstado.addEventListener('change', aplicarFiltros);
 
-        // Botón limpiar filtros
-        limpiarBtn.addEventListener('click', function() {
-            filtroNombre.value = '';
-            filtroDescripcion.value = '';
-            filtroEstado.value = '';
-            aplicarFiltros();
-        });
+        if (limpiarBtn) {
+            limpiarBtn.addEventListener('click', function() {
+                if (filtroNombre) filtroNombre.value = '';
+                if (filtroDescripcion) filtroDescripcion.value = '';
+                if (filtroEstado) filtroEstado.value = '';
+                aplicarFiltros();
+            });
+        }
     }
 
     // Botón flotante para subir
@@ -57,7 +56,6 @@
         const btnSubir = document.getElementById('btnSubir');
         if (!btnSubir) return;
 
-        // El contenedor con scroll es la tabla o su contenedor padre
         const tablaContainer = document.querySelector('.table-responsive');
         if (!tablaContainer) {
             btnSubir.style.display = 'none';
@@ -81,11 +79,10 @@
             });
         });
 
-        // Ejecutar una vez para verificar al cargar
         setTimeout(toggleBtnSubir, 300);
     }
 
-    // Manejar desactivación/activación de tests
+    // Manejar desactivación/activación de tests usando SweetAlert2
     function initDesactivar() {
         const botones = document.querySelectorAll('.btn-desactivar');
         botones.forEach(function(btn) {
@@ -94,20 +91,38 @@
                 const id = this.getAttribute('data-id');
                 const nombre = this.getAttribute('data-nombre');
                 const estadoActual = this.getAttribute('data-estado') === 'true';
-                const accion = estadoActual ? 'desactivar' : 'activar';
-                const mensaje = estadoActual
-                    ? `¿Estás seguro que quieres desactivar el test "${nombre}"?\nLos tests desactivados no se mostrarán en la lista de disponibles.`
-                    : `¿Estás seguro que quieres activar el test "${nombre}"?`;
 
-                if (confirm(mensaje)) {
-                    // Redirigir al endpoint de desactivar/activar
-                    window.location.href = '/gestion-test/desactivar/' + id;
+                const titulo = estadoActual ? '¿Desactivar Test?' : '¿Activar Test?';
+                const texto = estadoActual
+                    ? `¿Estás seguro que deseas desactivar el test "${nombre}"? No estará disponible en la evaluación.`
+                    : `¿Estás seguro que deseas activar el test "${nombre}"?`;
+                const confirmButtonText = estadoActual ? 'Sí, desactivar' : 'Sí, activar';
+                const confirmButtonColor = estadoActual ? '#dc3545' : '#198754';
+
+                if (typeof Swal !== 'undefined') {
+                    Swal.fire({
+                        title: titulo,
+                        text: texto,
+                        icon: estadoActual ? 'warning' : 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: confirmButtonColor,
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: confirmButtonText,
+                        cancelButtonText: 'Cancelar'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/gestion-test/alternar-estado/' + id;
+                        }
+                    });
+                } else {
+                    if (confirm(texto)) {
+                        window.location.href = '/gestion-test/alternar-estado/' + id;
+                    }
                 }
             });
         });
     }
 
-    // Inicializar todo al cargar el DOM
     document.addEventListener('DOMContentLoaded', function() {
         initFiltros();
         initBtnSubir();

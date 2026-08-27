@@ -32,12 +32,12 @@ public class UsuarioService {
             LocalDate fechaNac = usuario.getFecha_nacimiento().toLocalDate();
             LocalDate hoy = LocalDate.now();
 
-            // Verificar que no sea futura
+            // Verificar que no sea una fecha futura
             if (fechaNac.isAfter(hoy)) {
                 throw new RuntimeException("La fecha de nacimiento no puede ser futura.");
             }
 
-            // Calcular edad
+            // Calcular edad actual
             int edad = Period.between(fechaNac, hoy).getYears();
 
             // Verificar edad mínima (14 años)
@@ -57,7 +57,7 @@ public class UsuarioService {
                         throw new RuntimeException("El nombre de usuario ya está en uso.");
                     }
 
-                    // Actualización de datos
+                    // Actualización de datos permitidos
                     existente.setNombre(usuario.getNombre());
                     existente.setApellido(usuario.getApellido());
                     existente.setFecha_nacimiento(usuario.getFecha_nacimiento());
@@ -85,22 +85,58 @@ public class UsuarioService {
         }
     }
 
+    /**
+     * Cambia el estado del usuario al valor contrario al que tiene actualmente.
+     * 
+     * @param id ID del usuario.
+     * @return El nuevo estado resultante (true si quedó activo, false si quedó inactivo).
+     */
+    public boolean alternarEstado(int id) {
+        Usuario usuario = usuarioRepository.findById(id).orElse(null);
+        if (usuario != null) {
+            // Invierte el estado actual (si era true pasa a false, si era false o null pasa a true)
+            boolean estadoActual = usuario.getEstado() != null ? usuario.getEstado() : false;
+            boolean nuevoEstado = !estadoActual;
+            
+            usuario.setEstado(nuevoEstado);
+            usuarioRepository.save(usuario);
+            return nuevoEstado;
+        } else {
+            throw new RuntimeException("No se encontró el usuario especificado.");
+        }
+    }
+
+    /**
+     * Busca y retorna un usuario por su nombre de usuario (username).
+     */
     public Usuario buscarPorUsername(String username) {
         return usuarioRepository.findByUsername(username).orElse(null);
     }
 
+    /**
+     * Busca y retorna un usuario por su ID único.
+     */
     public Usuario buscarPorId(int id) {
         return usuarioRepository.findById(id).orElse(null);
     }
 
+    /**
+     * Retorna una lista con todos los usuarios registrados en el sistema.
+     */
     public List<Usuario> listarTodos() {
         return usuarioRepository.findAll();
     }
 
+    /**
+     * Elimina físicamente un usuario por su ID.
+     */
     public void eliminarUsuario(int id) {
         usuarioRepository.deleteById(id);
     }
-    //Retorna el número total de usuarios registrados en el sistema.
+
+    /**
+     * Retorna el número total de usuarios registrados en el sistema.
+     */
     public long count() {
         return usuarioRepository.count();
     }

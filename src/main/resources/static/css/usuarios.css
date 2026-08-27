@@ -1,209 +1,307 @@
-/* Estilos específicos para la página de gestión de usuarios */
-
-/* Asegura que ningún elemento desborde */
-* {
-    max-width: 100%;
-    box-sizing: border-box;
+/* Estilos especificos para la gestion de usuarios */
+/* Tarjetas del formulario y de la tabla */
+.form-card,
+.table-card {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
 }
 
 .form-card {
-    background: white;
-    border-radius: 16px;
-    padding: 18px 20px 20px;
-    box-shadow: 0 6px 20px rgba(13,110,253,0.08);
+    padding: 1.2rem !important;
+}
+
+.form-card .mb-3 {
+    margin-bottom: 0.8rem !important;
+}
+
+.form-card hr {
+    margin: 0.8rem 0;
+}
+
+/* Contenido principal con fondo degradado */
+.content {
+    background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.header-title {
+    color: #1e40af;
+    font-weight: 700;
     margin-bottom: 20px;
 }
-.form-card h5 {
-    font-size: 1rem;
-    color: #0d6efd;
-    margin-bottom: 14px;
-    font-weight: 600;
+
+/* Contenedor de la tabla con scroll vertical */
+.scrollable-table {
+    max-height: 600px;
+    overflow-y: auto;
 }
 
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px 20px;
-    margin-bottom: 16px;
+/* Encabezado fijo mientras se desplaza la tabla */
+.scrollable-table .table thead {
+    position: sticky;
+    top: 0;
+    z-index: 1;
 }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-.form-group label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: #1e293b;
-}
-.form-group small {
-    font-size: 0.7rem;
-    color: #6c757d;
-}
-
-.form-control, .form-select {
-    padding: 8px 10px;
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    font-size: 0.9rem;
-}
-.form-control:focus, .form-select:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 3px rgba(13,110,253,0.15);
-}
-
-.form-actions {
-    display: flex;
-    gap: 12px;
-}
-.form-actions .btn {
-    flex: 1;
-    padding: 10px;
-    font-weight: 600;
-    border-radius: 10px;
-}
-
-.table-card {
-    background: white;
-    border-radius: 16px;
-    padding: 16px 18px 12px;
-    box-shadow: 0 6px 20px rgba(13,110,253,0.08);
-}
-
-.table-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-.table-header h5 {
-    font-weight: 600;
-    color: #0d6efd;
-    font-size: 1rem;
-    margin: 0;
-}
-
-.table-toolbar {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-.table-toolbar .btn {
-    font-size: 0.8rem;
-    padding: 4px 12px;
-}
-
+/* Barra de filtros */
 .filter-bar {
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 8px 12px;
-    margin-bottom: 14px;
-}
-.filter-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px 12px;
-    align-items: center;
-}
-.filter-row .form-control,
-.filter-row .form-select {
-    flex: 1 1 140px;
-    min-width: 100px;
-    font-size: 0.8rem;
-    padding: 6px 10px;
-}
-.filter-row .btn {
-    font-size: 0.8rem;
-    padding: 6px 14px;
+    background: white;
+    border-radius: 15px;
+    padding: 12px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.table-responsive-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin: 0 -4px;
-    padding: 0 4px;
-}
+/* REGLAS PARA IMPRESION (SOBREESCRIBE BOOTSTRAP) */
+@media print {
 
-.table {
-    font-size: 0.85rem;
-    margin-bottom: 0;
-    min-width: 500px;
-}
-.table th {
-    white-space: nowrap;
-    padding: 10px 10px 8px 10px;
-    border-bottom: 2px solid #e9ecef;
-}
-.table td {
-    padding: 10px 10px;
-    border-bottom: 1px solid #f1f3f5;
-    vertical-align: middle;
-}
-.table td:last-child {
-    white-space: nowrap;
-}
-
-.table .badge {
-    font-size: 0.7rem;
-    padding: 3px 10px;
-}
-.table .btn-sm {
-    font-size: 0.8rem;
-    padding: 2px 6px;
-}
-
-@media (max-width: 767px) {
-    .form-grid {
-        grid-template-columns: 1fr;
-        gap: 12px;
+    /* Configura la hoja de impresion */
+    @page {
+        size: A4 portrait;
+        margin: 12mm;
     }
-    .form-card {
-        padding: 14px 16px 16px;
+
+    /* Oculta elementos que no deben imprimirse */
+    .no-print {
+        display: none !important;
     }
-    .form-actions {
-        flex-direction: column;
-        gap: 8px;
+
+    /* Corrige los margenes negativos de Bootstrap */
+    .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
-    .table-responsive-wrapper {
-        margin: 0 -10px;
-        padding: 0 10px;
+
+    /* Evita que el contenido sobresalga de la hoja */
+    .content,
+    .main-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow: visible !important;
+    }
+
+    /* Elimina el diseno visual de pantalla */
+    body,
+    .main-container,
+    .content,
+    .table-card {
+        background: #fff !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    /* Elimina espacios innecesarios */
+    .content {
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    /* La columna de la tabla ocupa todo el ancho */
+    .col-lg-7 {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 1. Destruimos el contenedor con scroll de Bootstrap */
+    .scrollable-table {
+        display: block !important;
+        position: static !important;
+        overflow: visible !important;
+        height: auto !important;
+        max-height: none !important;
+        width: 100% !important;
+    }
+
+    /* Configura la tabla general */
+    .table {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        table-layout: auto !important; 
+        border-collapse: collapse !important;
+        font-size: 9pt !important;
+    }
+
+    /* 2. Tratamos el encabezado como un grupo de filas normales */
+    .scrollable-table .table thead,
+    .table thead {
+        display: table-row-group !important;
+        position: static !important;
+    }
+
+    .table thead tr {
+        display: table-row !important;
+        position: static !important;
+        page-break-inside: avoid !important;
+    }
+
+    .table thead th {
+        display: table-cell !important;
+        position: static !important;
+        background-color: #1e40af !important;
+        color: #ffffff !important;
+        border: 1px solid #1e40af !important;
+        padding: 10px 8px !important; /* Espacio simétrico arriba y abajo */
+        height: auto !important;
+        font-size: 10pt !important;
+        line-height: 1.4 !important; /* Altura de línea adecuada para que respire el texto */
+        vertical-align: middle !important;
+        text-align: left !important;
+        overflow: visible !important;
+        white-space: normal !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Alineación específica para la columna ID */
+    .table th:first-child {
+        text-align: center !important;
+    }
+
+    /* 4. Asegura que los elementos internos no alteren el flujo */
+    .table thead th * {
+        display: inline !important;
+        visibility: visible !important;
+        margin: 0 !important;
+    }
+
+    /* Oculta la columna de acciones */
+    .table th:last-child,
+    .table td:last-child {
+        display: none !important;
+    }
+
+    /* Mantiene ocultas las filas filtradas */
+    .table tbody tr[style*="display: none"] {
+        display: none !important;
+    }
+
+    /* Evita dividir una fila entre paginas */
+    .table tbody tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+    }
+
+    /* Celdas de datos */
+    .table tbody td {
+        padding: 5px 6px !important;
+        border: 1px solid #dee2e6 !important;
+        font-size: 9pt !important;
+        line-height: 1.2 !important;
+        vertical-align: middle !important;
+    }
+
+    /* Anchos de columnas */
+    .table th:nth-child(1),
+    .table td:nth-child(1) {
+        width: 8% !important;
+        text-align: center !important;
+    }
+
+    .table th:nth-child(2),
+    .table td:nth-child(2) {
+        width: 37% !important;
+    }
+
+    .table th:nth-child(3),
+    .table td:nth-child(3) {
+        width: 20% !important;
+    }
+
+    .table th:nth-child(4),
+    .table td:nth-child(4) {
+        width: 17% !important;
+    }
+
+    .table th:nth-child(5),
+    .table td:nth-child(5) {
+        width: 18% !important;
+    }
+
+    /* Alterna el fondo de las filas */
+    .table tbody tr:nth-child(even) {
+        background-color: #f8f9fa !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Simplifica los badges */
+    .badge {
+        background: transparent !important;
+        color: #000 !important;
+        border: none !important;
+        padding: 0 !important;
+        font-weight: 600 !important;
+    }
+}
+
+/* ESTILOS ADICIONALES Y RESPONSIVE PARA LA TABLA DE USUARIOS */
+
+/* Ajustes de anchos específicos para columnas secundarias en escritorio */
+.th-nro {
+    width: 50px;
+    text-align: center;
+}
+
+.th-username {
+    max-width: 120px;
+}
+
+.th-rol {
+    width: 110px;
+}
+
+.th-estado {
+    width: 90px;
+}
+
+.th-acciones {
+    width: 110px;
+}
+
+/* Optimización responsive para dispositivos móviles (Max-width: 991.98px) */
+@media (max-width: 991.98px) {
+    /* Ocultamos temporalmente la columna de username en móviles para ahorrar espacio vital */
+    .th-username {
+        display: none !important;
+    }
+
+    /* Reducimos el padding y tamaño de fuente en las celdas táctiles */
+    .table td, .table th {
+        padding: 0.5rem 0.35rem !important;
+        font-size: 0.85rem;
+    }
+}
+
+/* Reglas especiales para la impresión de la tabla */
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    .columna-tabla-derecha, .columna-tabla-derecha * {
+        visibility: visible;
+    }
+    .columna-tabla-derecha {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100% !important;
+    }
+    .no-print {
+        display: none !important;
+    }
+    .scrollable-table {
+        max-height: none !important;
+        overflow: visible !important;
     }
     .table {
-        font-size: 0.8rem;
-        min-width: 460px;
-    }
-    .table th, .table td {
-        padding: 8px 6px;
-    }
-    .filter-row .form-control,
-    .filter-row .form-select {
-        flex: 1 1 100%;
-    }
-    .filter-row .btn {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .form-card {
-        padding: 12px 12px 14px;
-    }
-    .form-group label {
-        font-size: 0.8rem;
-    }
-    .form-control, .form-select {
-        font-size: 0.85rem;
-        padding: 6px 8px;
-    }
-    .table-toolbar .btn {
-        font-size: 0.7rem;
-        padding: 3px 8px;
-    }
-    .table .btn-sm {
-        font-size: 0.7rem;
-        padding: 2px 4px;
+        width: 100% !important;
     }
 }

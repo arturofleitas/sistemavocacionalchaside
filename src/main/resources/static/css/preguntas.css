@@ -1,8 +1,4 @@
-/* ==========================================================================
-   ESTILOS ESPECÍFICOS PARA LA GESTIÓN DE PREGUNTAS
-   ========================================================================== */
-
-/* ===== TARJETAS ===== */
+/* Tarjetas principales de la interfaz */
 .form-card,
 .table-card {
     background: rgba(255, 255, 255, 0.95);
@@ -10,25 +6,21 @@
     box-shadow: 0 10px 30px rgba(13, 110, 253, 0.15);
 }
 
-/* ===== CONTENIDO ===== */
+/* Contenedor general */
 .content {
     background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
     min-height: 100vh;
     padding: 30px;
 }
 
+/* Título de la cabecera principal */
 .header-title {
     color: #1e40af;
     font-weight: 700;
     margin-bottom: 25px;
 }
 
-/* ===== TABLA ===== */
-.scrollable-table {
-    max-height: 550px;
-    overflow-y: auto;
-}
-
+/* Barra superior de filtros */
 .filter-bar {
     background: white;
     border-radius: 15px;
@@ -37,127 +29,45 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* ==========================================================================
-   REGLAS EXCLUSIVAS DE IMPRESIÓN
-   ========================================================================== */
-@media print {
-    /* 1. Ocultar componentes web interactivos */
-    .no-print,
-    .sidebar,
-    .columna-formulario-izquierda,
-    .form-card,
-    .alert,
-    .filter-bar,
-    .cabecera-tabla,
-    .columna-acciones,
-    .user-info {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        width: 0 !important;
-        height: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-
-    /* 2. Limpiar fondos y resetear a blanco */
-    html, body, .content, .main-container, .row {
-        background: white !important;
-        background-color: white !important;
-        color: #334155 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-    }
-
-    /* 3. Cabecera con línea azul inferior */
-    .content > div.d-flex.justify-content-between {
-        border-bottom: 3px solid #1e40af !important;
-        padding-bottom: 12px !important;
-        margin-bottom: 35px !important;
-        display: flex !important;
-    }
-
-    .content h2.header-title {
-        color: #1e40af !important;
-        font-weight: 700 !important;
-        font-size: 22pt !important;
-        margin: 0 !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    /* 4. Forzar la tabla a ocupar todo el ancho */
-    .columna-tabla-derecha {
-        width: 100% !important;
-        max-width: 100% !important;
-        flex: 0 0 100% !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        display: block !important;
-    }
-
-    /* 5. Eliminar sombras y decoraciones */
-    .table-card {
-        box-shadow: none !important;
-        border: none !important;
-        background: transparent !important;
-        padding: 0 !important;
-    }
-
-    /* 6. Eliminar scroll para mostrar todas las filas */
-    .scrollable-table {
-        max-height: none !important;
-        overflow: visible !important;
-    }
-
-    /* 7. Tabla con cabecera azul institucional */
-    #preguntasTable {
-        width: 100% !important;
-        border-collapse: collapse !important;
-        border: 1px solid #e2e8f0 !important;
-        font-size: 11pt !important;
-        background-color: white !important;
-    }
-
-    #preguntasTable thead tr th {
-        background-color: #1e40af !important;
-        color: white !important;
-        padding: 12px 14px !important;
-        font-weight: bold !important;
-        text-align: left !important;
-        border: none !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    #preguntasTable tbody tr td {
-        padding: 12px 14px !important;
-        border-bottom: 1px solid #e2e8f0 !important;
-        color: #334155 !important;
-    }
-
-    #preguntasTable tbody tr:nth-child(even) {
-        background-color: #f8fafc !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-    }
-
-    /* 8. Badge de categoría en texto plano */
-    .text-badge-categoria {
-        background: transparent !important;
-        color: #0f172a !important;
-        padding: 0 !important;
-        font-weight: 600 !important;
-        border: none !important;
-        font-size: 11pt !important;
-    }
+/* Contenedor responsivo con scroll de la tabla */
+.contenedor-tabla-fisica {
+    max-height: 550px;
+    overflow-y: auto;
 }
 
-/* ============================================================
-   RESPONSIVE ESPECÍFICO
-   ============================================================ */
+/* Dimensiones fijas de columnas para equilibrar la tabla */
+.th-nro {
+    width: 45px;
+    text-align: center;
+}
 
+.th-categoria {
+    width: 60px;
+}
+
+.th-acciones {
+    width: 90px;
+}
+
+/* Botón flotante para scroll superior */
+.btn-flotante {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background-color: #0d6efd;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+}
+
+/* Ajustes de maquetación responsiva en móviles */
 @media (max-width: 767px) {
     .content {
         padding: 16px;
@@ -168,107 +78,96 @@
         margin-bottom: 0;
     }
 
-    /* El formulario ocupa todo el ancho */
-    .columna-formulario-izquierda {
-        flex: 0 0 100% !important;
-        max-width: 100% !important;
-    }
-
-    /* La tabla ocupa todo el ancho */
+    .columna-formulario-izquierda,
     .columna-tabla-derecha {
         flex: 0 0 100% !important;
         max-width: 100% !important;
-        margin-top: 20px;
     }
 
-    /* Filtros se apilan verticalmente */
-    .filter-bar .row .col-md-4,
-    .filter-bar .row .col-md-3,
-    .filter-bar .row .col-md-2 {
-        flex: 0 0 100%;
-        max-width: 100%;
-        margin-bottom: 8px;
+    /* Ocultar la columna Test en móviles para prevenir desbordamientos */
+    .col-test {
+        display: none !important;
     }
 
-    .filter-bar .row .col-md-2 {
-        margin-bottom: 0;
+    /* Formato compacto para celdas */
+    .table td, .table th {
+        padding: 0.5rem 0.35rem !important;
+        font-size: 0.85rem;
     }
 
-    /* Formulario más compacto */
-    .form-card {
-        padding: 1.2rem !important;
-    }
-
-    .form-card .mb-3 {
-        margin-bottom: 0.8rem !important;
-    }
-
-    .form-card .d-flex.gap-3 {
-        flex-direction: column;
-    }
-
-    .form-card .d-flex.gap-3 .btn {
-        width: 100%;
-    }
-
-    /* Tabla con scroll horizontal */
-    .scrollable-table {
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    .table {
-        min-width: 600px;
-        font-size: 0.9rem;
-    }
-
-    .table thead tr th,
-    .table tbody tr td {
-        padding: 8px 10px !important;
-    }
-
-    /* Cabecera de la tabla */
-    .cabecera-tabla {
-        flex-wrap: wrap;
-        gap: 8px;
-    }
-
-    .cabecera-tabla .d-flex.gap-2 {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        width: 100%;
-    }
-
-    .cabecera-tabla .d-flex.gap-2 .btn {
-        font-size: 0.8rem;
-        padding: 4px 10px;
+    /* Optimización de ancho para texto largo */
+    .pregunta-texto {
+        max-width: 180px;
+        white-space: normal;
+        word-break: break-word;
     }
 }
 
+/* Ajustes para dispositivos con pantallas pequeñas */
 @media (max-width: 480px) {
     .content {
         padding: 12px;
     }
 
-    .header-title {
-        font-size: 1.1rem;
+    .pregunta-texto {
+        max-width: 130px;
+    }
+}
+
+/* Estilos aplicados exclusivamente al imprimir */
+@media print {
+    .no-print,
+    .sidebar,
+    .columna-formulario-izquierda,
+    .form-card,
+    .alert,
+    .filter-bar,
+    .cabecera-tabla,
+    .columna-acciones,
+    .user-info,
+    .btn-flotante {
+        display: none !important;
     }
 
-    .cabecera-tabla .d-flex.gap-2 .btn {
-        font-size: 0.75rem;
-        padding: 4px 8px;
+    html, body, .content, .main-container, .row {
+        background: white !important;
+        color: #334155 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
     }
 
-    .form-card {
-        padding: 1rem !important;
+    .columna-tabla-derecha {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
     }
 
-    .table {
-        font-size: 0.8rem;
+    .table-card {
+        box-shadow: none !important;
+        border: none !important;
     }
 
-    .table thead tr th,
-    .table tbody tr td {
-        padding: 6px 8px !important;
+    .contenedor-tabla-fisica {
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    #preguntasTable {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        border: 1px solid #e2e8f0 !important;
+        font-size: 11pt !important;
+    }
+
+    #preguntasTable thead tr th {
+        background-color: #1e40af !important;
+        color: white !important;
+        padding: 10px !important;
+    }
+
+    #preguntasTable tbody tr td {
+        padding: 10px !important;
+        border-bottom: 1px solid #e2e8f0 !important;
     }
 }

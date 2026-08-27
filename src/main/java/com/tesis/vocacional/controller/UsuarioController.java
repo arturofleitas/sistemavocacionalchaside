@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.beans.PropertyEditorSupport;
 
@@ -54,7 +55,7 @@ public class UsuarioController {
             @Override
             public void setAsText(String text) {
                 if (text == null || text.trim().isEmpty()) {
-                    setValue(0); // valor por defecto si está vacío (opcional)
+                    setValue(0);
                 } else {
                     try {
                         long valor = Long.parseLong(text.trim());
@@ -64,7 +65,6 @@ public class UsuarioController {
                         setValue((int) valor);
                     } catch (NumberFormatException e) {
                         setValue(null);
-                        // Lanzar una excepción de validación personalizada
                         throw new IllegalArgumentException("Cédula inválida: debe ser un número entero entre 0 y 2,147,483,647");
                     }
                 }
@@ -73,7 +73,7 @@ public class UsuarioController {
     }
 
     /**
-     * Muestra la página de gestión de usuarios.
+     * Muestra la página de gestión de usuarios con la lista y el formulario vacío.
      */
     @GetMapping
     public String mostrarUsuarios(Model model) {
@@ -83,8 +83,7 @@ public class UsuarioController {
     }
 
     /**
-     * Muestra el formulario de edición con los datos del usuario.
-     * Si el ID es válido, carga el usuario; si no, redirige a la lista.
+     * Muestra el formulario de edición cargando los datos del usuario seleccionado.
      */
     @GetMapping("/editar/{id}")
     public String editarUsuario(@PathVariable int id, Model model) {
@@ -99,13 +98,10 @@ public class UsuarioController {
     }
 
     /**
-     * Guarda (crea o actualiza) un usuario.
-     * Encripta la contraseña si es nueva.
-     * Captura errores de validación (como cédula inválida) y los muestra en la vista.
+     * Guarda (crea o actualiza) un usuario gestionando la encriptación de contraseñas.
      */
     @PostMapping("/guardar")
     public String guardarUsuario(@ModelAttribute Usuario usuario, BindingResult bindingResult, Model model) {
-        // Si hay errores de conversión (como cédula inválida), se añaden mensajes
         if (bindingResult.hasErrors()) {
             model.addAttribute("error", "Error en el formulario: " + bindingResult.getAllErrors().get(0).getDefaultMessage());
             model.addAttribute("usuarios", usuarioService.listarTodos());
@@ -114,11 +110,10 @@ public class UsuarioController {
         }
 
         try {
-            // Encriptar contraseña solo si se proporcionó una nueva
+            // Encriptar contraseña solo si se proporcionó una nueva o no está vacía
             if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()) {
                 usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
             } else {
-                // Si es edición y la contraseña está vacía, mantener la existente
                 if (usuario.getId() > 0) {
                     Usuario existing = usuarioService.buscarPorId(usuario.getId());
                     if (existing != null && existing.getPassword() != null) {
@@ -138,11 +133,17 @@ public class UsuarioController {
     }
 
     /**
-     * Elimina un usuario por su ID.
+     * Alterna el estado del usuario (si está activo lo desactiva, y viceversa).
      */
-    @GetMapping("/eliminar/{id}")
-    public String eliminarUsuario(@PathVariable int id) {
-        usuarioService.eliminarUsuario(id);
+    @GetMapping("/alternar-estado/{id}")
+    public String alternarEstadoUsuario(@PathVariable int id, RedirectAttributes redirectAttributes) {
+        try {
+            boolean nuevoEstado = usuarioService.alternarEstado(id);
+            String mensaje = nuevoEstado ? "El usuario ha sido activado correctamente." : "El usuario ha sido desactivado correctamente.";
+            redirectAttributes.addFlashAttribute("success", mensaje);
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
+        }
         return "redirect:/usuarios";
     }
 }

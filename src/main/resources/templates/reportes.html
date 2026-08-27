@@ -19,9 +19,12 @@
 
         <!-- Contenido principal -->
         <div class="content">
-            
+
             <!-- Encabezado con botón hamburguesa y datos del usuario -->
-            <div class="header">
+            <!-- Clase "no-print" agregada: al imprimir, este bloque completo (título, ícono
+                 hamburguesa y "Bienvenido, X") no debe salir; solo debe verse el encabezado
+                 "Historial de evaluaciones" y la tabla de resultados. -->
+            <div class="header no-print">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
                         <i class="fas fa-bars"></i>
@@ -29,7 +32,9 @@
                     <h2 class="header-title"><i class="fas fa-chart-line me-2"></i>Reportes y Estadísticas</h2>
                 </div>
                 <div class="d-flex gap-3 align-items-center user-info no-print">
-                    <button onclick="window.print();" class="btn btn-sm btn-outline-primary">
+                    <!-- Clase btn-imprimir agregada para que el botón sea un poco más grande (ver reportes.css) -->
+                    <!-- El evento de impresión ya no va inline: se asigna desde reportes.js -->
+                    <button id="btnImprimir" type="button" class="btn btn-outline-primary btn-imprimir">
                         <i class="fas fa-print me-1"></i>Imprimir Reporte
                     </button>
                     <span class="fw-semibold text-primary">Bienvenido, <span sec:authentication="name"></span></span>
@@ -39,7 +44,7 @@
             <!-- Offcanvas para móvil (menú desplegable) -->
             <div th:replace="~{fragments/menu :: offcanvas}"></div>
 
-            <!-- Barra de filtros -->
+            <!-- Barra de filtros (misma estructura para ambos roles, solo cambia si se ve "Filtrar por alumno") -->
             <div class="filter-bar no-print" id="filtrosReportes">
                 <div class="row g-2 g-md-3 align-items-end">
                     <!-- Filtro por alumno (solo administradores) -->
@@ -64,87 +69,95 @@
                 </div>
             </div>
 
-            <!-- Contenedor de la lista de evaluaciones -->
-            <div id="contenedorLista" style="position: relative;">
-                <!-- Vista para administrador -->
-                <div th:if="${rol == 'ADMIN'}">
-                    <div class="table-responsive-custom">
-                        <h5 class="mb-3"><i class="fas fa-history me-2"></i>Historial de evaluaciones</h5>
-                        <div style="max-height: 500px; overflow-y: auto;" id="scrollableTable">
-                            <table class="table table-hover" id="tablaReportes">
-                                <thead class="table-light sticky-top">
-                                    <tr>
-                                        <th>Alumno</th>
-                                        <th>Fecha</th>
-                                        <th>Perfil</th>
-                                        <th>Puntaje</th>
-                                        <th>Detalle</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="tablaReportesBody">
-                                    <tr th:if="${resultados == null || resultados.isEmpty()}">
-                                        <td colspan="5" class="text-center text-muted">No se encontraron evaluaciones.</td>
-                                    </tr>
-                                    <tr th:each="res : ${resultados}" 
-                                        th:attr="data-nombre=${res.test.usuario.nombre + ' ' + res.test.usuario.apellido},
-                                                 data-fecha=${res.fechaRealizacion}">
-                                        <td th:text="${res.test.usuario.nombre + ' ' + res.test.usuario.apellido}">-</td>
-                                        <td th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">-</td>
-                                        <td th:text="${res.getNombrePerfil()}">-</td>
-                                        <td th:text="${res.puntaje}">-</td>
-                                        <td>
-                                            <a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}" class="btn btn-sm btn-info">
-                                                <i class="fas fa-eye"></i> Ver respuestas
-                                            </a>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+            <!-- Mensaje informativo (solo estudiante) -->
+            <div class="alert alert-info no-print" th:if="${rol == 'ESTUDIANTE'}">
+                <i class="fas fa-info-circle"></i> <strong>Aquí puedes ver tus evaluaciones realizadas.</strong>
+                <br>Selecciona una para ver el detalle de tus respuestas.
+            </div>
 
-                <!-- Vista para estudiante -->
-                <div th:if="${rol == 'ESTUDIANTE'}">
-                    <div class="alert alert-info no-print">
-                        <i class="fas fa-info-circle"></i> <strong>Aquí puedes ver tus evaluaciones realizadas.</strong>
-                        <br>Selecciona una para ver el detalle de tus respuestas.
-                    </div>
+            <!--
+                Estado vacío exclusivo del estudiante (invita a realizar el primer test).
+                El admin, si no hay resultados, simplemente ve la fila "No se encontraron
+                evaluaciones." dentro de la tabla (ver más abajo), por lo que este bloque
+                solo aplica cuando el rol es ESTUDIANTE.
+            -->
+            <div th:if="${rol == 'ESTUDIANTE' and (resultados == null || resultados.isEmpty())}"
+                 class="text-center p-5 bg-light rounded-4">
+                <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                <h4>Aún no has realizado ningún test</h4>
+                <a th:href="@{/realizar-test}" class="btn btn-primary">Iniciar test ahora</a>
+            </div>
 
-                    <div th:if="${resultados == null || resultados.isEmpty()}" class="text-center p-5 bg-light rounded-4">
-                        <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
-                        <h4>Aún no has realizado ningún test</h4>
-                        <a th:href="@{/realizar-test}" class="btn btn-primary">Iniciar test ahora</a>
-                    </div>
-
-                    <div th:unless="${resultados == null || resultados.isEmpty()}">
-                        <div class="container-reportes no-print" id="containerReportesEstudiante" style="max-height: 500px; overflow-y: auto;">
-                            <div class="lista-evaluaciones" id="listaEvaluaciones">
-                                <div class="card-evaluacion" th:each="res : ${resultados}">
-                                    <div class="info">
-                                        <div class="fecha">
-                                            <i class="far fa-calendar-alt"></i>
-                                            <span th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}"></span>
-                                        </div>
-                                        <div class="perfil">
-                                            <span th:text="${res.getNombrePerfil()}"></span>
-                                            <small>+</small>
-                                            <span th:text="${res.aptitudesPrincipales != null ? res.aptitudesPrincipales : ''}"></span>
-                                        </div>
-                                        <div class="puntaje">
-                                            <i class="fas fa-star" style="color:#f59e0b;"></i>
-                                            Puntaje: <span th:text="${res.puntaje}"></span>
-                                        </div>
-                                    </div>
-                                    <div class="accion">
-                                        <a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}">
-                                            <i class="fas fa-eye"></i> Ver respuestas
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <!--
+                TABLA ÚNICA de historial de evaluaciones, usada tanto por ADMIN como por ESTUDIANTE.
+                Se oculta completamente cuando el estudiante no tiene resultados (ya se mostró
+                el estado vacío arriba). Para el admin siempre se muestra (aunque esté vacía,
+                muestra el mensaje "No se encontraron evaluaciones." dentro del tbody).
+            -->
+            <div class="table-responsive-custom"
+                 th:if="${rol == 'ADMIN' || !(resultados == null || resultados.isEmpty())}">
+                <h5 class="mb-3"><i class="fas fa-history me-2"></i>Historial de evaluaciones</h5>
+                <div style="max-height: 500px; overflow-y: auto;" id="scrollableTable">
+                    <!--
+                        La clase "tabla-admin" / "tabla-estudiante" en la tabla permite que el CSS
+                        (reportes.css) afine el ancho de columnas de forma distinta según el rol,
+                        sobre todo en mobile, sin duplicar HTML.
+                    -->
+                    <table class="table table-hover"
+                           id="tablaReportes"
+                           th:classappend="${rol == 'ADMIN'} ? 'tabla-admin' : 'tabla-estudiante'">
+                        <thead class="table-light sticky-top">
+                            <tr>
+                                <!-- Columna de numeración correlativa (1, 2, 3...), igual para ambos roles -->
+                                <th class="col-index">#</th>
+                                <!-- Columna "Alumno" solo tiene sentido para el admin -->
+                                <th class="col-alumno" th:if="${rol == 'ADMIN'}">Alumno</th>
+                                <th class="col-fecha">Fecha</th>
+                                <th class="col-perfil">Perfil</th>
+                                <!--
+                                    Puntaje: en desktop se muestra siempre (hay espacio de sobra).
+                                    En mobile, se oculta SOLO para admin (ver reportes.css, regla
+                                    .tabla-admin .col-puntaje), porque ahí el espacio lo necesita
+                                    la columna Alumno. Para estudiante, en mobile, sí se ve.
+                                -->
+                                <th class="col-puntaje">Puntaje</th>
+                                <th class="col-detalle">Detalle</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaReportesBody">
+                            <!-- Fila de "sin datos" -->
+                            <tr th:if="${resultados == null || resultados.isEmpty()}">
+                                <td th:attr="colspan=${rol == 'ADMIN'} ? 6 : 5" class="text-center text-muted">
+                                    No se encontraron evaluaciones.
+                                </td>
+                            </tr>
+                            <!--
+                                Fila de datos. Los atributos data-nombre y data-fecha se agregan
+                                siempre (los use el admin para filtrar o no), ya que no afectan
+                                al estudiante y así reportes.js funciona igual para ambos roles.
+                            -->
+                            <!--
+                                Se agrega la variable de iteración "iterStat" (propia de Thymeleaf)
+                                para poder numerar las filas de forma correlativa con iterStat.count,
+                                sin depender de ningún campo de la base de datos.
+                            -->
+                            <tr th:each="res, iterStat : ${resultados}"
+                                th:attr="data-nombre=${res.test.usuario.nombre + ' ' + res.test.usuario.apellido},
+                                         data-fecha=${res.fechaRealizacion}">
+                                <td class="col-index" th:text="${iterStat.count}">1</td>
+                                <td class="col-alumno" th:if="${rol == 'ADMIN'}" th:text="${res.test.usuario.nombre + ' ' + res.test.usuario.apellido}">-</td>
+                                <td class="col-fecha" th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">-</td>
+                                <td class="col-perfil" th:text="${res.getNombrePerfil()}">-</td>
+                                <td class="col-puntaje" th:text="${res.puntaje}">-</td>
+                                <td class="col-detalle">
+                                    <a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}" class="btn btn-sm btn-info">
+                                        <!-- El texto "Ver" se oculta en pantallas muy angostas (< 576px), dejando solo el ícono, para ahorrar espacio -->
+                                        <i class="fas fa-eye"></i> <span class="d-none d-sm-inline">Ver</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -159,50 +172,5 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script th:src="@{/js/reportes.js}"></script>
-
-    <!-- Script para controlar la visibilidad del botón flotante (solo en móvil) -->
-    <script>
-        (function() {
-            'use strict';
-
-            const btnSubir = document.getElementById('btnSubir');
-            // Solo ejecutar si el botón existe (visible en móvil)
-            if (!btnSubir) return;
-
-            const scrollableTable = document.getElementById('scrollableTable');
-            const containerReportes = document.getElementById('containerReportesEstudiante');
-            let scrollContainer = null;
-
-            if (scrollableTable) {
-                scrollContainer = scrollableTable;
-            } else if (containerReportes) {
-                scrollContainer = containerReportes;
-            }
-
-            if (!scrollContainer) {
-                btnSubir.style.display = 'none';
-                return;
-            }
-
-            function toggleBtnSubir() {
-                if (scrollContainer.scrollTop > 200) {
-                    btnSubir.style.display = 'flex';
-                } else {
-                    btnSubir.style.display = 'none';
-                }
-            }
-
-            scrollContainer.addEventListener('scroll', toggleBtnSubir);
-
-            btnSubir.addEventListener('click', function() {
-                scrollContainer.scrollTo({
-                    top: 0,
-                    behavior: 'smooth'
-                });
-            });
-
-            setTimeout(toggleBtnSubir, 300);
-        })();
-    </script>
 </body>
 </html>
