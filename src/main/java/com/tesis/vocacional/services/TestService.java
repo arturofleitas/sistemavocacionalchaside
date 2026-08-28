@@ -26,6 +26,10 @@ public class TestService {
 		return testRepository.findAll();
 	}
 
+	public List<Test> listarActivos() {
+		return testRepository.findByEstadoTrue();
+	}
+
 	public Test guardar(Test test) {
 		return testRepository.save(test);
 	}

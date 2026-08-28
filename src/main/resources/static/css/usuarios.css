@@ -1,5 +1,6 @@
-/* Estilos especificos para la gestion de usuarios */
-/* Tarjetas del formulario y de la tabla */
+/* Estilos específicos para la gestión de usuarios */
+
+/* Tarjetas (formulario y tabla) */
 .form-card,
 .table-card {
     background: rgba(255, 255, 255, 0.95);
@@ -19,7 +20,7 @@
     margin: 0.8rem 0;
 }
 
-/* Contenido principal con fondo degradado */
+/* Fondo degradado del contenido principal */
 .content {
     background: linear-gradient(135deg, #f0f7ff 0%, #e0f0ff 100%);
     min-height: 100vh;
@@ -32,17 +33,56 @@
     margin-bottom: 20px;
 }
 
-/* Contenedor de la tabla con scroll vertical */
+/* Tabla con scroll interno */
 .scrollable-table {
     max-height: 600px;
     overflow-y: auto;
 }
 
-/* Encabezado fijo mientras se desplaza la tabla */
-.scrollable-table .table thead {
-    position: sticky;
-    top: 0;
-    z-index: 1;
+/* Botón flotante para volver arriba */
+.btn-flotante {
+    display: none;
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 1000;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #0d6efd;
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(13, 110, 253, 0.3);
+    font-size: 1.4rem;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.btn-flotante:hover {
+    background: #1e40af;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
+}
+
+@media (max-width: 767px) {
+    .btn-flotante {
+        bottom: 20px;
+        right: 20px;
+        width: 44px;
+        height: 44px;
+        font-size: 1.2rem;
+    }
+}
+
+/* Sticky solo en pantalla (se quita al imprimir con JavaScript) */
+@media screen {
+    .sticky-header {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
 }
 
 /* Barra de filtros */
@@ -54,52 +94,143 @@
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-/* REGLAS PARA IMPRESION (SOBREESCRIBE BOOTSTRAP) */
+/* Anchos de columna base (desktop) */
+.th-nro {
+    width: 50px;
+    text-align: center;
+}
+
+/* Contenido de la tabla de usuarios centrado */
+#tablaUsuarios th,
+#tablaUsuarios td {
+    text-align: center;
+}
+
+/* Nombre completo: el texto baja (no se expande a los costados) */
+#tablaUsuarios .th-nombre {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    min-width: 120px;
+}
+
+/* Badges: el fondo cubre todo el texto sin desbordarse */
+#tablaUsuarios .badge {
+    display: inline-block;
+    white-space: nowrap;
+    padding: 0.3em 0.6em;
+    vertical-align: middle;
+}
+.th-nombre {
+    white-space: normal;
+    word-break: break-word;
+}
+.th-username {
+    max-width: 120px;
+}
+.th-rol {
+    width: 110px;
+}
+.th-estado {
+    width: 90px;
+}
+.th-edad {
+    width: 60px;
+    text-align: center;
+}
+.th-registro {
+    width: 95px;
+}
+.th-acciones {
+    width: 110px;
+}
+
+/* Responsive mobile */
+@media screen and (max-width: 991.98px) {
+    .th-username,
+    .th-edad,
+    .th-registro {
+        display: none !important;
+    }
+
+    #tablaUsuarios {
+        table-layout: fixed;
+        width: 100%;
+    }
+
+    .th-nro      { width: 8%; }
+    .th-nombre   { width: 26%; }
+    .th-rol      { width: 22%; }
+    .th-estado   { width: 18%; }
+    .th-acciones { width: 26%; }
+
+    .table .badge {
+        text-transform: capitalize;
+        font-size: 0.68rem;
+        padding: 3px 8px;
+        white-space: nowrap;
+    }
+
+    .table td, .table th {
+        padding: 0.5rem 0.35rem !important;
+        font-size: 0.85rem;
+    }
+}
+
+/* Ajustes para impresión */
 @media print {
 
-    /* Configura la hoja de impresion */
+    /* Oculta controles que no deben imprimirse */
+    .no-print {
+        display: none !important;
+    }
+
+    /* Configura el tamaño y margen de la hoja */
     @page {
         size: A4 portrait;
         margin: 12mm;
     }
 
-    /* Oculta elementos que no deben imprimirse */
-    .no-print {
-        display: none !important;
+    /* Encabezado de la página (título) visible en la impresión */
+    .header {
+        display: block !important;
+        margin: 0 0 12px !important;
+        padding: 0 0 8px !important;
+        border-bottom: 2px solid #1e40af !important;
     }
 
-    /* Corrige los margenes negativos de Bootstrap */
-    .row {
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+    .header h2 {
+        color: #000 !important;
+        font-size: 14pt !important;
+        font-weight: 700 !important;
+        margin: 0 !important;
     }
 
-    /* Evita que el contenido sobresalga de la hoja */
-    .content,
-    .main-container {
-        width: 100% !important;
-        max-width: 100% !important;
-        overflow: visible !important;
-    }
-
-    /* Elimina el diseno visual de pantalla */
+    /* Elimina el diseño de pantalla */
     body,
-    .main-container,
     .content,
+    .main-container,
     .table-card {
-        background: #fff !important;
+        background: white !important;
         box-shadow: none !important;
         border: none !important;
     }
 
-    /* Elimina espacios innecesarios */
+    /* Elimina espacios externos innecesarios */
     .content {
         padding: 0 !important;
         margin: 0 !important;
     }
 
-    /* La columna de la tabla ocupa todo el ancho */
-    .col-lg-7 {
+    /* Corrige el ancho de Bootstrap */
+    .row {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* La tabla ocupa todo el ancho */
+    .col-lg-7,
+    .columna-tabla-derecha {
         width: 100% !important;
         max-width: 100% !important;
         flex: 0 0 100% !important;
@@ -107,201 +238,130 @@
         padding: 0 !important;
     }
 
-    /* 1. Destruimos el contenedor con scroll de Bootstrap */
+    /* Elimina el scroll durante la impresión */
+    .table-responsive,
     .scrollable-table {
-        display: block !important;
-        position: static !important;
         overflow: visible !important;
-        height: auto !important;
         max-height: none !important;
         width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 
-    /* Configura la tabla general */
-    .table {
+    /* Desactiva sticky sin quitar la clase */
+    .sticky-header {
+        position: static !important;
+        top: auto !important;
+        z-index: auto !important;
+    }
+
+    /* Configuración de la tabla */
+    #tablaUsuarios {
         width: 100% !important;
         max-width: 100% !important;
         margin: 0 !important;
-        box-sizing: border-box !important;
-        table-layout: auto !important; 
+        table-layout: fixed !important;
         border-collapse: collapse !important;
-        font-size: 9pt !important;
     }
 
-    /* 2. Tratamos el encabezado como un grupo de filas normales */
-    .scrollable-table .table thead,
-    .table thead {
-        display: table-row-group !important;
-        position: static !important;
+    /* Encabezado visible y completo */
+    #tablaUsuarios thead {
+        display: table-header-group !important;
     }
 
-    .table thead tr {
+    #tablaUsuarios thead tr {
         display: table-row !important;
-        position: static !important;
-        page-break-inside: avoid !important;
     }
 
-    .table thead th {
+    #tablaUsuarios thead th {
         display: table-cell !important;
-        position: static !important;
         background-color: #1e40af !important;
-        color: #ffffff !important;
-        border: 1px solid #1e40af !important;
-        padding: 10px 8px !important; /* Espacio simétrico arriba y abajo */
+        color: white !important;
+        font-size: 9pt !important;
+        font-weight: bold !important;
+        padding: 8px 6px !important;
+        line-height: 1.2 !important;
         height: auto !important;
-        font-size: 10pt !important;
-        line-height: 1.4 !important; /* Altura de línea adecuada para que respire el texto */
+        min-height: 30px !important;
         vertical-align: middle !important;
-        text-align: left !important;
-        overflow: visible !important;
         white-space: normal !important;
+        text-align: center !important;
+        letter-spacing: 0 !important;
+        text-transform: none !important;
+        overflow: visible !important;
+        border: 1px solid #1e40af !important;
+
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
-        box-sizing: border-box !important;
     }
 
-    /* Alineación específica para la columna ID */
-    .table th:first-child {
-        text-align: center !important;
+    /* Mantiene visibles las filas que pasan el filtro */
+    #tablaUsuarios tbody tr {
+        display: table-row;
     }
 
-    /* 4. Asegura que los elementos internos no alteren el flujo */
-    .table thead th * {
-        display: inline !important;
-        visibility: visible !important;
-        margin: 0 !important;
+    /* Oculta las filas eliminadas por el filtro */
+    #tablaUsuarios tbody tr[style*="display: none"] {
+        display: none !important;
     }
 
     /* Oculta la columna de acciones */
-    .table th:last-child,
-    .table td:last-child {
+    #tablaUsuarios .th-acciones {
         display: none !important;
     }
 
-    /* Mantiene ocultas las filas filtradas */
-    .table tbody tr[style*="display: none"] {
-        display: none !important;
+    /* Define el ancho de las columnas */
+    #tablaUsuarios .th-nro {
+        width: 6% !important;
+        text-align: center !important;
     }
 
-    /* Evita dividir una fila entre paginas */
-    .table tbody tr {
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
+    #tablaUsuarios .th-nombre {
+        width: 29% !important;
     }
 
-    /* Celdas de datos */
-    .table tbody td {
-        padding: 5px 6px !important;
-        border: 1px solid #dee2e6 !important;
-        font-size: 9pt !important;
-        line-height: 1.2 !important;
-        vertical-align: middle !important;
+    #tablaUsuarios .th-username {
+        width: 13% !important;
     }
 
-    /* Anchos de columnas */
-    .table th:nth-child(1),
-    .table td:nth-child(1) {
+    #tablaUsuarios .th-edad {
         width: 8% !important;
         text-align: center !important;
     }
 
-    .table th:nth-child(2),
-    .table td:nth-child(2) {
-        width: 37% !important;
+    #tablaUsuarios .th-registro {
+        width: 15% !important;
     }
 
-    .table th:nth-child(3),
-    .table td:nth-child(3) {
-        width: 20% !important;
-    }
-
-    .table th:nth-child(4),
-    .table td:nth-child(4) {
+    #tablaUsuarios .th-rol {
         width: 17% !important;
     }
 
-    .table th:nth-child(5),
-    .table td:nth-child(5) {
-        width: 18% !important;
+    #tablaUsuarios .th-estado {
+        width: 12% !important;
     }
 
-    /* Alterna el fondo de las filas */
-    .table tbody tr:nth-child(even) {
-        background-color: #f8f9fa !important;
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
+    /* Ajusta las celdas */
+    #tablaUsuarios tbody td {
+        font-size: 9pt !important;
+        padding: 5px 6px !important;
+        border: 1px solid #dee2e6 !important;
+        vertical-align: middle !important;
+        line-height: 1.2 !important;
+    }
+
+    /* Evita dividir una fila entre páginas */
+    #tablaUsuarios tbody tr {
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
     }
 
     /* Simplifica los badges */
-    .badge {
+    #tablaUsuarios .badge {
         background: transparent !important;
         color: #000 !important;
-        border: none !important;
         padding: 0 !important;
+        border: none !important;
         font-weight: 600 !important;
-    }
-}
-
-/* ESTILOS ADICIONALES Y RESPONSIVE PARA LA TABLA DE USUARIOS */
-
-/* Ajustes de anchos específicos para columnas secundarias en escritorio */
-.th-nro {
-    width: 50px;
-    text-align: center;
-}
-
-.th-username {
-    max-width: 120px;
-}
-
-.th-rol {
-    width: 110px;
-}
-
-.th-estado {
-    width: 90px;
-}
-
-.th-acciones {
-    width: 110px;
-}
-
-/* Optimización responsive para dispositivos móviles (Max-width: 991.98px) */
-@media (max-width: 991.98px) {
-    /* Ocultamos temporalmente la columna de username en móviles para ahorrar espacio vital */
-    .th-username {
-        display: none !important;
-    }
-
-    /* Reducimos el padding y tamaño de fuente en las celdas táctiles */
-    .table td, .table th {
-        padding: 0.5rem 0.35rem !important;
-        font-size: 0.85rem;
-    }
-}
-
-/* Reglas especiales para la impresión de la tabla */
-@media print {
-    body * {
-        visibility: hidden;
-    }
-    .columna-tabla-derecha, .columna-tabla-derecha * {
-        visibility: visible;
-    }
-    .columna-tabla-derecha {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100% !important;
-    }
-    .no-print {
-        display: none !important;
-    }
-    .scrollable-table {
-        max-height: none !important;
-        overflow: visible !important;
-    }
-    .table {
-        width: 100% !important;
     }
 }

@@ -211,6 +211,71 @@ body {
     margin-top: 0;
 }
 
+/* Referencia institucional FACITEC y autor */
+.facitec-footer {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 14px rgba(13, 110, 253, 0.10);
+    margin-top: 26px;
+}
+.facitec-logo {
+    height: 52px;
+    width: auto;
+    max-width: 45%;
+    flex-shrink: 0;
+    object-fit: contain;
+}
+.facitec-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    line-height: 1.3;
+    min-width: 0;
+    flex: 1;
+}
+.facitec-titulo,
+.facitec-autor {
+    color: #64748b;
+    font-size: 0.85rem;
+}
+.facitec-autor strong {
+    color: #0d6efd;
+}
+
+/* Móvil: banner azul minimalista (estilo UNER), texto reducido */
+@media (max-width: 767px) {
+    .facitec-footer {
+        background: #1e3a8a;
+        border-radius: 12px;
+        padding: 10px 12px;
+        gap: 12px;
+        margin-top: 20px;
+    }
+    .facitec-logo {
+        height: 40px;
+        max-width: none;
+        width: auto;
+        background: #ffffff;
+        border-radius: 6px;
+        padding: 4px 6px;
+    }
+    /* Se oculta la línea del título para que el banner sea más corto */
+    .facitec-titulo {
+        display: none;
+    }
+    .facitec-autor {
+        color: #f1f5f9;
+        font-size: 0.75rem;
+    }
+    .facitec-autor strong {
+        color: #ffffff;
+    }
+}
+
 /* Banner para estudiantes (nuevo) */
 .welcome-student {
     background: white;

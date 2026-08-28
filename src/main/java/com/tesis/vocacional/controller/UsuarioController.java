@@ -16,6 +16,8 @@ import java.beans.PropertyEditorSupport;
 @RequestMapping("/usuarios")
 public class UsuarioController {
 
+    private static final int PASSWORD_MIN_LENGTH = 5;
+
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
 
@@ -24,14 +26,11 @@ public class UsuarioController {
         this.passwordEncoder = passwordEncoder;
     }
 
-    /**
-     * Configura los conversores personalizados:
-     * - Para el campo 'estado': convierte "ACTIVO" a true, "INACTIVO" a false.
-     * - Para el campo 'cedula': convierte String a int, validando el rango.
-     */
+    /**Configura el conversor personalizado para el campo 'estado':
+     * acepta tanto "true"/"false" (lo que envía el <select> actual)
+     * como "ACTIVO"/"INACTIVO", por si el texto de las opciones cambia.*/
     @InitBinder
     public void initBinder(WebDataBinder binder) {
-        // Conversor para Boolean (ACTIVO/INACTIVO)
         binder.registerCustomEditor(Boolean.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) {
@@ -45,27 +44,6 @@ public class UsuarioController {
                         setValue(Boolean.FALSE);
                     } else {
                         setValue(Boolean.parseBoolean(upper));
-                    }
-                }
-            }
-        });
-
-        // Conversor para cédula (String a int) con validación de rango
-        binder.registerCustomEditor(Integer.class, "cedula", new PropertyEditorSupport() {
-            @Override
-            public void setAsText(String text) {
-                if (text == null || text.trim().isEmpty()) {
-                    setValue(0);
-                } else {
-                    try {
-                        long valor = Long.parseLong(text.trim());
-                        if (valor < 0 || valor > Integer.MAX_VALUE) {
-                            throw new NumberFormatException("La cédula debe estar entre 0 y " + Integer.MAX_VALUE);
-                        }
-                        setValue((int) valor);
-                    } catch (NumberFormatException e) {
-                        setValue(null);
-                        throw new IllegalArgumentException("Cédula inválida: debe ser un número entero entre 0 y 2,147,483,647");
                     }
                 }
             }
@@ -94,6 +72,7 @@ public class UsuarioController {
             model.addAttribute("usuario", new Usuario());
         }
         model.addAttribute("usuarios", usuarioService.listarTodos());
+        model.addAttribute("abrirModal", true);
         return "usuarios";
     }
 
@@ -103,7 +82,18 @@ public class UsuarioController {
     @PostMapping("/guardar")
     public String guardarUsuario(@ModelAttribute Usuario usuario, BindingResult bindingResult, Model model) {
         if (bindingResult.hasErrors()) {
-            model.addAttribute("error", "Error en el formulario: " + bindingResult.getAllErrors().get(0).getDefaultMessage());
+            model.addAttribute("modalError", "Error en el formulario: " + bindingResult.getAllErrors().get(0).getDefaultMessage());
+            model.addAttribute("abrirModal", true);
+            model.addAttribute("usuarios", usuarioService.listarTodos());
+            model.addAttribute("usuario", usuario);
+            return "usuarios";
+        }
+
+        // Contraseña nueva (no vacía) debe cumplir el mínimo; vacía = conservar la actual (edición).
+        if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()
+                && usuario.getPassword().length() < PASSWORD_MIN_LENGTH) {
+            model.addAttribute("modalError", "La contraseña debe tener al menos " + PASSWORD_MIN_LENGTH + " caracteres.");
+            model.addAttribute("abrirModal", true);
             model.addAttribute("usuarios", usuarioService.listarTodos());
             model.addAttribute("usuario", usuario);
             return "usuarios";
@@ -125,16 +115,15 @@ public class UsuarioController {
             usuarioService.guardarUsuario(usuario);
             return "redirect:/usuarios";
         } catch (RuntimeException e) {
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("modalError", e.getMessage());
+            model.addAttribute("abrirModal", true);
             model.addAttribute("usuarios", usuarioService.listarTodos());
             model.addAttribute("usuario", usuario);
             return "usuarios";
         }
     }
 
-    /**
-     * Alterna el estado del usuario (si está activo lo desactiva, y viceversa).
-     */
+    /**Alterna el estado del usuario (si está activo lo desactiva, y viceversa).*/
     @GetMapping("/alternar-estado/{id}")
     public String alternarEstadoUsuario(@PathVariable int id, RedirectAttributes redirectAttributes) {
         try {

@@ -2,6 +2,8 @@ package com.tesis.vocacional.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.Period;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -67,5 +69,12 @@ public class Usuario extends Persona {
 
     public void setTestUsuarios(List<TestUsuario> testUsuarios) {
         this.testUsuarios = testUsuarios;
+    }
+
+    public int getEdad() {
+        if (getFecha_nacimiento() == null) {
+            return 0;
+        }
+        return Period.between(getFecha_nacimiento().toLocalDate(), LocalDate.now()).getYears();
     }
 }

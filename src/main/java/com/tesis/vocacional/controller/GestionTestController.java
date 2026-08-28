@@ -30,6 +30,7 @@ public class GestionTestController {
             model.addAttribute("test", test);
         }
         model.addAttribute("tests", testService.listarTodos());
+        model.addAttribute("abrirModal", true);
         return "gestion-test";
     }
 

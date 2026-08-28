@@ -23,9 +23,10 @@
     <!-- Estilos globales y específicos -->
     <link rel="stylesheet" th:href="@{/css/home.css} + '?v=' + ${#dates.createNow().getTime()}">
     <link rel="stylesheet" th:href="@{/css/preguntas.css} + '?v=' + ${#dates.createNow().getTime()}">
+    <link rel="stylesheet" th:href="@{/css/gestion.css} + '?v=' + ${#dates.createNow().getTime()}">
 </head>
 
-<body>
+<body th:attr="data-abrir-modal=${abrirModal != null && abrirModal ? 'true' : 'false'}">
     <div class="main-container">
 
         <!-- Sidebar escritorio -->
@@ -37,12 +38,12 @@
             <!-- Encabezado superior -->
             <div class="header">
                 <div style="display: flex; align-items: center; gap: 12px;">
-                    <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
+                    <button class="btn btn-primary d-md-none no-print" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
                         <i class="fas fa-bars"></i>
                     </button>
                     <h2 class="header-title">Gestión de Preguntas</h2>
                 </div>
-                <div class="user-info">
+                <div class="user-info no-print">
                     <span>Bienvenido, <span sec:authentication="name"></span></span>
                 </div>
             </div>
@@ -50,181 +51,112 @@
             <!-- Menú offcanvas móvil -->
             <div th:replace="~{fragments/menu :: offcanvas}"></div>
 
-            <!-- Alerta de error -->
-            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
-                <strong><i class="fas fa-exclamation-triangle"></i> Error:</strong> <span th:text="${error}"></span>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
+            <!-- Tabla de preguntas (ocupa todo el ancho del contenido) -->
+            <div class="col-12 columna-tabla-derecha px-0">
+                <div class="table-card">
+                    <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-wrap gap-2 no-print cabecera-tabla">
+                        <h5 class="mb-0 text-primary titulo-tabla">Preguntas Registradas</h5>
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnNuevoPregunta" class="btn btn-primary btn-mas"
+                                data-bs-toggle="tooltip" data-bs-placement="bottom" title="Agregar pregunta">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button onclick="window.print();" class="btn btn-outline-primary">
+                                <i class="fas fa-print me-1"></i> Imprimir
+                            </button>
+                        </div>
+                    </div>
 
-            <!-- Layout principal -->
-            <div class="row g-4">
-                
-                <!-- Formulario de registro/edición -->
-                <div class="col-lg-5 columna-formulario-izquierda no-print">
-                    <div class="form-card p-4">
-                        <h5 class="mb-4 text-primary" th:if="${pregunta.id == null || pregunta.id == 0}">Nueva Pregunta</h5>
-                        <h5 class="mb-4 text-primary" th:if="${pregunta.id != null && pregunta.id > 0}">Editar Pregunta</h5>
-
-                        <form th:action="@{/preguntas/guardar}" th:object="${pregunta}" method="post">
-                            <input type="hidden" th:field="*{id}" />
-
-                            <!-- Selección de Test -->
-                            <div class="mb-3">
-                                <label class="form-label">Test al que pertenece</label>
-                                <select class="form-select" th:field="*{test}" required>
-                                    <option value="">-- Seleccione un Test --</option>
+                    <!-- Filtros de búsqueda -->
+                    <div class="filter-bar no-print">
+                        <div class="row g-2 g-md-3 align-items-end">
+                            <div class="col-12 col-md-3">
+                                <label for="searchText" class="form-label">Buscar texto</label>
+                                <input type="text" id="searchText" class="form-control" placeholder="Buscar...">
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label for="filterNumero" class="form-label">N°</label>
+                                <input type="number" id="filterNumero" class="form-control" placeholder="Ej: 34" min="1" max="98">
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label for="filterCategoria" class="form-label">Categoría</label>
+                                <select id="filterCategoria" class="form-select">
+                                    <option value="">Todas</option>
+                                    <option value="C">C</option>
+                                    <option value="H">H</option>
+                                    <option value="A">A</option>
+                                    <option value="S">S</option>
+                                    <option value="I">I</option>
+                                    <option value="D">D</option>
+                                    <option value="E">E</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label for="filterTest" class="form-label">Test</label>
+                                <select id="filterTest" class="form-select">
+                                    <option value="">Todos</option>
                                     <option th:each="t : ${tests}" th:value="${t.id}" th:text="${t.nombre}"></option>
                                 </select>
                             </div>
-
-                            <!-- Número de pregunta -->
-                            <div class="mb-3">
-                                <label class="form-label">Número de Pregunta (1-98)</label>
-                                <input type="number" class="form-control" th:field="*{numero}" min="1" max="98" required>
-                                <small class="text-muted">Debe ser único y no repetido.</small>
+                            <div class="col-12 col-md-2">
+                                <button id="resetFilters" class="btn btn-outline-secondary w-100">Limpiar</button>
                             </div>
-
-                            <!-- Texto principal -->
-                            <div class="mb-3">
-                                <label class="form-label">Texto de la Pregunta</label>
-                                <textarea class="form-control" rows="4" th:field="*{texto}" required></textarea>
-                            </div>
-
-                            <!-- Categoría CHASIDE -->
-                            <div class="mb-3">
-                                <label class="form-label">Categoría (C H A S I D E)</label>
-                                <select class="form-select" th:field="*{categoria}" required>
-                                    <option value="C">C - Administrativas y Contables</option>
-                                    <option value="H">H - Humanísticas, Jurídicas y Sociales</option>
-                                    <option value="A">A - Artísticas</option>
-                                    <option value="S">S - Ciencias de la Salud</option>
-                                    <option value="I">I - Ingenierías, Técnicas y Computación</option>
-                                    <option value="D">D - Defensa y Seguridad</option>
-                                    <option value="E">E - Ciencias Agrarias, Naturales y Biológicas</option>
-                                </select>
-                            </div>
-
-                            <!-- Dimensión -->
-                            <div class="mb-3">
-                                <label class="form-label">Dimensión (Interés o Aptitud)</label>
-                                <select class="form-select" th:field="*{dimension}" required>
-                                    <option value="">-- Seleccione --</option>
-                                    <option value="INTERES">INTERES</option>
-                                    <option value="APTITUD">APTITUD</option>
-                                </select>
-                            </div>
-
-                            <!-- Botones de acción del formulario -->
-                            <div class="d-flex gap-3">
-                                <button type="button" class="btn btn-secondary flex-fill" onclick="window.location.href='/preguntas'">Cancelar</button>
-                                <button type="submit" class="btn btn-primary flex-fill">Guardar Pregunta</button>
-                            </div>
-                        </form>
+                        </div>
                     </div>
-                </div>
 
-                <!-- Tabla de datos -->
-                <div class="col-lg-7 columna-tabla-derecha">
-                    <div class="table-card">
-                        <div class="p-4 border-bottom bg-light d-flex justify-content-between align-items-center cabecera-tabla">
-                            <h5 class="mb-0 text-primary titulo-tabla">Preguntas Registradas</h5>
-                            <div class="d-flex gap-2 no-print">
-                                <button onclick="window.print();" class="btn btn-outline-primary">
-                                    <i class="fas fa-print me-1"></i>Imprimir
-                                </button>
-                                <a th:href="@{/preguntas}" class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i>Nueva Pregunta
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Filtros de búsqueda -->
-                        <div class="filter-bar no-print">
-                            <div class="row g-2 g-md-3 align-items-end">
-                                <div class="col-12 col-md-3">
-                                    <label for="searchText" class="form-label">Buscar texto</label>
-                                    <input type="text" id="searchText" class="form-control" placeholder="Buscar...">
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label for="filterNumero" class="form-label">N°</label>
-                                    <input type="number" id="filterNumero" class="form-control" placeholder="Ej: 34" min="1" max="98">
-                                </div>
-                                <div class="col-6 col-md-2">
-                                    <label for="filterCategoria" class="form-label">Categoría</label>
-                                    <select id="filterCategoria" class="form-select">
-                                        <option value="">Todas</option>
-                                        <option value="C">C</option>
-                                        <option value="H">H</option>
-                                        <option value="A">A</option>
-                                        <option value="S">S</option>
-                                        <option value="I">I</option>
-                                        <option value="D">D</option>
-                                        <option value="E">E</option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-3">
-                                    <label for="filterTest" class="form-label">Test</label>
-                                    <select id="filterTest" class="form-select">
-                                        <option value="">Todos</option>
-                                        <option th:each="t : ${tests}" th:value="${t.id}" th:text="${t.nombre}"></option>
-                                    </select>
-                                </div>
-                                <div class="col-12 col-md-2">
-                                    <button id="resetFilters" class="btn btn-outline-secondary w-100">Limpiar</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Contenedor con scroll responsivo de la tabla -->
-                        <div class="table-responsive contenedor-tabla-fisica" id="tablaPreguntas">
-                            <table class="table table-hover mb-0 align-middle" id="preguntasTable">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="th-nro">N°</th>
-                                        <th class="col-test">Test</th>
-                                        <th>Pregunta</th>
-                                        <th class="th-categoria text-center">Cat.</th>
-                                        <th class="text-center columna-acciones no-print th-acciones">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="preguntasBody">
-                                    <!-- Mensaje cuando la lista está vacía -->
-                                    <tr th:if="${preguntas.isEmpty()}">
-                                        <td colspan="5" class="text-center py-5 text-muted">
-                                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
-                                            Aún no hay preguntas registradas.
-                                        </td>
-                                    </tr>
-                                    <!-- Listado de preguntas ordenadas por número -->
-                                    <tr th:each="p : ${preguntas}" 
-                                        th:attr="data-test-id=${p.test?.id}, 
-                                                 data-categoria=${p.categoria},
-                                                 data-numero=${p.numero}">
-                                        <td class="fw-bold text-muted th-nro" th:text="${p.numero}"></td>
-                                        <td class="col-test" th:text="${p.test?.nombre} ?: 'Sin asignar'"></td>
-                                        <td class="pregunta-texto" th:text="${p.texto}"></td>
-                                        <td class="text-center th-categoria">
-                                            <span class="badge bg-primary text-badge-categoria" th:text="${p.categoria}"></span>
-                                        </td>
-                                        <!-- Botones solo con icono -->
-                                        <td class="text-center columna-acciones no-print text-nowrap th-acciones">
-                                            <a th:href="@{/preguntas/editar/{id}(id=${p.id})}" 
-                                               class="btn btn-sm btn-outline-primary me-1" 
-                                               title="Editar pregunta">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <button type="button" 
-                                                    class="btn btn-sm btn-outline-danger btn-eliminar" 
-                                                    th:data-id="${p.id}" 
-                                                    th:data-numero="${p.numero}"
-                                                    title="Eliminar pregunta">
-                                                <i class="fas fa-trash-can"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                    <!-- Contenedor con scroll responsivo de la tabla -->
+                    <div class="table-responsive contenedor-tabla-fisica" id="tablaPreguntas">
+                        <table class="table table-hover mb-0 align-middle" id="preguntasTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th class="th-nro text-center">N°</th>
+                                    <th class="col-test">Test</th>
+                                    <th>Pregunta</th>
+                                    <th class="th-categoria text-center">Cat.</th>
+                                    <th class="text-center columna-acciones no-print th-acciones">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="preguntasBody">
+                                <!-- Mensaje cuando la lista está vacía -->
+                                <tr th:if="${preguntas.isEmpty()}">
+                                    <td colspan="5" class="text-center py-5 text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                        Aún no hay preguntas registradas.
+                                    </td>
+                                </tr>
+                                <!-- Listado de preguntas ordenadas por número -->
+                                <tr th:each="p : ${preguntas}"
+                                    th:attr="data-id=${p.id},
+                                             data-numero=${p.numero},
+                                             data-texto=${p.texto},
+                                             data-categoria=${p.categoria},
+                                             data-dimension=${p.dimension},
+                                             data-test-id=${p.test?.id},
+                                             data-test-nombre=${p.test?.nombre}">
+                                    <td class="fw-bold text-muted th-nro text-center" th:text="${p.numero}"></td>
+                                    <td class="col-test" th:text="${p.test?.nombre} ?: 'Sin asignar'"></td>
+                                    <td class="pregunta-texto" th:text="${p.texto}"></td>
+                                    <td class="text-center th-categoria">
+                                        <span class="badge bg-primary text-badge-categoria" th:text="${p.categoria}"></span>
+                                    </td>
+                                    <!-- Botones solo con icono -->
+                                    <td class="text-center columna-acciones no-print text-nowrap th-acciones">
+                                        <a href="#" th:attr="data-id=${p.id}"
+                                           class="btn btn-sm btn-outline-primary me-1 btn-editar"
+                                           title="Editar pregunta">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-outline-danger btn-eliminar"
+                                                th:data-id="${p.id}"
+                                                th:data-numero="${p.numero}"
+                                                title="Eliminar pregunta">
+                                            <i class="fas fa-trash-can"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -235,6 +167,78 @@
     <button id="btnSubir" class="btn-flotante d-md-none" title="Volver arriba">
         <i class="fas fa-chevron-up"></i>
     </button>
+
+    <!-- Modal: formulario de pregunta (nuevo / editar) -->
+    <div class="modal fade" id="modalPregunta" tabindex="-1" aria-labelledby="tituloModalPregunta" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h5 class="modal-title text-primary fw-bold" id="tituloModalPregunta">
+                        <i class="fas fa-plus me-2"></i>Nueva Pregunta
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formPregunta" th:action="@{/preguntas/guardar}" th:object="${pregunta}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    <div class="modal-body">
+                        <!-- Error de validación del servidor dentro del modal -->
+                        <div th:if="${modalError}" class="alert alert-danger py-2 mb-3" style="font-size: 0.85rem;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <span th:text="${modalError}"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Test al que pertenece</label>
+                            <!-- Solo se listan tests activos; si la pregunta editada tiene un test inactivo se conserva -->
+                            <select class="form-select form-select-sm" th:field="*{test}" required>
+                                <option value="">-- Seleccione un Test --</option>
+                                <option th:if="${pregunta.test != null && !testsActivos.contains(pregunta.test)}"
+                                        th:value="${pregunta.test.id}" th:text="${pregunta.test.nombre}"></option>
+                                <option th:each="t : ${testsActivos}" th:value="${t.id}" th:text="${t.nombre}"></option>
+                            </select>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label">Número de Pregunta (1-98)</label>
+                                <input type="number" class="form-control form-control-sm" th:field="*{numero}" min="1" max="98" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label">Categoría (C H A S I D E)</label>
+                                <select class="form-select form-select-sm" th:field="*{categoria}" required>
+                                    <option value="C">C - Administrativas</option>
+                                    <option value="H">H - Humanísticas</option>
+                                    <option value="A">A - Artísticas</option>
+                                    <option value="S">S - Salud</option>
+                                    <option value="I">I - Ingenierías</option>
+                                    <option value="D">D - Defensa y Seguridad</option>
+                                    <option value="E">E - Ciencias Agrarias</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Texto de la Pregunta</label>
+                            <textarea class="form-control form-control-sm" rows="3" th:field="*{texto}" required></textarea>
+                        </div>
+
+                        <div class="mb-2">
+                            <label class="form-label">Dimensión (Interés o Aptitud)</label>
+                            <select class="form-select form-select-sm" th:field="*{dimension}" required>
+                                <option value="">-- Seleccione --</option>
+                                <option value="INTERES">INTERES</option>
+                                <option value="APTITUD">APTITUD</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Guardar Pregunta</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Scripts de Bootstrap, SweetAlert2 y módulo local -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

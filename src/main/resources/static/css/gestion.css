@@ -1,0 +1,86 @@
+/* Estilos unificados de gestión (modal + tablas + botones) para Usuarios, Test y Preguntas */
+
+/* Modal de formulario: compacto, footer siempre visible */
+.modal-dialog-scrollable .modal-body {
+    padding: 1rem 1.25rem;
+}
+.modal-header,
+.modal-footer {
+    padding: 0.6rem 1.25rem;
+}
+.modal-body .form-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 2px;
+}
+.modal-body .form-control-sm,
+.modal-body .form-select-sm,
+.modal-footer .btn-sm {
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+.modal-body small {
+    font-size: 0.7rem;
+}
+
+/* Botón "+" unificado (azul, cuadrado) */
+.btn-mas {
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+}
+
+/* Botones de la cabecera de tabla unificados */
+.cabecera-tabla .btn {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+/* Tablas: encabezados consistentes */
+.table thead th {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.table td,
+.table th {
+    vertical-align: middle;
+}
+
+/* Celdas y encabezados centrados (columnas cortas) */
+.table th.text-center,
+.table td.text-center {
+    text-align: center;
+}
+
+/* Barra de filtros consistente */
+.filter-bar .form-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #334155;
+    margin-bottom: 2px;
+}
+.filter-bar .form-control,
+.filter-bar .form-select {
+    font-size: 0.85rem;
+    border-radius: 8px;
+}
+
+/* Tablas de gestión: separadores insinuados como en reportes */
+.table-card .table-responsive {
+    padding-left: 1rem;
+    padding-right: 1rem;
+}
+.table-card .table thead th {
+    background: #f8fafc;
+    color: #1e293b;
+    border-bottom: 2px solid #e2e8f0;
+}
+.table-card .table tbody td {
+    border-bottom: 1px solid #f1f5f9;
+}

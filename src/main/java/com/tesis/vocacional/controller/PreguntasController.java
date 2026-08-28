@@ -30,6 +30,7 @@ public class PreguntasController {
     public String mostrarPreguntas(Model model) {
         model.addAttribute("preguntas", preguntaService.listarTodas());
         model.addAttribute("tests", testService.listarTodos());
+        model.addAttribute("testsActivos", testService.listarActivos());
         model.addAttribute("pregunta", new Pregunta()); // objeto vacío para nuevo registro
         return "preguntas";
     }
@@ -48,6 +49,8 @@ public class PreguntasController {
         model.addAttribute("pregunta", pregunta);
         model.addAttribute("preguntas", preguntaService.listarTodas());
         model.addAttribute("tests", testService.listarTodos());
+        model.addAttribute("testsActivos", testService.listarActivos());
+        model.addAttribute("abrirModal", true);
         return "preguntas";
     }
 
@@ -63,9 +66,12 @@ public class PreguntasController {
             return "redirect:/preguntas";
         } catch (RuntimeException e) {
             log.error("Error al guardar pregunta: {}", e.getMessage());
-            model.addAttribute("error", e.getMessage());
+            model.addAttribute("modalError", e.getMessage());
+            model.addAttribute("abrirModal", true);
             model.addAttribute("pregunta", pregunta);
+            model.addAttribute("preguntas", preguntaService.listarTodas());
             model.addAttribute("tests", testService.listarTodos());
+            model.addAttribute("testsActivos", testService.listarActivos());
             return "preguntas";
         }
     }

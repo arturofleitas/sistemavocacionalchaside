@@ -125,7 +125,8 @@
     .cabecera-tabla,
     .columna-acciones,
     .user-info,
-    .btn-flotante {
+    .btn-flotante,
+    .header .btn-primary {
         display: none !important;
     }
 
@@ -151,6 +152,8 @@
     .contenedor-tabla-fisica {
         max-height: none !important;
         overflow: visible !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 
     #preguntasTable {

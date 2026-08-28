@@ -1,9 +1,92 @@
-// gestion-test.js - Lógica de filtros, botón flotante y confirmación de estado
+// gestion-test.js - Filtros, modal de test, botón flotante y confirmación de estado
 
 (function() {
     'use strict';
 
-    // Funciones de filtrado
+    // Utilidades del modal de test
+    function obtenerModal() {
+        const modal = document.getElementById('modalTest');
+        const form = document.getElementById('formTest');
+        const titulo = document.getElementById('tituloModalTest');
+        const instancia = modal && typeof bootstrap !== 'undefined' ? bootstrap.Modal.getOrCreateInstance(modal) : null;
+        return { modal, form, titulo, instancia };
+    }
+
+    // Cambia el título del modal según sea nuevo o edición
+    function setTitulo(editando) {
+        const { titulo } = obtenerModal();
+        if (!titulo) return;
+        titulo.innerHTML = editando
+            ? '<i class="fas fa-user-edit me-2"></i>Editar Test'
+            : '<i class="fas fa-plus me-2"></i>Nuevo Test';
+    }
+
+    function abrirModal(editando, resetear) {
+        const { form, instancia } = obtenerModal();
+        if (!instancia) return;
+        setTitulo(editando);
+        // Solo se restablece el formulario al crear un test nuevo desde el botón "+"
+        if (resetear && !editando && form) {
+            form.reset();
+            const idInput = form.querySelector('input[name="id"]');
+            if (idInput) idInput.value = '0';
+        }
+        instancia.show();
+    }
+
+    // Rellena el formulario con los datos de la fila (edición)
+    function rellenarFormulario(row) {
+        const { form } = obtenerModal();
+        if (!form) return;
+        const set = (campo, valor) => {
+            const el = form.elements[campo];
+            if (el) el.value = (valor == null || valor === 'null') ? '' : valor;
+        };
+        set('id', row.getAttribute('data-id'));
+        set('nombre', row.getAttribute('data-nombre'));
+        set('descripcion', row.getAttribute('data-descripcion'));
+        const estadoSel = form.elements['estado'];
+        if (estadoSel) estadoSel.value = row.getAttribute('data-estado') || 'true';
+    }
+
+    function initModal() {
+        const { modal, form } = obtenerModal();
+        if (!modal || !form) return;
+
+        // Limpia el formulario al cerrar el modal
+        modal.addEventListener('hidden.bs.modal', function() {
+            form.reset();
+            setTitulo(false);
+        });
+
+        // Botón "+" para nuevo test
+        const btnNuevo = document.getElementById('btnNuevoTest');
+        if (btnNuevo) {
+            btnNuevo.addEventListener('click', function() {
+                abrirModal(false, true);
+            });
+        }
+
+        // Botones de editar en la tabla
+        document.querySelectorAll('.btn-editar').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const fila = this.closest('tr');
+                if (!fila) return;
+                rellenarFormulario(fila);
+                abrirModal(true, false);
+            });
+        });
+
+        // Reabre el modal ante una edición por navegación (/gestion-test/editar/x)
+        if (document.body.getAttribute('data-abrir-modal') === 'true') {
+            const idInput = form.querySelector('input[name="id"]');
+            const editando = idInput && parseInt(idInput.value, 10) > 0;
+            abrirModal(editando, false);
+        }
+    }
+
+    // Filtros de la tabla
     function initFiltros() {
         const filtroNombre = document.getElementById('filtroNombre');
         const filtroDescripcion = document.getElementById('filtroDescripcion');
@@ -73,16 +156,13 @@
         tablaContainer.addEventListener('scroll', toggleBtnSubir);
 
         btnSubir.addEventListener('click', function() {
-            tablaContainer.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
+            tablaContainer.scrollTo({ top: 0, behavior: 'smooth' });
         });
 
         setTimeout(toggleBtnSubir, 300);
     }
 
-    // Manejar desactivación/activación de tests usando SweetAlert2
+    // Confirmación de activar/desactivar con SweetAlert2
     function initDesactivar() {
         const botones = document.querySelectorAll('.btn-desactivar');
         botones.forEach(function(btn) {
@@ -114,19 +194,28 @@
                             window.location.href = '/gestion-test/alternar-estado/' + id;
                         }
                     });
-                } else {
-                    if (confirm(texto)) {
-                        window.location.href = '/gestion-test/alternar-estado/' + id;
-                    }
+                } else if (confirm(texto)) {
+                    window.location.href = '/gestion-test/alternar-estado/' + id;
                 }
             });
         });
     }
 
+    // Tooltips de Bootstrap (botón "+")
+    function initTooltips() {
+        if (typeof bootstrap !== 'undefined' && bootstrap.Tooltip?.getOrCreateInstance) {
+            document.querySelectorAll('[data-bs-toggle="tooltip"]').forEach(el => {
+                bootstrap.Tooltip.getOrCreateInstance(el);
+            });
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
+        initModal();
         initFiltros();
         initBtnSubir();
         initDesactivar();
+        initTooltips();
     });
 
 })();

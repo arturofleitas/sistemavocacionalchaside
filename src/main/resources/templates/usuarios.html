@@ -8,7 +8,7 @@
 
     <title>Gestión de Usuarios - Sistema Vocacional</title>
 
-    <!-- Meta tags para evitar caché del navegador -->
+    <!-- Meta tags para evitar caché -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
@@ -26,19 +26,23 @@
           crossorigin="anonymous"
           referrerpolicy="no-referrer">
 
-    <!-- SweetAlert2 CSS para alertas profesionales -->
+    <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 
-    <!-- Estilos globales del sistema -->
+    <!-- Estilos globales -->
     <link rel="stylesheet"
           th:href="@{/css/home.css} + '?v=' + ${#dates.createNow().getTime()}">
 
-    <!-- Estilos específicos de usuarios (Aquí ya se encuentra el CSS optimizado) -->
+    <!-- Estilos específicos de usuarios -->
     <link rel="stylesheet"
           th:href="@{/css/usuarios.css} + '?v=' + ${#dates.createNow().getTime()}">
+
+    <!-- Estilos unificados de gestión -->
+    <link rel="stylesheet"
+          th:href="@{/css/gestion.css} + '?v=' + ${#dates.createNow().getTime()}">
 </head>
 
-<body>
+<body th:attr="data-abrir-modal=${abrirModal != null && abrirModal ? 'true' : 'false'}">
 
     <div class="main-container">
 
@@ -49,7 +53,8 @@
         <div class="content" id="pagina-usuarios">
 
             <!-- Cabecera principal -->
-            <div class="header no-print">
+            <!-- El título sí se imprime (encabezado); solo se ocultan los controles no-print internos -->
+            <div class="header">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <button class="btn btn-primary d-md-none no-print"
                             type="button"
@@ -74,10 +79,16 @@
             <!-- Offcanvas para el menú móvil -->
             <div th:replace="~{fragments/menu :: offcanvas}"></div>
 
-            <!-- Mensaje de error -->
-            <div th:if="${error}"
-                 class="alert alert-danger alert-dismissible fade show no-print"
-                 role="alert">
+            <!-- Mensajes flash (éxito / error de alternar estado) -->
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show no-print" role="alert">
+                <strong>
+                    <i class="fas fa-check-circle"></i>
+                    Éxito:
+                </strong>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show no-print" role="alert">
                 <strong>
                     <i class="fas fa-exclamation-triangle"></i>
                     Error:
@@ -86,194 +97,201 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- Filas: formulario a la izquierda, tabla a la derecha -->
-            <div class="row g-4">
-
-                <!-- Columna izquierda: formulario -->
-                <div class="col-lg-5 no-print">
-                    <div class="form-card p-4">
-                        <h5 class="mb-3 text-primary" th:if="${usuario.id == null || usuario.id == 0}">
-                            Nuevo Usuario
-                        </h5>
-                        <h5 class="mb-3 text-primary" th:if="${usuario.id != null && usuario.id > 0}">
-                            Editar Usuario
-                        </h5>
-
-                        <form th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
-                            <input type="hidden" th:field="*{id}">
-
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <label class="form-label small">Nombre</label>
-                                    <input type="text" class="form-control form-control-sm" th:field="*{nombre}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Apellido</label>
-                                    <input type="text" class="form-control form-control-sm" th:field="*{apellido}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Fecha de Nacimiento</label>
-                                    <input type="date" class="form-control form-control-sm" th:field="*{fecha_nacimiento}" required>
-                                </div>
-                            </div>
-
-                            <hr class="my-2">
-
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <label class="form-label small">Username</label>
-                                    <input type="text" class="form-control form-control-sm" th:field="*{username}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Rol</label>
-                                    <select class="form-select form-select-sm" th:field="*{rol}" required>
-                                        <option value="ESTUDIANTE">ESTUDIANTE</option>
-                                        <option value="ADMIN">ADMIN</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Contraseña</label>
-                                    <input type="password" class="form-control form-control-sm" th:field="*{password}" required>
-                                    <small class="text-muted" style="font-size: 10px;">Mínimo 6 caracteres</small>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label small">Estado</label>
-                                    <select class="form-select form-select-sm" th:field="*{estado}" required>
-                                        <option th:value="true">Activo</option>
-                                        <option th:value="false">Inactivo</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="d-flex gap-2 mt-3 no-print">
-                                <button type="button" class="btn btn-secondary btn-sm flex-fill" onclick="window.location.href='/usuarios'">
-                                    Cancelar
-                                </button>
-                                <button type="submit" class="btn btn-primary btn-sm flex-fill">
-                                    Guardar Usuario
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-
-                <!-- Columna derecha: tabla -->
-                <div class="col-lg-7 columna-tabla-derecha">
-                    <div class="table-card">
-                        <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center no-print">
-                            <h5 class="mb-0 text-primary">Usuarios Registrados</h5>
-                            <div class="d-flex gap-2">
-                                <button onclick="window.print();" class="btn btn-sm btn-outline-primary no-print">
-                                    <i class="fas fa-print me-1"></i> Imprimir
-                                </button>
-                                <a th:href="@{/usuarios}" class="btn btn-sm btn-primary no-print">
-                                    <i class="fas fa-plus"></i> Nuevo
-                                </a>
-                            </div>
-                        </div>
-
-                        <!-- Barra de filtros -->
-                        <div class="filter-bar no-print">
-                            <div class="row g-2 align-items-end">
-                                <div class="col-md-4">
-                                    <label for="searchNombre" class="form-label small">Nombre / Apellido</label>
-                                    <input type="text" id="searchNombre" class="form-control form-control-sm" placeholder="Ej: Juan Pérez">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="searchUsername" class="form-label small">Username</label>
-                                    <input type="text" id="searchUsername" class="form-control form-control-sm" placeholder="Nombre de usuario">
-                                </div>
-                                <div class="col-md-3">
-                                    <label for="filterRol" class="form-label small">Rol</label>
-                                    <select id="filterRol" class="form-select form-select-sm">
-                                        <option value="">Todos</option>
-                                        <option value="ESTUDIANTE">Estudiante</option>
-                                        <option value="ADMIN">Administrador</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-2">
-                                    <button id="resetFilters" class="btn btn-outline-secondary btn-sm w-100 no-print">Limpiar</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Contenedor responsivo con scroll -->
-                        <div class="table-responsive scrollable-table">
-                            <table class="table table-sm table-hover mb-0 align-middle" id="tablaUsuarios">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th class="th-nro">Nº</th>
-                                        <th>Nombre completo</th>
-                                        <th class="th-username">Username</th>
-                                        <th class="th-rol">Rol</th>
-                                        <th class="th-estado">Estado</th>
-                                        <th class="text-center no-print th-acciones">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="usuariosBody">
-                                    <tr th:if="${usuarios.isEmpty()}">
-                                        <td colspan="6" class="text-center py-4 text-muted">
-                                            <i class="fas fa-inbox fa-2x mb-2"></i><br>
-                                            No hay usuarios registrados.
-                                        </td>
-                                    </tr>
-
-                                    <!-- Iteramos con 'iterStat' para generar un número correlativo (1, 2, 3...) -->
-                                    <tr th:each="u, iterStat : ${usuarios}"
-                                        th:attr="data-nombre=${u.nombre + ' ' + u.apellido},
-                                                 data-username=${u.username},
-                                                 data-rol=${u.rol}">
-                                        <!-- Mostramos el número de orden secuencial -->
-                                        <td class="fw-bold text-muted th-nro" th:text="${iterStat.count}"></td>
-                                        <td th:text="${u.nombre + ' ' + u.apellido}"></td>
-                                        <td class="th-username text-truncate" th:text="${u.username}"></td>
-                                        <td class="th-rol">
-                                            <span th:if="${u.rol == 'ADMIN'}" class="badge bg-danger">ADMIN</span>
-                                            <span th:if="${u.rol == 'ESTUDIANTE'}" class="badge bg-success">ESTUDIANTE</span>
-                                        </td>
-                                        <td class="th-estado">
-                                            <span th:if="${u.estado}" class="badge bg-success">Activo</span>
-                                            <span th:unless="${u.estado}" class="badge bg-secondary">Inactivo</span>
-                                        </td>
-
-                                        <!-- Acciones -->
-                                        <td class="text-center no-print text-nowrap th-acciones">
-                                            <!-- Botón para editar usuario -->
-                                            <a th:href="@{/usuarios/editar/{id}(id=${u.id})}"
-                                               class="btn btn-sm btn-outline-primary me-1"
-                                               title="Editar usuario">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-
-                                            <!-- Botón dinámico con alerta SweetAlert -->
-                                            <button type="button"
-                                                    class="btn btn-sm btn-alternar-estado"
-                                                    th:classappend="${u.estado != null && u.estado} ? 'btn-outline-danger' : 'btn-outline-success'"
-                                                    th:data-id="${u.id}"
-                                                    th:data-nombre="${u.nombre + ' ' + u.apellido}"
-                                                    th:data-estado="${u.estado != null && u.estado}"
-                                                    th:title="${u.estado != null && u.estado} ? 'Desactivar usuario' : 'Activar usuario'">
-                                                <i class="fas" th:classappend="${u.estado != null && u.estado} ? 'fa-ban' : 'fa-check'"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+            <!-- Tabla de usuarios (ocupa todo el ancho del contenido) -->
+            <div class="col-12 columna-tabla-derecha px-0">
+                <div class="table-card">
+                    <div class="p-3 border-bottom bg-light d-flex justify-content-between align-items-center flex-wrap gap-2 no-print">
+                        <h5 class="mb-0 text-primary">Usuarios Registrados</h5>
+                        <div class="d-flex gap-2">
+                            <button type="button" id="btnNuevoUsuario" class="btn btn-primary btn-mas"
+                                    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Agregar usuario">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                            <button onclick="window.print();" class="btn btn-outline-primary">
+                                <i class="fas fa-print me-1"></i> Imprimir
+                            </button>
                         </div>
                     </div>
+
+                    <!-- Barra de filtros -->
+                    <div class="filter-bar no-print">
+                        <div class="row g-2 align-items-end">
+                            <div class="col-md-3">
+                                <label for="searchNombre" class="form-label small">Nombre / Apellido</label>
+                                <input type="text" id="searchNombre" class="form-control form-control-sm" placeholder="Ej: Juan Pérez">
+                            </div>
+                            <div class="col-md-3">
+                                <label for="searchUsername" class="form-label small">Username</label>
+                                <input type="text" id="searchUsername" class="form-control form-control-sm" placeholder="Nombre de usuario">
+                            </div>
+                            <div class="col-md-2">
+                                <label for="filterRol" class="form-label small">Rol</label>
+                                <select id="filterRol" class="form-select form-select-sm">
+                                    <option value="">Todos</option>
+                                    <option value="ESTUDIANTE">Estudiante</option>
+                                    <option value="ADMIN">Administrador</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="filterEstado" class="form-label small">Estado</label>
+                                <select id="filterEstado" class="form-select form-select-sm">
+                                    <option value="">Todos</option>
+                                    <option value="true">Activo</option>
+                                    <option value="false">Inactivo</option>
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <button id="resetFilters" class="btn btn-outline-secondary btn-sm w-100 no-print">Limpiar</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contenedor responsivo con scroll -->
+                    <div class="table-responsive scrollable-table">
+                        <table class="table table-sm table-hover mb-0 align-middle" id="tablaUsuarios">
+                            <!-- Encabezado con clase sticky-header (manejada por JS para Safari) -->
+                            <thead class="table-light sticky-header">
+                                <tr>
+                                    <th class="th-nro">Nº</th>
+                                    <th class="th-nombre">Nombre completo</th>
+                                    <th class="th-username">Username</th>
+                                    <th class="th-edad text-center">Edad</th>
+                                    <th class="th-registro">Registro</th>
+                                    <th class="th-rol">Rol</th>
+                                    <th class="th-estado">Estado</th>
+                                    <th class="text-center no-print th-acciones">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usuariosBody">
+                                <tr th:if="${usuarios.isEmpty()}">
+                                    <td colspan="8" class="text-center py-4 text-muted">
+                                        <i class="fas fa-inbox fa-2x mb-2"></i><br>
+                                        No hay usuarios registrados.
+                                    </td>
+                                </tr>
+
+                                <tr th:each="u, iterStat : ${usuarios}"
+                                    th:attr="data-id=${u.id},
+                                             data-nombre=${u.nombre},
+                                             data-apellido=${u.apellido},
+                                             data-fecha=${u.fecha_nacimiento != null ? u.fecha_nacimiento.toLocalDate().toString() : ''},
+                                             data-username=${u.username},
+                                             data-rol=${u.rol},
+                                             data-estado=${u.estado != null ? u.estado : true}">
+                                    <td class="fw-bold text-muted th-nro" th:text="${iterStat.count}"></td>
+                                    <td class="th-nombre" th:text="${u.nombre + ' ' + u.apellido}"></td>
+                                    <td class="th-username text-truncate" th:text="${u.username}"></td>
+                                    <td class="th-edad text-center" th:text="${u.edad}"></td>
+                                    <td class="th-registro" th:text="${#temporals.format(u.fechaRegistro, 'dd/MM/yyyy')}"></td>
+                                    <td class="th-rol">
+                                        <span th:if="${u.rol == 'ADMIN'}" class="badge bg-primary">Administrador</span>
+                                        <span th:if="${u.rol == 'ESTUDIANTE'}" class="badge bg-success">Estudiante</span>
+                                    </td>
+                                    <td class="th-estado">
+                                        <span th:if="${u.estado}" class="badge bg-success">Activo</span>
+                                        <span th:unless="${u.estado}" class="badge bg-secondary">Inactivo</span>
+                                    </td>
+                                    <td class="text-center no-print text-nowrap th-acciones">
+                                        <a href="#" th:attr="data-id=${u.id}"
+                                           class="btn btn-sm btn-outline-primary me-1 btn-editar"
+                                           title="Editar usuario">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button"
+                                                class="btn btn-sm btn-alternar-estado"
+                                                th:classappend="${u.estado != null && u.estado} ? 'btn-outline-danger' : 'btn-outline-success'"
+                                                th:data-id="${u.id}"
+                                                th:data-nombre="${u.nombre + ' ' + u.apellido}"
+                                                th:data-estado="${u.estado != null && u.estado}"
+                                                th:title="${u.estado != null && u.estado} ? 'Desactivar usuario' : 'Activar usuario'">
+                                            <i class="fas" th:classappend="${u.estado != null && u.estado} ? 'fa-ban' : 'fa-check'"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal: formulario de usuario (nuevo / editar) -->
+    <div class="modal fade" id="modalUsuario" tabindex="-1" aria-labelledby="tituloModalUsuario" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header py-2">
+                    <h5 class="modal-title text-primary fw-bold" id="tituloModalUsuario">
+                        <i class="fas fa-user-plus me-2"></i>Nuevo Usuario
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formUsuario" th:action="@{/usuarios/guardar}" th:object="${usuario}" method="post">
+                    <input type="hidden" th:field="*{id}">
+                    <div class="modal-body">
+                        <!-- Error de validación del servidor dentro del modal -->
+                        <div th:if="${modalError}" class="alert alert-danger py-2 mb-3" style="font-size: 0.85rem;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            <span th:text="${modalError}"></span>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Nombre</label>
+                                <input type="text" class="form-control form-control-sm" th:field="*{nombre}" required placeholder="Ej: Juan">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Apellido</label>
+                                <input type="text" class="form-control form-control-sm" th:field="*{apellido}" required placeholder="Ej: Pérez">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Fecha de Nacimiento</label>
+                                <input type="date" class="form-control form-control-sm" th:field="*{fecha_nacimiento}" required>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Username</label>
+                                <input type="text" class="form-control form-control-sm" th:field="*{username}" required placeholder="Ej: jperez">
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Rol</label>
+                                <select class="form-select form-select-sm" th:field="*{rol}" required>
+                                    <option value="ESTUDIANTE">ESTUDIANTE</option>
+                                    <option value="ADMIN">ADMIN</option>
+                                </select>
+                            </div>
+                            <div class="col-6">
+                                <label class="form-label small mb-1">Estado</label>
+                                <select class="form-select form-select-sm" th:field="*{estado}" required>
+                                    <option th:value="true">Activo</option>
+                                    <option th:value="false">Inactivo</option>
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label small mb-1">Contraseña</label>
+                                <input type="password" class="form-control form-control-sm" th:field="*{password}" minlength="5" placeholder="Mínimo 5 caracteres">
+                                <small class="text-muted d-block mt-1" style="font-size: 10px;">En edición, vacío = conservar la actual.</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Guardar Usuario</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 
-    <!-- Scripts Bootstrap -->
+    <!-- Botón flotante para volver arriba (listas extensas) -->
+    <button id="btnSubir" class="btn-flotante" title="Volver arriba">
+        <i class="fas fa-chevron-up"></i>
+    </button>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-    <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <!-- Script principal de usuarios -->
-    <script th:src="@{/js/usuarios.js}"></script>
+    <script th:src="@{/js/usuarios.js} + '?v=' + ${#dates.createNow().getTime()}"></script>
 
 </body>
 </html>

@@ -28,6 +28,11 @@ public class PreguntaService {
             throw new RuntimeException("El número de pregunta es obligatorio.");
         }
 
+        // Validar rango permitido (1 a 98)
+        if (pregunta.getNumero() < 1 || pregunta.getNumero() > 98) {
+            throw new RuntimeException("El número de pregunta debe estar entre 1 y 98.");
+        }
+
         // Validar unicidad (excepto si es la misma pregunta en edición)
         Pregunta existente = preguntaRepository.findByNumero(pregunta.getNumero());
         if (existente != null && existente.getId() != pregunta.getId()) {
