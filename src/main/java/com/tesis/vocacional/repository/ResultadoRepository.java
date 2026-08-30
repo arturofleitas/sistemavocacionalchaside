@@ -11,10 +11,10 @@ import java.util.List;
 @Repository
 public interface ResultadoRepository extends JpaRepository<Resultado, Integer> {
 
-    @Query("SELECT r FROM Resultado r JOIN FETCH r.test tu JOIN FETCH tu.usuario u ORDER BY r.fechaRealizacion DESC")
+    @Query("SELECT r FROM Resultado r JOIN FETCH r.test tu JOIN FETCH tu.usuario u JOIN FETCH tu.test t ORDER BY r.fechaRealizacion DESC")
     List<Resultado> findAllWithUsuarioAndTest();
 
-    @Query("SELECT r FROM Resultado r JOIN FETCH r.test tu JOIN FETCH tu.usuario u WHERE u.id = :usuarioId ORDER BY r.fechaRealizacion DESC")
+    @Query("SELECT r FROM Resultado r JOIN FETCH r.test tu JOIN FETCH tu.usuario u JOIN FETCH tu.test t WHERE u.id = :usuarioId ORDER BY r.fechaRealizacion DESC")
     List<Resultado> findByUsuarioId(@Param("usuarioId") Integer usuarioId);
 
     @Query("SELECT COUNT(DISTINCT r.test.usuario.id) FROM Resultado r")

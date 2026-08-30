@@ -66,24 +66,42 @@ public class TestController {
 		this.resultadoService = resultadoService;
 	}
 
-	/** Inicia un nuevo test. Crea una sesión con las preguntas y un TestUsuario. */
+	/** Inicia un nuevo test o reanuda el test EN_CURSO del usuario. */
 	@GetMapping
 	public String iniciarTest(HttpSession session, Model model) {
 		List<Pregunta> preguntas = preguntaService.listarTodas();
 		Usuario usuario = obtenerUsuarioAutenticado();
 		Test test = obtenerTestCHASIDE();
 
-		TestUsuario testUsuario = new TestUsuario();
-		testUsuario.setUsuario(usuario);
-		testUsuario.setTest(test);
-		testUsuario.setEstado("EN_CURSO");
-		testUsuario = testUsuarioService.guardar(testUsuario);
+		// Reanudar test en curso si existe (persistencia del progreso) o crear uno nuevo
+		TestUsuario testUsuario = testUsuarioService.buscarEnCurso(usuario).orElse(null);
 
-		// Guardar en sesión
+		if (testUsuario == null) {
+			testUsuario = new TestUsuario();
+			testUsuario.setUsuario(usuario);
+			testUsuario.setTest(test);
+			testUsuario.setEstado("EN_CURSO");
+			testUsuario = testUsuarioService.guardar(testUsuario);
+		}
+
+		// Reconstruir las respuestas ya guardadas cuando se retoma el test
+		List<String> respuestas = reconstruirRespuestas(testUsuario, preguntas);
+		int indiceActual = respuestas.size();
+
+		// Si ya se respondieron todas las preguntas, ir directo al resultado
+		if (indiceActual >= preguntas.size()) {
+			return "redirect:/realizar-test/test-resultado";
+		}
+
+		// Guardar el estado en sesión
 		session.setAttribute("preguntas", preguntas);
-		session.setAttribute("respuestas", new ArrayList<String>());
-		session.setAttribute("indiceActual", 0);
+		session.setAttribute("respuestas", respuestas);
 		session.setAttribute("testUsuario", testUsuario);
+		session.setAttribute("indiceActual", indiceActual);
+
+		// Aviso visual solo si realmente hay progreso (no en el primer ingreso)
+		boolean retomando = indiceActual > 0;
+		model.addAttribute("retomando", retomando);
 
 		return mostrarPreguntaActual(session, model);
 	}
@@ -111,15 +129,13 @@ public class TestController {
 			return "redirect:/realizar-test/test-resultado";
 		}
 
-		// Guardar respuesta en sesión
-		if (indice < respuestas.size()) {
-			respuestas.set(indice, respuesta);
-		} else {
-			respuestas.add(respuesta);
+		// Validar que la respuesta sea "SI" o "NO" (impide valores manipulados)
+		if (!"SI".equalsIgnoreCase(respuesta) && !"NO".equalsIgnoreCase(respuesta)) {
+			model.addAttribute("error", "Respuesta inválida. Seleccioná Sí o No para continuar.");
+			return mostrarPreguntaActual(session, model);
 		}
-		session.setAttribute("respuestas", respuestas);
 
-		// Persistir la respuesta en la base de datos
+		// Persistir primero; solo si tiene éxito se actualiza la sesión y se avanza
 		try {
 			Pregunta preguntaActual = preguntas.get(indice);
 
@@ -136,6 +152,9 @@ public class TestController {
 				tup = testUsuarioPreguntaService.guardar(tup);
 			}
 
+			// Eliminar respuestas previas de esta pregunta para evitar duplicados
+			respuestaService.eliminarPorTestUsuarioPregunta(tup);
+
 			// Crear la respuesta (valor booleano)
 			Respuesta respuestaEntity = new Respuesta();
 			respuestaEntity.setPregunta(tup);
@@ -146,9 +165,18 @@ public class TestController {
 
 		} catch (Exception e) {
 			e.printStackTrace();
-			// En caso de error, no interrumpimos el flujo, pero registramos el problema
-			model.addAttribute("error", "Error al guardar la respuesta: " + e.getMessage());
+			// Mensaje controlado: no se avanza para no perder la pregunta actual
+			model.addAttribute("error", "No se pudo guardar la respuesta. Intentá nuevamente.");
+			return mostrarPreguntaActual(session, model);
 		}
+
+		// Guardar respuesta en sesión (tras la persistencia exitosa)
+		if (indice < respuestas.size()) {
+			respuestas.set(indice, respuesta);
+		} else {
+			respuestas.add(respuesta);
+		}
+		session.setAttribute("respuestas", respuestas);
 
 		// Avanzar al siguiente índice
 		indice++;
@@ -190,15 +218,25 @@ public class TestController {
 	@PostMapping("/anterior")
 	public String anterior(HttpSession session, Model model) {
 		List<String> respuestas = obtenerLista(session, "respuestas");
+		List<Pregunta> preguntas = obtenerLista(session, "preguntas");
+		TestUsuario testUsuario = (TestUsuario) session.getAttribute("testUsuario");
 		Integer indice = (Integer) session.getAttribute("indiceActual");
 
-		if (respuestas == null || indice == null || indice <= 0) {
+		if (respuestas == null || preguntas == null || testUsuario == null || indice == null || indice <= 0) {
 			return "redirect:/realizar-test";
 		}
 
+		// Quitar de la sesión la respuesta y volver al índice anterior
 		respuestas.remove(indice - 1);
 		session.setAttribute("respuestas", respuestas);
 		session.setAttribute("indiceActual", --indice);
+
+		// Eliminar la respuesta de la base de datos para que el progreso sea consistente
+		Pregunta preguntaAAnular = preguntas.get(indice);
+		testUsuarioPreguntaService.buscarPorTestUsuarioYPregunta(testUsuario, preguntaAAnular).ifPresent(tup -> {
+			respuestaService.eliminarPorTestUsuarioPregunta(tup);
+			testUsuarioPreguntaService.eliminar(tup);
+		});
 
 		return mostrarPreguntaActual(session, model);
 	}
@@ -280,9 +318,10 @@ public class TestController {
 		int maxInteres = puntajesInteres.values().stream().max(Integer::compareTo).orElse(1);
 		int maxAptitud = puntajesAptitud.values().stream().max(Integer::compareTo).orElse(1);
 
-		// 6. Perfil combinado
-		String perfilCombinado = interesesPrincipales.stream().findFirst().orElse("Sin interés") + " + "
-				+ aptitudesPrincipales.stream().findFirst().orElse("Sin aptitud");
+		// 6. Perfil combinado: mayor puntaje de interés + mayor puntaje de aptitud (nombre legible)
+		String interesNombre = NOMBRE_CATEGORIA.getOrDefault(interesesPrincipales.stream().findFirst().orElse(""), "Sin interés");
+		String aptitudNombre = NOMBRE_CATEGORIA.getOrDefault(aptitudesPrincipales.stream().findFirst().orElse(""), "Sin aptitud");
+		String perfilCombinado = interesNombre + " + " + aptitudNombre;
 
 		// 7. Pasar datos al modelo
 		model.addAttribute("interesesPrincipales", interesesNombres);
@@ -308,7 +347,34 @@ public class TestController {
 		return "test-resultado";
 	}
 
-	// MÉTODOS AUXILIARES PRIVADOS
+	/**
+	 * Reconstruye la lista de respuestas desde la base de datos para reanudar el
+	 * test. Recorre las preguntas en orden y se detiene en la primera sin respuesta.
+	 */
+	private List<String> reconstruirRespuestas(TestUsuario testUsuario, List<Pregunta> preguntas) {
+		List<String> respuestas = new ArrayList<>();
+		if (testUsuario == null || testUsuario.getId() == 0) {
+			return respuestas;
+		}
+
+		// Mapa preguntaId -> valor de la respuesta guardada
+		Map<Integer, Boolean> respuestasPorPregunta = new HashMap<>();
+		for (Respuesta r : respuestaService.obtenerPorTestUsuarioId(testUsuario.getId())) {
+			if (r.getPregunta() != null && r.getPregunta().getPregunta() != null) {
+				respuestasPorPregunta.put(r.getPregunta().getPregunta().getId(), r.getValor());
+			}
+		}
+
+		// Se recorren en el orden real y se corta en la primera pregunta sin respuesta
+		for (Pregunta p : preguntas) {
+			Boolean valor = respuestasPorPregunta.get(p.getId());
+			if (valor == null) {
+				break;
+			}
+			respuestas.add(Boolean.TRUE.equals(valor) ? "SI" : "NO");
+		}
+		return respuestas;
+	}
 
 	/**
 	 * Obtiene el usuario autenticado actualmente.

@@ -116,13 +116,30 @@ body {
 @media print {
     .no-print { display: none !important; }
     body { background: white !important; padding: 10px !important; }
-    .report-header, .info-card, .table-reporte {
+    .report-header, .info-card {
         box-shadow: none !important;
         border: 1px solid #dee2e6;
         break-inside: avoid;
     }
     .report-header { border-bottom: 2px solid #0d6efd; border-radius: 0; }
     .badge-perfil, .badge-si, .badge-no { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-    .table-reporte { border: 1px solid #ccc; }
+
+    /* La tabla de respuestas: visible, sin scroll, y repetir encabezado por página */
+    .table-reporte {
+        box-shadow: none !important;
+        border: 1px solid #dee2e6;
+    }
+    .table-reporte .table-responsive,
+    .table-reporte .table {
+        overflow: visible !important;
+        width: 100% !important;
+    }
+    .table-reporte thead {
+        display: table-header-group !important;
+    }
+    .table-reporte tbody tr {
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
     .table-reporte th { background: #e9ecef !important; -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 }

@@ -37,12 +37,22 @@ public class UsuarioService {
                 throw new RuntimeException("La fecha de nacimiento no puede ser futura.");
             }
 
+            // Verificar que la fecha no sea demasiado antigua (año 1900 como límite)
+            if (fechaNac.isBefore(LocalDate.of(1900, 1, 1))) {
+                throw new RuntimeException("La fecha de nacimiento no puede ser anterior al año 1900.");
+            }
+
             // Calcular edad actual
             int edad = Period.between(fechaNac, hoy).getYears();
 
             // Verificar edad mínima (14 años)
             if (edad < 14) {
                 throw new RuntimeException("Debes tener al menos 14 años para registrarte.");
+            }
+
+            // Verificar edad máxima (120 años)
+            if (edad > 120) {
+                throw new RuntimeException("La edad no puede superar los 120 años.");
             }
 
             // MODO ACTUALIZACIÓN

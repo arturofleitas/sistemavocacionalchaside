@@ -5,6 +5,7 @@ import com.tesis.vocacional.model.TestUsuario;
 import com.tesis.vocacional.model.Pregunta;
 import com.tesis.vocacional.repository.TestUsuarioPreguntaRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,5 +30,11 @@ public class TestUsuarioPreguntaService {
     // Este es el método que faltaba
     public Optional<TestUsuarioPregunta> buscarPorTestUsuarioYPregunta(TestUsuario testUsuario, Pregunta pregunta) {
         return repository.buscarPorTestUsuarioYPregunta(testUsuario, pregunta);
+    }
+
+    // Elimina la relación pregunta-usuario (usado al retroceder)
+    @Transactional
+    public void eliminar(TestUsuarioPregunta tup) {
+        repository.delete(tup);
     }
 }

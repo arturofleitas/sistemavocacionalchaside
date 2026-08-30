@@ -85,6 +85,28 @@
 
 			<div th:replace="~{fragments/menu :: offcanvas}"></div>
 
+			<!-- Aviso cuando se retoma el test desde donde quedó -->
+
+			<div th:if="${retomando}" class="alert alert-info alert-dismissible fade show" role="alert">
+
+				<i class="fas fa-history me-2"></i>
+
+				<strong>Retomaste el test</strong> donde lo dejaste. Continuá desde la pregunta
+
+				<strong th:text="${progreso}"></strong>.
+
+			</div>
+
+			<!-- Alerta de error controlado (validación o persistencia) -->
+
+			<div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+
+				<i class="fas fa-exclamation-triangle me-2"></i>
+
+				<span th:text="${error}"></span>
+
+			</div>
+
 			<!-- Barra de progreso -->
 
 			<div class="mb-4">
@@ -136,7 +158,7 @@
 
 					<!-- Opciones Sí / No -->
 
-					<div class="opciones-container">
+					<div class="opciones-container" id="opciones" th:attr="data-progreso=${progreso}">
 
 						<!-- Opción Sí -->
 
@@ -173,41 +195,38 @@
 
 					</div>
 
-					<!-- Botones de navegación -->
-
-					<div class="d-flex justify-content-between mt-5">
-
-						<span></span>
-
-						<button type="button" class="btn btn-primary" th:if="${!esUltimaPregunta}" id="btnSiguiente">
-
-							Siguiente →
-
-						</button>
-
-						<button type="submit" class="btn btn-success" th:if="${esUltimaPregunta}" id="btnFinalizar">
-
-							Finalizar Test
-
-						</button>
-
-					</div>
-
 				</form>
 
-				<!-- Formulario para retroceder (independiente) -->
+				<!-- Navegación: Anterior y Siguiente/Finalizar en la misma fila -->
 
-				<form th:if="${progreso > 1}" th:action="@{/realizar-test/anterior}" method="post"
-					style="margin-top: -68px; width: fit-content;"
-					onsubmit="this.querySelector('button').disabled = true;">
+				<div class="d-flex justify-content-between align-items-center mt-5 nav-test">
 
-					<button type="submit" class="btn btn-secondary">
+					<form th:if="${progreso > 1}" id="formAnterior" th:action="@{/realizar-test/anterior}" method="post"
+						onsubmit="this.querySelector('button').disabled = true;">
 
-						← Anterior
+						<button type="submit" class="btn btn-secondary">
+
+							← Anterior
+
+						</button>
+
+					</form>
+
+					<span th:if="${progreso <= 1}"></span>
+
+					<button type="button" class="btn btn-primary" th:if="${!esUltimaPregunta}" id="btnSiguiente">
+
+						Siguiente →
 
 					</button>
 
-				</form>
+					<button type="button" class="btn btn-success" th:if="${esUltimaPregunta}" id="btnFinalizar">
+
+						Finalizar Test
+
+					</button>
+
+				</div>
 
 			</div>
 

@@ -160,32 +160,16 @@
         }
 
         /* BOTÓN FINALIZAR TEST
-         * Este botón sí es "submit", pero se valida
-         * directamente antes de permitir el envío.*/
+         * Es de tipo "button": se envía el formulario desde JS para
+         * garantizar que llegue al backend y muestre el resultado. */
 
         if (btnFinalizar) {
 
             btnFinalizar.addEventListener('click', function(event) {
 
-                console.log('Botón Finalizar presionado');
-
-                /*
-                 * Comprobar si existe una respuesta.
-                 */
-
                 if (!isRespuestaSeleccionada()) {
 
-                    console.log('Respuesta no seleccionada');
-
-                    /*
-                     * Cancelar el envío.
-                     */
-
                     event.preventDefault();
-
-                    /*
-                     * Mostrar alerta.
-                     */
 
                     mostrarAlerta();
 
@@ -193,19 +177,72 @@
 
                 }
 
-                /*
-                 * Si hay respuesta, permitir el envío.
-                 */
-
-                console.log('Respuesta seleccionada, finalizando test');
-
-                /*
-                 * Evitar múltiples envíos.
-                 */
+                // Validado: enviar el formulario para ir al resultado
+                event.preventDefault();
 
                 btnFinalizar.disabled = true;
 
+                form.submit();
+
             });
+
+        }
+
+        /* Navegación por teclado (simplificada):
+         * - Flechas izquierda/derecha (y arriba/abajo): alternan entre Sí y No.
+         * - Enter: confirma la opción seleccionada y envía el formulario. */
+
+        document.addEventListener('keydown', function(event) {
+
+            var mover = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(event.key) !== -1;
+
+            if (mover) {
+
+                var actual = -1;
+
+                for (var i = 0; i < radios.length; i++) {
+
+                    if (radios[i].checked) { actual = i; break; }
+
+                }
+
+                // Si no hay selección se elige "Sí"; izquierda/arriba -> Sí, derecha/abajo -> No
+                var destino = (actual === -1) ? 0 : ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') ? 0 : 1);
+
+                if (radios[destino]) {
+
+                    radios[destino].checked = true;
+
+                    radios[destino].focus();
+
+                }
+
+                event.preventDefault();
+
+            } else if (event.key === 'Enter') {
+
+                // Confirmar la opción elegida (envía el formulario)
+                if (isRespuestaSeleccionada()) {
+
+                    event.preventDefault();
+
+                    form.submit();
+
+                }
+
+            }
+
+        });
+
+        /* En escritorio, el foco y la selección empiezan en "Sí" en cada pregunta */
+
+        var contenedorOpciones = document.getElementById('opciones');
+
+        if (contenedorOpciones && window.innerWidth >= 768 && radios[0] && !isRespuestaSeleccionada()) {
+
+            radios[0].checked = true;
+
+            radios[0].focus();
 
         }
 

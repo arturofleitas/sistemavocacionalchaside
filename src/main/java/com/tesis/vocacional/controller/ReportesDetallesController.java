@@ -46,7 +46,7 @@ public class ReportesDetallesController {
     @GetMapping("/test/{id}")
     public String verDetalleTest(@PathVariable Integer id, Model model) {
         Resultado resultado = resultadoService.buscarPorId(id);
-        if (resultado == null) {
+        if (resultado == null || resultado.getTest() == null) {
             return "redirect:/reportes";
         }
 
@@ -70,7 +70,15 @@ public class ReportesDetallesController {
         String perfilRecomendado = construirPerfilRecomendadoCompleto(resultado.getInteresesPrincipales(),
                                                                      resultado.getAptitudesPrincipales());
 
+        // Nombre del alumno con protección ante datos incompletos
+        String alumnoNombre = "-";
+        if (resultado.getTest().getUsuario() != null) {
+            alumnoNombre = resultado.getTest().getUsuario().getNombre() + " "
+                    + resultado.getTest().getUsuario().getApellido();
+        }
+
         model.addAttribute("resultado", resultado);
+        model.addAttribute("alumnoNombre", alumnoNombre);
         model.addAttribute("preguntas", preguntas);
         model.addAttribute("mapaRespuestas", mapaRespuestas);
         model.addAttribute("interesesNombres", interesesNombres);

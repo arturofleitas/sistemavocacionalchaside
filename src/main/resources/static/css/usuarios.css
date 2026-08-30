@@ -161,8 +161,8 @@
     .th-nro      { width: 8%; }
     .th-nombre   { width: 26%; }
     .th-rol      { width: 22%; }
-    .th-estado   { width: 18%; }
-    .th-acciones { width: 26%; }
+    .th-estado   { width: 20%; }
+    .th-acciones { width: 24%; }
 
     .table .badge {
         text-transform: capitalize;
@@ -172,8 +172,15 @@
     }
 
     .table td, .table th {
-        padding: 0.5rem 0.35rem !important;
+        padding: 0.5rem 0.45rem !important;
         font-size: 0.85rem;
+    }
+
+    /* Separar los encabezados de las columnas en móvil */
+    #tablaUsuarios thead th {
+        padding-right: 6px;
+        padding-left: 6px;
+        letter-spacing: 0 !important;
     }
 }
 

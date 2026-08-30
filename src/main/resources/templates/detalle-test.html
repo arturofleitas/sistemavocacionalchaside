@@ -32,7 +32,7 @@
         <div class="row">
             <div class="col-md-6">
                 <strong>Alumno</strong><br>
-                <span th:text="${resultado.test.usuario.nombre + ' ' + resultado.test.usuario.apellido}">-</span>
+                <span th:text="${alumnoNombre}">-</span>
             </div>
             <div class="col-md-6">
                 <strong>Fecha de realización</strong><br>
@@ -79,10 +79,10 @@
                 <tbody>
                     <tr th:each="tup, stat : ${preguntas}">
                         <td style="text-align:center;" th:text="${stat.count}">1</td>
-                        <td th:text="${tup.pregunta.texto}">Texto de la pregunta</td>
+                        <td th:text="${tup.pregunta != null && tup.pregunta.texto != null ? tup.pregunta.texto : 'Pregunta no disponible'}">Texto de la pregunta</td>
                         <td style="text-align:center;">
-                            <span th:with="res=${mapaRespuestas[tup.pregunta.id]}"
-                                  th:text="${res}"
+                            <span th:with="res=${tup.pregunta != null ? mapaRespuestas[tup.pregunta.id] : null}"
+                                  th:text="${res ?: 'Sin respuesta'}"
                                   th:class="${res == 'Sí' ? 'badge-si' : 'badge-no'}">Sí</span>
                         </td>
                     </tr>
@@ -100,16 +100,25 @@
 </div>
 
 <script>
-    window.addEventListener('scroll', function() {
-        var btn = document.getElementById('scrollTopBtn');
-        if (window.scrollY > window.innerHeight / 2) {
-            btn.style.display = 'block';
-        } else {
-            btn.style.display = 'none';
-        }
-    });
     document.addEventListener('DOMContentLoaded', function() {
-        document.getElementById('scrollTopBtn').style.display = 'none';
+        var btn = document.getElementById('scrollTopBtn');
+        var tabla = document.querySelector('.table-reporte');
+        var triggerY = 0;
+
+        // El botón aparece al llegar a la pregunta 20 (aprox.) de la tabla
+        if (tabla) {
+            var filas = tabla.querySelectorAll('tbody tr');
+            var fila20 = filas[19];
+            var rect = fila20 ? fila20.getBoundingClientRect() : tabla.getBoundingClientRect();
+            triggerY = rect.top + window.scrollY + (fila20 ? rect.height : 600);
+        }
+
+        function actualizar() {
+            btn.style.display = (window.scrollY >= triggerY) ? 'block' : 'none';
+        }
+
+        window.addEventListener('scroll', actualizar);
+        actualizar();
     });
 </script>
 
