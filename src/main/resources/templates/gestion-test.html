@@ -38,11 +38,12 @@
 						data-bs-target="#offcanvasMenu">
 						<i class="fas fa-bars"></i>
 					</button>
+					<button class="btn-toggle-sidebar d-none d-md-inline-block" type="button" title="Mostrar/ocultar menú">
+						<i class="fas fa-bars"></i>
+					</button>
 					<h2 class="header-title">Gestión de Test</h2>
 				</div>
-				<div class="user-info no-print">
-					<span>Bienvenido, <span sec:authentication="name"></span></span>
-				</div>
+				<div th:replace="~{fragments/menu :: userInfo}"></div>
 			</div>
 
 			<div th:replace="~{fragments/menu :: offcanvas}"></div>
@@ -203,6 +204,8 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 	<!-- SweetAlert2 JS -->
 	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<!-- Toggle del menú lateral (común a todas las interfaces) -->
+	<script th:src="@{/js/sidebar.js}"></script>
 	<script th:src="@{/js/gestion-test.js} + '?v=' + ${#dates.createNow().getTime()}"></script>
 </body>
 

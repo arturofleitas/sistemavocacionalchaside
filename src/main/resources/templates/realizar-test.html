@@ -66,18 +66,15 @@
 
 					</button>
 
+					<button class="btn-toggle-sidebar d-none d-md-inline-block" type="button" title="Mostrar/ocultar menú">
+						<i class="fas fa-bars"></i>
+					</button>
+
 					<h2 class="header-title">Realizar Test Vocacional CHASIDE</h2>
 
 				</div>
 
-				<div class="user-info">
-
-					<span>
-						Bienvenido,
-						<span sec:authentication="name"></span>
-					</span>
-
-				</div>
+				<div th:replace="~{fragments/menu :: userInfo}"></div>
 
 			</div>
 
@@ -237,6 +234,8 @@
 	<!-- Scripts -->
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+	<script th:src="@{/js/sidebar.js}"></script>
 
 	<script th:src="@{/js/realizar-test.js} + '?v=' + ${#dates.createNow().getTime()}"></script>
 

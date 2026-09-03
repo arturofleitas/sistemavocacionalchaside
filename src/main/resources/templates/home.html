@@ -28,15 +28,12 @@
                         <i class="fas fa-bars"></i>
                     </button>
                     <!-- Botón toggle sidebar (desktop) -->
-                    <button class="btn-toggle-sidebar d-none d-md-inline-block" type="button" onclick="toggleSidebar()">
+                    <button class="btn-toggle-sidebar d-none d-md-inline-block" type="button" title="Mostrar/ocultar menú">
                         <i class="fas fa-bars"></i>
                     </button>
                     <h2>Panel de Control</h2>
                 </div>
-                <div class="user-info">
-                    <span>Bienvenido, <strong sec:authentication="name"></strong></span>
-                    <div class="avatar"><i class="fas fa-user"></i></div>
-                </div>
+                <div th:replace="~{fragments/menu :: userInfo}"></div>
             </div>
 
             <!-- Offcanvas (menú móvil) -->
@@ -118,24 +115,8 @@
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/sidebar.js}"></script>
     <script>
-        // Alterna la visibilidad del sidebar en desktop
-        function toggleSidebar() {
-            var container = document.getElementById('appContainer');
-            container.classList.toggle('sidebar-collapsed');
-            var isCollapsed = container.classList.contains('sidebar-collapsed');
-            localStorage.setItem('sidebarCollapsed', isCollapsed);
-        }
-
-        // Restaura el estado del sidebar al cargar la página
-        window.addEventListener('load', function() {
-            var container = document.getElementById('appContainer');
-            var collapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-            if (collapsed) {
-                container.classList.add('sidebar-collapsed');
-            }
-        });
-
         // Fuerza un reflow en navegación con historial para evitar problemas de renderizado
         window.addEventListener('pageshow', function(event) {
             if (event.persisted) {

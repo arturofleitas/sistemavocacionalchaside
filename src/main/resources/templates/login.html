@@ -3,110 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Sistema Vocacional</title>
+    <title>Iniciar Sesión - CHASIDE</title>
+
+    <!-- Bootstrap, Font Awesome y estilos -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <style>
-        body {
-            background: linear-gradient(135deg, #0d6efd 0%, #1e40af 100%);
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            padding: 1rem 0;
-        }
-        
-        .login-card {
-            border-radius: 20px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
-            padding: 2rem 1.25rem;
-        }
-        
-        /* Ajustes para móviles */
-        @media (max-width: 576px) {
-            .login-card {
-                padding: 2rem 1rem;
-            }
-            
-            .form-control {
-                font-size: 16px;  /* Evita zoom en iOS */
-                padding: 12px 14px;
-            }
-            
-            .form-label {
-                font-size: 14px;
-            }
-            
-            .btn {
-                font-size: 16px;
-                padding: 12px;
-            }
-            
-            .alert {
-                font-size: 0.95rem;
-                padding: 0.5rem 0.75rem;
-            }
-        }
-        
-        /* Ajustes para tablets */
-        @media (min-width: 577px) and (max-width: 992px) {
-            .login-card {
-                padding: 2.5rem 2rem;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/login.css} + '?v=' + ${#dates.createNow().getTime()}">
 </head>
 <body>
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-11 col-sm-10 col-md-6 col-lg-4">
-                <div class="card login-card">
-                    <div class="text-center mb-4">
-                        <h3 class="text-primary" style="font-size: clamp(1.5rem, 5vw, 2.5rem);">
-                            Sistema Vocacional CHASIDE
-                        </h3>
-                        <p class="text-muted" style="font-size: clamp(0.9rem, 2vw, 1rem);">
-                            Iniciar Sesión
-                        </p>
-                    </div>
 
-                    <!-- Mensajes de error o éxito -->
-                    <div th:if="${param.error}" class="alert alert-danger text-center py-2 px-3" style="font-size: 0.95rem;">
-                        <i class="fas fa-exclamation-circle me-1"></i> Usuario o contraseña incorrectos
-                    </div>
-                    <div th:if="${param.logout}" class="alert alert-success text-center py-2 px-3" style="font-size: 0.95rem;">
-                        <i class="fas fa-check-circle me-1"></i> Has cerrado sesión correctamente
-                    </div>
-                    <div th:if="${param.registered}" class="alert alert-success text-center py-2 px-3" style="font-size: 0.95rem;">
-                        <i class="fas fa-check-circle me-1"></i> ¡Registro exitoso! Ahora puedes iniciar sesión
-                    </div>
+    <!-- Logo FACITEC en la esquina superior (escritorio) -->
+    <div class="factec-marca">
+        <img th:src="@{/img/LogoFacitec.jpg}" alt="FACITEC - Universidad Nacional de Canindeyú">
+    </div>
 
-                    <form th:action="@{/login}" method="post">
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Usuario</label>
-                            <input type="text" name="username" class="form-control" required placeholder="Ingresa tu usuario">
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Contraseña</label>
-                            <input type="password" name="password" class="form-control" required placeholder="Ingresa tu contraseña">
-                        </div>
-
-                        <button type="submit" class="btn btn-primary w-100 py-2 py-sm-3 mb-4 fw-semibold">
-                            <i class="fas fa-sign-in-alt me-2"></i> Ingresar
-                        </button>
-                    </form>
-
-                    <!-- Enlace de registro para estudiantes -->
-                    <div class="text-center">
-                        <p class="mb-0">
-                            ¿No tienes cuenta? 
-                            <a href="/registrarse" class="text-primary fw-semibold d-block py-2" style="font-size: 1.05rem;">
-                                <i class="fas fa-user-plus me-1"></i> Regístrate como Estudiante
-                            </a>
-                        </p>
-                    </div>
+    <div class="login-card">
+        <!-- Panel izquierdo: marca / presentación -->
+        <div class="login-brand">
+            <div class="brand-tag">
+                <!-- Logo que aparece en el panel (móvil) -->
+                <img th:src="@{/img/LogoFacitec.jpg}" alt="FACITEC" class="brand-logo-img">
+                <!-- Brújula (solo escritorio) -->
+                <i class="fas fa-compass brand-compass"></i>
+                <div>
+                    <h3>CHASIDE</h3>
+                    <div class="brand-sub">Sistema de Orientación Vocacional</div>
                 </div>
+            </div>
+
+            <h2>Descubrí tu camino,<br>construí tu futuro.</h2>
+
+            <p>CHASIDE te ayuda a identificar tus intereses y aptitudes para tomar una mejor decisión vocacional.</p>
+
+            <ul class="brand-features">
+                <li>
+                    <i class="fas fa-file-alt"></i>
+                    <div><strong>Test vocacional científico</strong><span>Basado en el modelo CHASIDE</span></div>
+                </li>
+                <li>
+                    <i class="fas fa-chart-line"></i>
+                    <div><strong>Cálculo de resultados automáticos</strong><span>Análisis de intereses y aptitudes</span></div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Panel derecho: formulario -->
+        <div class="login-form">
+            <h2>Bienvenido de nuevo</h2>
+            <p class="form-tag">Ingresá tus datos para continuar</p>
+
+            <!-- Mensajes de error o éxito -->
+            <div th:if="${param.error}" class="alert alert-danger py-2 px-3">
+                <i class="fas fa-exclamation-circle me-1"></i> Usuario o contraseña incorrectos
+            </div>
+            <div th:if="${param.logout}" class="alert alert-success py-2 px-3">
+                <i class="fas fa-check-circle me-1"></i> Has cerrado sesión correctamente
+            </div>
+            <div th:if="${param.registered}" class="alert alert-success py-2 px-3">
+                <i class="fas fa-check-circle me-1"></i> ¡Registro exitoso! Ahora puedes iniciar sesión
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Usuario</label>
+                    <input type="text" name="username" class="form-control" required placeholder="Ingresá tu usuario">
+                </div>
+                <div class="mb-4">
+                    <label class="form-label">Contraseña</label>
+                    <input type="password" name="password" class="form-control" required placeholder="Ingresá tu contraseña">
+                </div>
+
+                <button type="submit" class="btn-login">
+                    <i class="fas fa-sign-in-alt me-2"></i> Iniciar Sesión
+                </button>
+            </form>
+
+            <div class="login-register">
+                ¿No tenés cuenta?
+                <a th:href="@{/registrarse}"><i class="fas fa-user-plus me-1"></i> Regístrate como Estudiante</a>
             </div>
         </div>
     </div>
+
 </body>
 </html>

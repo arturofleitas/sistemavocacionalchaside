@@ -131,6 +131,42 @@ body {
     justify-content: center;
     font-weight: 600;
 }
+/* Bloque de usuario (nombre, apellido y rol) */
+.user-info {
+    color: #1e40af;
+}
+.user-meta {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+.user-name {
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #1e3a8a;
+}
+.user-role {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+/* En móvil se muestra solo el apellido para no alargar el encabezado */
+.user-name-mobile {
+    display: none;
+}
+@media (max-width: 767px) {
+    .user-name-desktop {
+        display: none !important;
+    }
+    .user-name-mobile {
+        display: block;
+    }
+    .user-name {
+        font-size: 0.82rem;
+    }
+    .user-role {
+        font-size: 0.7rem;
+    }
+}
 
 /* Botón hamburguesa (móvil) y toggle sidebar (desktop) */
 .menu-toggle {
@@ -190,11 +226,14 @@ body {
 }
 
 /* Sidebar colapsado (oculto en desktop) */
-.app-container.sidebar-collapsed .sidebar {
+.app-container.sidebar-collapsed .sidebar,
+.main-container.sidebar-collapsed .sidebar {
     display: none !important;
 }
 .app-container.sidebar-collapsed .content,
-.app-container.sidebar-collapsed .main-content {
+.app-container.sidebar-collapsed .main-content,
+.main-container.sidebar-collapsed .content,
+.main-container.sidebar-collapsed .main-content {
     margin-left: 0 !important;
 }
 
@@ -485,11 +524,25 @@ body {
     .main-content {
         padding: 12px 10px;
     }
-    .header {
+    .main-container .header {
         flex-wrap: wrap;
-        gap: 8px;
+        row-gap: 10px;
     }
-    .user-info {
+    /* Encabezado apilado en móvil: título arriba, "Bienvenido"/botones debajo */
+    .main-container .header > div,
+    .main-container .header > div:first-child,
+    .main-container .header .user-info {
+        width: 100%;
+        flex: 1 1 100%;
+        justify-content: flex-start;
+        min-width: 0;
+    }
+    .main-container .header h2 {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .main-container .header .user-info {
         font-size: 0.85rem;
     }
     .avatar {
@@ -529,5 +582,27 @@ body {
     .btn-test-ahora {
         font-size: 0.9rem;
         padding: 12px 24px;
+    }
+}
+
+/* Encabezado en móvil: título arriba y "Bienvenido"/botones debajo (no aplica a Home) */
+@media (max-width: 768px) {
+    .main-container .header {
+        flex-wrap: wrap;
+        row-gap: 10px;
+    }
+    .main-container .header > div {
+        width: 100%;
+        flex: 1 1 100%;
+        justify-content: flex-start;
+    }
+    .main-container .header h2 {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .main-container .header .user-info {
+        justify-content: flex-start;
+        font-size: 0.85rem;
     }
 }

@@ -199,9 +199,13 @@
         gap: 8px;
     }
 
+    .cabecera-tabla .titulo-tabla {
+        flex: 1 0 100%;
+    }
+
     .cabecera-tabla .d-flex.gap-2 {
         flex-wrap: wrap;
-        justify-content: flex-end;
+        justify-content: flex-start;
         width: 100%;
     }
 
@@ -341,5 +345,20 @@
     .table td, .table th {
         padding: 0.5rem 0.35rem !important;
         font-size: 0.85rem;
+    }
+}
+
+/* Los botones ("+" e Imprimir) bajan debajo del título en móvil/tablet */
+@media (max-width: 991.98px) {
+    .cabecera-tabla {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .cabecera-tabla .titulo-tabla {
+        flex: 1 0 100%;
+    }
+    .cabecera-tabla .d-flex.gap-2 {
+        width: 100%;
+        justify-content: flex-start;
     }
 }

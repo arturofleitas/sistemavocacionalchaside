@@ -1,176 +1,230 @@
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+/* Estilos de la pantalla de Login (CHASIDE) */
 
+/* Fondo con la imagen de orientación vocacional */
 body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: linear-gradient(135deg, #1e3c72, #2a5298);
-    height: 100vh;
+    min-height: 100vh;
+    margin: 0;
+    background: url('/img/Fondo.png') center / cover no-repeat fixed;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #333;
+    padding: 1rem;
 }
 
-.container {
-    width: 1100px;
-    height: 620px;
-    background: white;
-    border-radius: 20px;
+/* Tarjeta de dos paneles (marca + formulario) */
+.login-card {
+    display: flex;
+    width: 100%;
+    max-width: 900px;
+    min-height: 520px;
+    border-radius: 24px;
     overflow: hidden;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-    display: flex;
+    box-shadow: 0 18px 45px rgba(0, 0, 0, 0.28);
+    background: #ffffff;
 }
 
-.left-panel {
-    flex: 1;
-    background: linear-gradient(135deg, #2a5298, #1e3c72);
-    color: white;
-    padding: 50px 45px;
-    position: relative;
-    overflow: hidden;
-}
-
-.header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 30px;
-}
-
-.logo {
-    font-size: 28px;
-}
-
-.title {
-    font-size: 42px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    line-height: 1.1;
-}
-
-.description {
-    font-size: 17px;
-    line-height: 1.5;
-    opacity: 0.95;
-    margin-bottom: 40px;
-}
-
-.illustration {
-    position: absolute;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-}
-
-.main-illustration {
-    width: 280px;
-    filter: drop-shadow(0 10px 20px rgba(0,0,0,0.3));
-}
-
-.info {
-    position: absolute;
-    bottom: 40px;
-    left: 45px;
-}
-
-.info-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    font-size: 17px;
-}
-
-.icon {
-    font-size: 22px;
-    width: 30px;
-}
-
-.right-panel {
-    flex: 1;
-    padding: 60px 50px;
+/* Panel izquierdo: marca (azul del sistema) */
+.login-brand {
+    flex: 0 0 42%;
+    background: linear-gradient(160deg, #1e3a8a 0%, #0d6efd 100%);
+    color: #ffffff;
+    padding: 2rem 1.8rem;
     display: flex;
     flex-direction: column;
+    gap: 1rem;
 }
-
-.right-panel h2 {
-    font-size: 28px;
-    color: #1e3c72;
-    margin-bottom: 40px;
+.login-brand .brand-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
 }
-
-.form-group {
-    margin-bottom: 28px;
+.login-brand .brand-tag .brand-compass {
+    color: #cfe2ff;
+    font-size: 2rem;
 }
-
-.form-group label {
+/* Logo FACITEC dentro del panel (visible en móvil) */
+.brand-logo-img {
+    height: 44px;
+    width: auto;
+    border-radius: 8px;
+    background: #ffffff;
+    padding: 3px;
+    display: none;
+}
+.login-brand h3 {
+    margin: 0;
+    font-weight: 800;
+    font-size: 1.6rem;
+    letter-spacing: 1px;
+}
+.login-brand .brand-sub {
+    font-size: 0.85rem;
+    color: #dbeafe;
+}
+.login-brand h2 {
+    font-weight: 800;
+    font-size: clamp(1.5rem, 3vw, 2rem);
+    margin: 0.5rem 0 0;
+    line-height: 1.25;
+}
+.login-brand p {
+    color: #dbeafe;
+    font-size: 0.95rem;
+}
+.brand-features {
+    list-style: none;
+    padding: 0;
+    margin: auto 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+.brand-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+.brand-features li i {
+    font-size: 1.2rem;
+    color: #cfe2ff;
+    margin-top: 2px;
+}
+.brand-features strong {
     display: block;
-    margin-bottom: 8px;
+    font-size: 0.95rem;
+}
+.brand-features span {
+    color: #bfdbfe;
+    font-size: 0.82rem;
+}
+
+/* Panel derecho: formulario blanco */
+.login-form {
+    flex: 1;
+    padding: 2rem 2.1rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+.login-form h2 {
+    font-weight: 800;
+    color: #1e3a8a;
+    margin: 0;
+}
+.login-form .form-tag {
+    color: #6b7280;
+    font-size: 0.92rem;
+    margin-bottom: 1.6rem;
+}
+.login-form .form-label {
     font-weight: 600;
-    color: #333;
+    color: #1e293b;
+    font-size: 0.88rem;
 }
-
-.input-wrapper {
-    position: relative;
-}
-
-.icon-input {
-    position: absolute;
-    left: 15px;
-    top: 50%;
-    transform: translateY(-50%);
-    font-size: 20px;
-    color: #666;
-}
-
-input {
-    width: 100%;
-    padding: 14px 15px 14px 48px;
-    border: 1px solid #ddd;
+.login-form .form-control {
     border-radius: 10px;
-    font-size: 16px;
-    transition: all 0.3s;
+    padding: 11px 14px;
+    border: 1px solid #d1d5db;
+    font-size: 0.95rem;
+}
+.login-form .form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.12);
 }
 
-input:focus {
-    outline: none;
-    border-color: #2a5298;
-    box-shadow: 0 0 0 3px rgba(42, 82, 152, 0.15);
-}
-
-.btn-test {
-    margin-top: auto;
-    padding: 16px;
-    background: #2a5298;
-    color: white;
+/* Botón azul del sistema */
+.btn-login {
+    width: 100%;
+    padding: 12px;
     border: none;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background 0.3s;
+    border-radius: 10px;
+    background: #0d6efd;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+}
+.btn-login:hover {
+    background: #0b5ed7;
 }
 
-.btn-test:hover {
-    background: #1e3c72;
+.login-register {
+    margin-top: 1.4rem;
+    text-align: center;
+    color: #374151;
+    font-size: 0.9rem;
+}
+.login-register a {
+    color: #0d6efd;
+    font-weight: 700;
+    text-decoration: none;
+}
+.login-register a:hover {
+    text-decoration: underline;
 }
 
-footer {
+.login-form .alert {
+    font-size: 0.88rem;
+    border-radius: 10px;
+}
+
+/* Logo FACITEC en la esquina superior izquierda (escritorio) */
+.factec-marca {
     position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(255,255,255,0.7);
-    font-size: 14px;
+    top: 16px;
+    left: 16px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 12px;
+    padding: 4px 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+.factec-marca img {
+    height: 40px;
+    display: block;
+    border-radius: 6px;
 }
 
-/* Responsive pequeño ajuste */
-@media (max-width: 1150px) {
-    .container {
-        width: 95%;
+/* Móvil: se acorta la interfaz, se centra y el logo va dentro del panel */
+@media (max-width: 768px) {
+    body {
+        flex-direction: column;
+        gap: 14px;
+    }
+    .factec-marca {
+        display: none; /* El logo ya está dentro del panel */
+    }
+    .login-card {
+        min-height: auto;
+        flex-direction: column;
+    }
+    .login-brand {
+        flex: none;
+        padding: 1.5rem 1.25rem;
+        gap: 0.7rem;
+        text-align: center;
+        align-items: center;
+    }
+    .login-brand .brand-tag {
+        justify-content: center;
+    }
+    /* En móvil: se quita la brújula y se muestra el logo en su lugar */
+    .login-brand .brand-tag .brand-compass {
+        display: none !important;
+    }
+    .brand-logo-img {
+        display: inline-flex;
+    }
+    .login-brand h2,
+    .login-brand p {
+        text-align: center;
+    }
+    .login-brand p,
+    .login-brand .brand-features {
+        display: none;
+    }
+    .login-form {
+        padding: 1.8rem 1.25rem;
+    }
+    .form-control {
+        font-size: 16px; /* Evita zoom en iOS */
     }
 }

@@ -56,6 +56,11 @@
         </ul>
     </div>
 
+    <!-- Datos del usuario autenticado (Bienvenido) -->
+    <div th:fragment="userInfo" class="user-info no-print">
+        <span>Bienvenido, <span sec:authentication="name"></span></span>
+    </div>
+
     <!-- Offcanvas para móvil (se abre desde la izquierda) -->
     <div th:fragment="offcanvas" class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" style="width: 280px; max-width: 280px;">
         <div class="offcanvas-header">
