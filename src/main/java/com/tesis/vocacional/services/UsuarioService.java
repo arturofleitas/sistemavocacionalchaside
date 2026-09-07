@@ -2,11 +2,17 @@ package com.tesis.vocacional.services;
 
 import com.tesis.vocacional.model.Usuario;
 import com.tesis.vocacional.repository.UsuarioRepository;
+import com.tesis.vocacional.repository.TestUsuarioRepository;
+import com.tesis.vocacional.repository.ResultadoRepository;
+import com.tesis.vocacional.repository.RespuestaRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.Period;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -14,6 +20,15 @@ public class UsuarioService {
 
     @Autowired
     private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private TestUsuarioRepository testUsuarioRepository;
+
+    @Autowired
+    private ResultadoRepository resultadoRepository;
+
+    @Autowired
+    private RespuestaRepository respuestaRepository;
 
     /**
      * Guarda un usuario en el sistema.
@@ -149,5 +164,50 @@ public class UsuarioService {
      */
     public long count() {
         return usuarioRepository.count();
+    }
+
+    /**
+     * Construye un resumen de los datos que se eliminarán al borrar definitivamente
+     * la cuenta de un usuario (sin incluir preguntas/test compartidos ni datos de otros).
+     *
+     * @param id ID del usuario.
+     * @return Mapa con datos de la cuenta y conteos de información asociada.
+     */
+    public Map<String, Object> resumenEliminacion(int id) {
+        Usuario usuario = usuarioRepository.findById(id).orElse(null);
+        if (usuario == null) {
+            throw new RuntimeException("No se encontró el usuario especificado.");
+        }
+
+        Map<String, Object> resumen = new LinkedHashMap<>();
+        resumen.put("id", usuario.getId());
+        resumen.put("nombre", usuario.getNombre());
+        resumen.put("apellido", usuario.getApellido());
+        resumen.put("username", usuario.getUsername());
+        resumen.put("rol", usuario.getRol());
+        resumen.put("testsRealizados", testUsuarioRepository.countByUsuarioId(id));
+        resumen.put("resultados", resultadoRepository.countByUsuarioId(id));
+        resumen.put("respuestas", respuestaRepository.countByUsuarioId(id));
+        return resumen;
+    }
+
+    /**
+     * Elimina definitivamente la cuenta de un usuario junto con todos sus datos
+     * asociados (sesiones de test, respuestas y resultados). NO se eliminan las
+     * preguntas compartidas ni el test CHASIDE, ni datos de otros usuarios.
+     *
+     * El cascade configurado en las entidades (CascadeType.ALL + orphanRemoval)
+     * elimina en cascada: usuario -> test_usuario -> resultado,
+     * test_usuario_pregunta -> respuesta.
+     *
+     * @param id ID del usuario a eliminar.
+     */
+    @Transactional
+    public void eliminarUsuarioConDatos(int id) {
+        Usuario usuario = usuarioRepository.findById(id).orElse(null);
+        if (usuario == null) {
+            throw new RuntimeException("No se encontró el usuario especificado.");
+        }
+        usuarioRepository.delete(usuario);
     }
 }

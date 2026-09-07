@@ -187,7 +187,7 @@
         }
     }
 
-    // Inicializa las acciones de la tabla (alternar estado con SweetAlert2)
+    // Inicializa las acciones de la tabla
     function initAcciones() {
         const tbody = document.getElementById('usuariosBody');
         if (!tbody) return;
@@ -236,6 +236,138 @@
         });
     }
 
+    // Inicializa la eliminación definitiva de cuenta (selección única + re-autenticación)
+    function initEliminar() {
+        const tbody = document.getElementById('usuariosBody');
+        const btnEliminar = document.getElementById('btnEliminarUsuario');
+        const modalEliminar = document.getElementById('modalEliminar');
+        const form = document.getElementById('formEliminar');
+        if (!tbody || !btnEliminar || !modalEliminar || !form) return;
+
+        const checkboxes = Array.from(tbody.querySelectorAll('.check-seleccion'));
+
+        function actualizarBoton() {
+            btnEliminar.disabled = !checkboxes.some(cb => cb.checked);
+        }
+
+        function obtenerFilaSeleccionada() {
+            const cb = checkboxes.find(c => c.checked);
+            return cb ? cb.closest('tr') : null;
+        }
+
+        // Selección única: al marcar uno se desmarcan los demás
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', function() {
+                if (this.checked) {
+                    checkboxes.forEach(other => { if (other !== this) other.checked = false; });
+                }
+                actualizarBoton();
+            });
+        });
+
+        btnEliminar.addEventListener('click', function() {
+            const fila = obtenerFilaSeleccionada();
+            if (!fila) return;
+
+            const id = fila.getAttribute('data-id');
+            const nombre = ((fila.getAttribute('data-nombre') || '') + ' ' + (fila.getAttribute('data-apellido') || '')).trim();
+            const username = fila.getAttribute('data-username') || '';
+            const rol = fila.getAttribute('data-rol') || '';
+
+            // Limpiar error previo al abrir
+            const errorBox = document.getElementById('eliminarError');
+            if (errorBox) errorBox.style.display = 'none';
+
+            document.getElementById('eliminarNombre').textContent = nombre || '—';
+            document.getElementById('eliminarUsername').textContent = username || '—';
+            document.getElementById('eliminarRol').textContent = rol || '—';
+            document.getElementById('eliminarPassword').value = '';
+
+            // Cargar el resumen de datos que se eliminarán
+            fetch(`/usuarios/eliminar/detalle/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('eliminarId').value = data.id != null ? data.id : id;
+                    document.getElementById('eliminarTests').textContent = data.testsRealizados != null ? data.testsRealizados : '0';
+                    document.getElementById('eliminarResultados').textContent = data.resultados != null ? data.resultados : '0';
+                    document.getElementById('eliminarRespuestas').textContent = data.respuestas != null ? data.respuestas : '0';
+                })
+                .catch(() => {
+                    document.getElementById('eliminarId').value = id;
+                    document.getElementById('eliminarTests').textContent = '0';
+                    document.getElementById('eliminarResultados').textContent = '0';
+                    document.getElementById('eliminarRespuestas').textContent = '0';
+                });
+
+            if (typeof bootstrap !== 'undefined') {
+                bootstrap.Modal.getOrCreateInstance(modalEliminar).show();
+            }
+        });
+
+        // Re-autenticación: la contraseña no puede ser nula/vacía.
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const pw = form.elements['password'];
+            const idInput = form.elements['id'];
+            const errorBox = document.getElementById('eliminarError');
+            const errorTexto = document.getElementById('eliminarErrorTexto');
+
+            function mostrarError(mensaje) {
+                if (errorBox && errorTexto) {
+                    errorTexto.textContent = mensaje;
+                    errorBox.style.display = 'block';
+                }
+            }
+
+            if (errorBox) errorBox.style.display = 'none';
+
+            if (!pw || !pw.value.trim()) {
+                mostrarError('Debes ingresar tu contraseña para confirmar la eliminación.');
+                return;
+            }
+
+            const csrf = form.querySelector('input[name="_csrf"]');
+            const body = new URLSearchParams();
+            body.append('id', idInput.value);
+            body.append('password', pw.value);
+            if (csrf && csrf.value) body.append('_csrf', csrf.value);
+
+            fetch(form.action, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.success) {
+                    if (typeof Swal !== 'undefined') {
+                        Swal.fire({
+                            title: 'Cuenta eliminada',
+                            text: 'La cuenta y todos sus datos fueron eliminados definitivamente.',
+                            icon: 'success',
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Entendido'
+                        }).then(() => { window.location.href = '/usuarios'; });
+                    } else {
+                        window.location.href = '/usuarios';
+                    }
+                } else {
+                    mostrarError((data && data.error) || 'No se pudo eliminar el usuario.');
+                }
+            })
+            .catch(() => {
+                mostrarError('Error inesperado. Inténtalo de nuevo.');
+            });
+        });
+
+        // Al cerrar el modal se limpia la selección y se deshabilita el botón
+        modalEliminar.addEventListener('hidden.bs.modal', function() {
+            checkboxes.forEach(cb => { cb.checked = false; });
+            actualizarBoton();
+        });
+    }
+
     // Inicializa el botón flotante para volver arriba (listas extensas)
     function initBtnSubir() {
         const btnSubir = document.getElementById('btnSubir');
@@ -269,6 +401,7 @@
         initModal();
         initFiltros();
         initAcciones();
+        initEliminar();
         initBtnSubir();
         initTooltips();
     });

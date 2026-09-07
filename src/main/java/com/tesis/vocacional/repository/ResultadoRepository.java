@@ -19,4 +19,8 @@ public interface ResultadoRepository extends JpaRepository<Resultado, Integer> {
 
     @Query("SELECT COUNT(DISTINCT r.test.usuario.id) FROM Resultado r")
     long countUsuariosConTests();  
+
+    // Cantidad de resultados (evaluaciones completadas) de un usuario
+    @Query("SELECT COUNT(r) FROM Resultado r WHERE r.test.usuario.id = :usuarioId")
+    long countByUsuarioId(@Param("usuarioId") Integer usuarioId);
 }

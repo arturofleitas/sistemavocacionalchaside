@@ -12,4 +12,7 @@ public interface TestUsuarioRepository extends JpaRepository<TestUsuario, Intege
 	// Busca el test EN_CURSO más reciente del usuario para reanudar el progreso
 	Optional<TestUsuario> findTopByUsuarioAndEstadoOrderByIdDesc(Usuario usuario, String estado);
 
+	// Cantidad de tests (sesiones de test) que ha realizado un usuario
+	long countByUsuarioId(Integer usuarioId);
+
 }

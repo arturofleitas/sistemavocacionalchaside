@@ -49,9 +49,11 @@
                 </a>
             </li>
             <li class="nav-item mt-auto">
-                <a th:href="@{/logout}" class="nav-link">
-                    <i class="fas fa-sign-out-alt"></i> Salir
-                </a>
+                <form th:action="@{/logout}" method="post" class="w-100">
+                    <button type="submit" class="nav-link w-100 text-start border-0 bg-transparent">
+                        <i class="fas fa-sign-out-alt"></i> Salir
+                    </button>
+                </form>
             </li>
         </ul>
     </div>
@@ -106,9 +108,11 @@
                     </a>
                 </li>
                 <li class="mt-auto">
-                    <a th:href="@{/logout}" class="nav-link">
-                        <i class="fas fa-sign-out-alt"></i> Salir
-                    </a>
+                    <form th:action="@{/logout}" method="post" class="w-100">
+                        <button type="submit" class="nav-link w-100 text-start border-0 bg-transparent">
+                            <i class="fas fa-sign-out-alt"></i> Salir
+                        </button>
+                    </form>
                 </li>
             </ul>
         </div>

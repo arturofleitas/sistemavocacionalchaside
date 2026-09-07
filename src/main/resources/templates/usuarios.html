@@ -104,6 +104,10 @@
                             <button onclick="window.print();" class="btn btn-outline-primary">
                                 <i class="fas fa-print me-1"></i> Imprimir
                             </button>
+                            <button type="button" id="btnEliminarUsuario" class="btn btn-outline-danger"
+                                    data-bs-toggle="tooltip" data-bs-placement="bottom" title="Eliminar definitivamente la cuenta del usuario seleccionado" disabled>
+                                <i class="fas fa-trash-alt me-1"></i> Eliminar
+                            </button>
                         </div>
                     </div>
 
@@ -146,6 +150,9 @@
                             <!-- Encabezado con clase sticky-header (manejada por JS para Safari) -->
                             <thead class="table-light sticky-header">
                                 <tr>
+                                    <th class="th-seleccion text-center no-print">
+                                        <i class="fas fa-check" title="Seleccionar usuario"></i>
+                                    </th>
                                     <th class="th-nro">Nº</th>
                                     <th class="th-nombre">Nombre completo</th>
                                     <th class="th-username">Username</th>
@@ -158,7 +165,7 @@
                             </thead>
                             <tbody id="usuariosBody">
                                 <tr th:if="${usuarios.isEmpty()}">
-                                    <td colspan="8" class="text-center py-4 text-muted">
+                                    <td colspan="9" class="text-center py-4 text-muted">
                                         <i class="fas fa-inbox fa-2x mb-2"></i><br>
                                         No hay usuarios registrados.
                                     </td>
@@ -172,6 +179,11 @@
                                              data-username=${u.username},
                                              data-rol=${u.rol},
                                              data-estado=${u.estado != null ? u.estado : true}">
+                                    <td class="th-seleccion text-center no-print">
+                                        <input type="checkbox"
+                                               class="form-check-input check-seleccion"
+                                               th:data-id="${u.id}">
+                                    </td>
                                     <td class="fw-bold text-muted th-nro" th:text="${iterStat.count}"></td>
                                     <td class="th-nombre" th:text="${u.nombre + ' ' + u.apellido}"></td>
                                     <td class="th-username text-truncate" th:text="${u.username}"></td>
@@ -271,6 +283,65 @@
                     <div class="modal-footer py-2">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
                         <button type="submit" class="btn btn-primary btn-sm">Guardar Usuario</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: confirmación de eliminación definitiva de cuenta -->
+    <div class="modal fade" id="modalEliminar" tabindex="-1" aria-labelledby="tituloModalEliminar" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white py-2">
+                    <h5 class="modal-title fw-bold" id="tituloModalEliminar">
+                        <i class="fas fa-trash-alt me-2"></i>Eliminar cuenta definitivamente
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <form id="formEliminar" th:action="@{/usuarios/eliminar}" method="post">
+                    <input type="hidden" name="id" id="eliminarId">
+                    <div class="modal-body">
+                        <div class="alert alert-warning py-2 mb-3" style="font-size: 0.85rem;">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            Esta acción es <strong>irreversible</strong>. Se eliminará la cuenta y todos sus datos.
+                        </div>
+
+                        <div id="eliminarError" class="alert alert-danger py-2 mb-3" style="display: none; font-size: 0.85rem;">
+                            <i class="fas fa-exclamation-circle me-1"></i>
+                            <span id="eliminarErrorTexto"></span>
+                        </div>
+
+                        <p class="mb-1"><strong>Usuario:</strong> <span id="eliminarNombre"></span></p>
+                        <p class="mb-1"><strong>Username:</strong> <span id="eliminarUsername"></span></p>
+                        <p class="mb-1"><strong>Rol:</strong> <span id="eliminarRol"></span></p>
+                        <hr>
+                        <p class="mb-1"><strong>Se eliminará la siguiente información:</strong></p>
+                        <ul class="mb-3">
+                            <li><span id="eliminarTests"></span> sesión(es) de test</li>
+                            <li><span id="eliminarResultados"></span> resultado(s) / evaluación(es)</li>
+                            <li><span id="eliminarRespuestas"></span> respuesta(s)</li>
+                        </ul>
+                        <p class="small text-muted mb-3">
+                            Las preguntas del test y los datos de otros usuarios <strong>no</strong> se verán afectados.
+                        </p>
+
+                        <label for="eliminarPassword" class="form-label small mb-1">
+                            Confirma tu contraseña (administrador) para continuar
+                        </label>
+                        <input type="password"
+                               id="eliminarPassword"
+                               name="password"
+                               class="form-control form-control-sm"
+                               autocomplete="current-password"
+                               placeholder="Tu contraseña"
+                               required>
+                    </div>
+                    <div class="modal-footer py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash-alt me-1"></i> Eliminar definitivamente
+                        </button>
                     </div>
                 </form>
             </div>

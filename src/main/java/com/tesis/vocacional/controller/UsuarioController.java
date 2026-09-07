@@ -2,6 +2,9 @@ package com.tesis.vocacional.controller;
 
 import com.tesis.vocacional.model.Usuario;
 import com.tesis.vocacional.services.UsuarioService;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -11,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.beans.PropertyEditorSupport;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/usuarios")
@@ -134,5 +139,71 @@ public class UsuarioController {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
         return "redirect:/usuarios";
+    }
+
+    /**Devuelve el resumen de datos que se eliminarán al borrar la cuenta de un usuario (JSON).*/
+    @GetMapping("/eliminar/detalle/{id}")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> detalleEliminacion(@PathVariable int id) {
+        try {
+            Map<String, Object> resumen = usuarioService.resumenEliminacion(id);
+            return ResponseEntity.ok(resumen);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    /**
+     * Elimina definitivamente la cuenta de un usuario y sus datos asociados.
+     * Es una acción irreversible: requiere re-autenticación (contraseña del
+     * administrador actual) según recomendaciones OWASP, y no permite
+     * eliminar la propia cuenta. Devuelve JSON para que el error se muestre
+     * dentro del modal sin cerrarlo.
+     */
+    @PostMapping("/eliminar")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> eliminarUsuario(@RequestParam int id,
+                                                               @RequestParam String password) {
+        Map<String, Object> respuesta = new LinkedHashMap<>();
+        try {
+            // 1) Re-autenticación: la contraseña no puede ser nula/vacía
+            if (password == null || password.trim().isEmpty()) {
+                respuesta.put("success", false);
+                respuesta.put("error", "Debes ingresar tu contraseña para confirmar la eliminación.");
+                return ResponseEntity.badRequest().body(respuesta);
+            }
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            Usuario adminActual = (auth != null) ? usuarioService.buscarPorUsername(auth.getName()) : null;
+
+            if (adminActual == null) {
+                respuesta.put("success", false);
+                respuesta.put("error", "No se pudo verificar la sesión del administrador.");
+                return ResponseEntity.badRequest().body(respuesta);
+            }
+
+            // 2) Verificar la contraseña del administrador
+            if (!passwordEncoder.matches(password, adminActual.getPassword())) {
+                respuesta.put("success", false);
+                respuesta.put("error", "Contraseña incorrecta. No se realizó la eliminación.");
+                return ResponseEntity.badRequest().body(respuesta);
+            }
+
+            // 3) No permitir eliminar la propia cuenta
+            if (id == adminActual.getId()) {
+                respuesta.put("success", false);
+                respuesta.put("error", "No puedes eliminar tu propia cuenta.");
+                return ResponseEntity.badRequest().body(respuesta);
+            }
+
+            // 4) Ejecutar la eliminación (cuenta + datos asociados)
+            usuarioService.eliminarUsuarioConDatos(id);
+            respuesta.put("success", true);
+            return ResponseEntity.ok(respuesta);
+        } catch (RuntimeException e) {
+            respuesta.put("success", false);
+            respuesta.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(respuesta);
+        }
     }
 }

@@ -26,4 +26,8 @@ public interface RespuestaRepository extends JpaRepository<Respuesta, Integer> {
     @Modifying
     @Query("DELETE FROM Respuesta r WHERE r.pregunta = :tup")
     void eliminarPorTestUsuarioPregunta(@Param("tup") TestUsuarioPregunta tup);
+
+    // Cantidad de respuestas de un usuario
+    @Query("SELECT COUNT(r) FROM Respuesta r WHERE r.pregunta.testUsuario.usuario.id = :usuarioId")
+    long countByUsuarioId(@Param("usuarioId") Integer usuarioId);
 }
