@@ -77,6 +77,15 @@
     margin-right: 6px;
 }
 
+/* Texto del caso "No se identificaron áreas predominantes" */
+.texto-cero {
+    color: #ffffff;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 8px 0 0;
+    opacity: 0.95;
+}
+
 /* Secciones (intereses / aptitudes) */
 .seccion {
     margin-bottom: 28px;
@@ -378,6 +387,7 @@
     .offcanvas,
     .acciones,
     .aviso,
+    .card,
     .footer-resultado {
         display: none !important;
     }

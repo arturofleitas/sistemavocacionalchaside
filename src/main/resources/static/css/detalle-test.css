@@ -53,6 +53,76 @@ body {
     width: fit-content;
 }
 
+/* Lista de áreas predominantes (intereses/aptitudes): una por fila, ya que
+   varias pueden empatar en el puntaje máximo y no hay un orden real entre
+   ellas. Mismo patrón visual que la vista de resultado del alumno. */
+.lista-areas {
+    margin-top: 6px;
+}
+
+.item-area {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.item-area:last-child {
+    border-bottom: none;
+}
+
+.item-area .letra {
+    font-weight: 700;
+    font-size: 0.95rem;
+    width: 22px;
+    flex: none;
+    color: #0d6efd;
+}
+
+.item-area .nombre {
+    flex: 1;
+    font-size: 0.9rem;
+    color: #1e293b;
+}
+
+.item-area .puntaje {
+    font-weight: 600;
+    font-size: 0.9rem;
+    min-width: 24px;
+    text-align: right;
+    color: #0d6efd;
+}
+
+.item-area .barra-fondo {
+    flex: 0 0 90px;
+    height: 7px;
+    background: #e9ecef;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.item-area .barra-llena {
+    height: 100%;
+    border-radius: 10px;
+    background: #0d6efd;
+}
+
+.item-area .barra-llena.aptitud {
+    background: #10b981;
+}
+
+@media (max-width: 480px) {
+    .item-area {
+        flex-wrap: wrap;
+    }
+    .item-area .barra-fondo {
+        flex: 0 0 100%;
+        order: 4;
+        margin-top: 2px;
+    }
+}
+
 .table-reporte {
     background: white;
     border-radius: 16px;

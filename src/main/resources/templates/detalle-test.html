@@ -41,22 +41,46 @@
         </div>
         <div class="row mt-2">
             <div class="col-md-6">
-                <strong>Perfil Recomendado</strong><br>
-                <span class="badge-perfil" th:text="${perfilRecomendado}">-</span>
+                <strong><i class="fas fa-heart text-primary me-1"></i>Intereses predominantes</strong>
+                <div class="lista-areas">
+                    <span th:if="${interesesPredominantes.isEmpty()}" class="text-muted">No definido</span>
+                    <div th:each="letra : ${interesesPredominantes}" class="item-area">
+                        <span class="letra" th:text="${letra}">H</span>
+                        <span class="nombre" th:text="${categoriaMap.get(letra)}">Humanísticas</span>
+                        <span class="puntaje" th:text="${puntajesInteres.get(letra)}">9</span>
+                        <div class="barra-fondo">
+                            <div class="barra-llena" th:style="'width: ' + (${puntajesInteres.get(letra)} * 100 / ${maxInteres}) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="col-md-6">
-                <strong>Puntaje de afinidad</strong><br>
-                <span class="text-success" th:text="${resultado.puntaje} + ' aciertos'">-</span>
+                <strong><i class="fas fa-brain text-success me-1"></i>Aptitudes predominantes</strong>
+                <div class="lista-areas">
+                    <span th:if="${aptitudesPredominantes.isEmpty()}" class="text-muted">No definido</span>
+                    <div th:each="letra : ${aptitudesPredominantes}" class="item-area">
+                        <span class="letra" th:text="${letra}">A</span>
+                        <span class="nombre" th:text="${categoriaMap.get(letra)}">Artísticas</span>
+                        <span class="puntaje" th:text="${puntajesAptitud.get(letra)}">4</span>
+                        <div class="barra-fondo">
+                            <div class="barra-llena aptitud" th:style="'width: ' + (${puntajesAptitud.get(letra)} * 100 / ${maxAptitud}) + '%'"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
         <div class="row mt-2">
             <div class="col-md-6">
-                <strong><i class="fas fa-heart text-primary me-1"></i>Intereses</strong><br>
-                <span th:text="${interesesNombres}">-</span>
+                <strong>Puntaje máximo</strong><br>
+                <span class="text-success" th:text="${resultado.puntaje} + ' aciertos'">-</span>
             </div>
-            <div class="col-md-6">
-                <strong><i class="fas fa-brain text-success me-1"></i>Aptitudes</strong><br>
-                <span th:text="${aptitudesNombres}">-</span>
+        </div>
+        <div class="row mt-2" th:if="${interesesPredominantes.isEmpty() and aptitudesPredominantes.isEmpty()}">
+            <div class="col-12">
+                <span class="text-muted">
+                    <i class="fas fa-circle-info me-1"></i>
+                    No se identificaron áreas predominantes: las respuestas no generaron puntajes positivos.
+                </span>
             </div>
         </div>
     </div>

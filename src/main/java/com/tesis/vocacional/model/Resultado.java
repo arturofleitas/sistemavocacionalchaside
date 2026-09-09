@@ -40,32 +40,25 @@ public class Resultado {
     }
 
     /**
-     * Devuelve el perfil recomendado (combinación de interés principal + aptitud principal)
-     * en formato legible para la tabla de historial.
-     * Ejemplo: "Artísticas + Salud"
+     * Devuelve una descripción de las áreas predominantes por dimensión, sin
+     * combinarlas en un perfil único. Ejemplo:
+     * "Intereses: Artísticas - Defensa | Aptitudes: Salud".
      */
     public String getNombrePerfil() {
-        // Obtener el primer interés principal y la primera aptitud principal
-        String interesPrincipal = "";
-        String aptitudPrincipal = "";
+        String interes = getNombresIntereses();
+        String aptitud = getNombresAptitudes();
 
-        if (interesesPrincipales != null && !interesesPrincipales.isEmpty()) {
-            String primeraLetra = interesesPrincipales.split(",")[0].trim();
-            interesPrincipal = nombreCategoria.getOrDefault(primeraLetra, primeraLetra);
-        }
-        if (aptitudesPrincipales != null && !aptitudesPrincipales.isEmpty()) {
-            String primeraLetra = aptitudesPrincipales.split(",")[0].trim();
-            aptitudPrincipal = nombreCategoria.getOrDefault(primeraLetra, primeraLetra);
-        }
+        boolean sinInteres = "No definido".equals(interes);
+        boolean sinAptitud = "No definido".equals(aptitud);
 
-        if (interesPrincipal.isEmpty() && aptitudPrincipal.isEmpty()) {
-            return "Perfil no reconocido";
-        } else if (interesPrincipal.isEmpty()) {
-            return aptitudPrincipal;
-        } else if (aptitudPrincipal.isEmpty()) {
-            return interesPrincipal;
+        if (sinInteres && sinAptitud) {
+            return "No se identificaron áreas predominantes";
+        } else if (sinInteres) {
+            return "Aptitudes: " + aptitud;
+        } else if (sinAptitud) {
+            return "Intereses: " + interes;
         } else {
-            return interesPrincipal + " + " + aptitudPrincipal;
+            return "Intereses: " + interes + " | Aptitudes: " + aptitud;
         }
     }
 
