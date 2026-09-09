@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Vocacional CHASIDE - Invitado</title>
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+          integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+          crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link rel="stylesheet" th:href="@{/css/home.css} + '?v=' + ${#dates.createNow().getTime()}">
+    <link rel="stylesheet" th:href="@{/css/realizar-test.css} + '?v=' + ${#dates.createNow().getTime()}">
+</head>
+
+<body>
+    <div class="main-container sidebar-collapsed">
+        <div class="content p-3 p-md-4">
+            <div class="header mb-3">
+                <h2 class="header-title">Test Vocacional CHASIDE</h2>
+            </div>
+
+            <div th:if="${retomando}" class="alert alert-info alert-dismissible fade show" role="alert">
+                <i class="fas fa-history me-2"></i>
+                <strong>Retomaste el test</strong> donde lo dejaste. Continuá desde la pregunta
+                <strong th:text="${progreso}"></strong>.
+            </div>
+
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span th:text="${error}"></span>
+            </div>
+
+            <div class="mb-4">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Pregunta <strong th:text="${progreso}"></strong> de <strong th:text="${total}"></strong></span>
+                    <span th:text="${progreso * 100 / total} + '%'"></span>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar bg-primary" th:style="'width: ' + (${progreso} * 100 / ${total}) + '%'"></div>
+                </div>
+            </div>
+
+            <div class="question-card">
+                <h4 th:text="${pregunta.texto}"></h4>
+
+                <div id="alertaSeleccion" class="alert alert-warning alert-dismissible fade show mt-3" role="alert"
+                     style="display: none;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>¡Atención!</strong> Para continuar, seleccioná una respuesta (Sí o No).
+                </div>
+
+                <form id="formTest" th:action="@{/test/publico/responder}" method="post" class="mt-4">
+                    <div class="opciones-container">
+                        <label class="opcion-card">
+                            <input type="radio" name="respuesta" value="SI" id="si">
+                            <div class="opcion-box">
+                                <div class="cuadrado-indicador"></div>
+                                <span class="opcion-texto">Sí</span>
+                            </div>
+                        </label>
+                        <label class="opcion-card">
+                            <input type="radio" name="respuesta" value="NO" id="no">
+                            <div class="opcion-box">
+                                <div class="cuadrado-indicador"></div>
+                                <span class="opcion-texto">No</span>
+                            </div>
+                        </label>
+                    </div>
+                </form>
+
+                <div class="d-flex justify-content-between align-items-center mt-5 nav-test">
+                    <form th:if="${progreso > 1}" id="formAnterior" th:action="@{/test/publico/anterior}" method="post"
+                          onsubmit="this.querySelector('button').disabled = true;">
+                        <button type="submit" class="btn btn-secondary">← Anterior</button>
+                    </form>
+                    <span th:if="${progreso <= 1}"></span>
+
+                    <button type="button" class="btn btn-primary" th:if="${!esUltimaPregunta}" id="btnSiguiente">
+                        Siguiente →
+                    </button>
+                    <button type="button" class="btn btn-success" th:if="${esUltimaPregunta}" id="btnFinalizar">
+                        Finalizar Test
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            'use strict';
+
+            const form = document.getElementById('formTest');
+            const radios = form.querySelectorAll('input[name="respuesta"]');
+            const alerta = document.getElementById('alertaSeleccion');
+
+            function isRespuestaSeleccionada() {
+                return Array.prototype.some.call(radios, r => r.checked);
+            }
+
+            function ocultarAlerta() {
+                if (alerta) alerta.style.display = 'none';
+            }
+
+            function mostrarAlerta() {
+                if (alerta) {
+                    alerta.style.display = 'block';
+                    alerta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }
+
+            radios.forEach(radio => radio.addEventListener('change', ocultarAlerta));
+
+            function onBtnClick(e) {
+                if (!isRespuestaSeleccionada()) {
+                    e.preventDefault();
+                    mostrarAlerta();
+                    return;
+                }
+                e.preventDefault();
+                const btn = e.currentTarget;
+                if (btn) btn.disabled = true;
+                form.submit();
+            }
+
+            const btnSig = document.getElementById('btnSiguiente');
+            const btnFin = document.getElementById('btnFinalizar');
+            if (btnSig) btnSig.addEventListener('click', onBtnClick);
+            if (btnFin) btnFin.addEventListener('click', onBtnClick);
+
+            // Navegación por teclado: flechas alternan entre Sí/No y Enter confirma
+            document.addEventListener('keydown', function (event) {
+                const mover = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].indexOf(event.key) !== -1;
+
+                if (mover) {
+                    let actual = -1;
+                    for (let i = 0; i < radios.length; i++) {
+                        if (radios[i].checked) { actual = i; break; }
+                    }
+                    // Sin selección se elige "Sí"; izquierda/arriba -> Sí, derecha/abajo -> No
+                    const destino = (actual === -1) ? 0 : ((event.key === 'ArrowLeft' || event.key === 'ArrowUp') ? 0 : 1);
+                    if (radios[destino]) {
+                        radios[destino].checked = true;
+                        radios[destino].focus();
+                    }
+                    event.preventDefault();
+                } else if (event.key === 'Enter') {
+                    // Si el foco está en un botón (Anterior/Siguiente), dejamos que haga su acción
+                    const target = event.target;
+                    if (target && (target.tagName === 'BUTTON' || target.tagName === 'A')) {
+                        return;
+                    }
+                    if (isRespuestaSeleccionada()) {
+                        event.preventDefault();
+                        form.submit();
+                    }
+                }
+            });
+
+            // En escritorio, el foco y la selección empiezan en "Sí" en cada pregunta
+            if (window.innerWidth >= 768 && radios[0] && !isRespuestaSeleccionada()) {
+                radios[0].checked = true;
+                radios[0].focus();
+            }
+        })();
+    </script>
+</body>
+</html>
