@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.tesis.vocacional.model.TestUsuario;
 import com.tesis.vocacional.model.Usuario;
+import com.tesis.vocacional.model.SesionInvitado;
 import com.tesis.vocacional.repository.TestUsuarioRepository;
 
 @Service
@@ -21,5 +22,15 @@ public class TestUsuarioService {
 	// Busca un test EN_CURSO del usuario para poder reanudar el progreso
 	public Optional<TestUsuario> buscarEnCurso(Usuario usuario) {
 		return testUsuarioRepository.findTopByUsuarioAndEstadoOrderByIdDesc(usuario, "EN_CURSO");
+	}
+
+	// Busca el test EN_CURSO de un acceso de invitado para reanudar el progreso
+	public Optional<TestUsuario> buscarEnCursoPorSesionInvitado(SesionInvitado sesionInvitado) {
+		return testUsuarioRepository.findTopBySesionInvitadoAndEstadoOrderByIdDesc(sesionInvitado, "EN_CURSO");
+	}
+
+	// Busca el test más reciente de un acceso de invitado (EN_CURSO o COMPLETADO)
+	public Optional<TestUsuario> buscarPorSesionInvitado(SesionInvitado sesionInvitado) {
+		return testUsuarioRepository.findTopBySesionInvitadoOrderByIdDesc(sesionInvitado);
 	}
 }

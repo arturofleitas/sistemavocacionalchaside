@@ -3,14 +3,20 @@ package com.tesis.vocacional.controller;
 import com.tesis.vocacional.model.Respuesta;
 import com.tesis.vocacional.model.Resultado;
 import com.tesis.vocacional.model.TestUsuarioPregunta;
+import com.tesis.vocacional.services.AccesoReporteService;
 import com.tesis.vocacional.services.RespuestaService;
 import com.tesis.vocacional.services.ResultadoService;
 import com.tesis.vocacional.services.TestUsuarioPreguntaService;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.*;
 
@@ -22,6 +28,7 @@ public class ReportesDetallesController {
     private final ResultadoService resultadoService;
     private final TestUsuarioPreguntaService testUsuarioPreguntaService;
     private final RespuestaService respuestaService;
+    private final AccesoReporteService accesoReporteService;
 
     // Mapa de nombres completos de las áreas (orden fijo para la vista)
     private static final Map<String, String> NOMBRE_CATEGORIA = new LinkedHashMap<>();
@@ -37,17 +44,28 @@ public class ReportesDetallesController {
 
     public ReportesDetallesController(ResultadoService resultadoService,
                                       TestUsuarioPreguntaService testUsuarioPreguntaService,
-                                      RespuestaService respuestaService) {
+                                      RespuestaService respuestaService,
+                                      AccesoReporteService accesoReporteService) {
         this.resultadoService = resultadoService;
         this.testUsuarioPreguntaService = testUsuarioPreguntaService;
         this.respuestaService = respuestaService;
+        this.accesoReporteService = accesoReporteService;
     }
 
     @GetMapping("/test/{id}")
-    public String verDetalleTest(@PathVariable Integer id, Model model) {
+    public String verDetalleTest(@PathVariable Integer id, HttpServletRequest request, Model model,
+                                 RedirectAttributes redirectAttributes) {
         Resultado resultado = resultadoService.buscarPorId(id);
         if (resultado == null || resultado.getTest() == null) {
-            return "redirect:/reportes";
+            return sinPermiso(redirectAttributes);
+        }
+
+        // Control de acceso centralizado: se verifica la propiedad de la evaluación
+        // ANTES de cargar cualquier dato en el modelo. Si no hay permiso, se redirige
+        // a un lugar seguro con un mensaje, sin exponer nombres, respuestas, puntajes
+        // ni datos del propietario.
+        if (!accesoReporteService.puedeAcceder(request, resultado)) {
+            return sinPermiso(redirectAttributes);
         }
 
         Integer testUsuarioId = resultado.getTest().getId();
@@ -62,13 +80,23 @@ public class ReportesDetallesController {
             }
         }
 
-        // No necesitamos puntajes para gráficos, solo los nombres de intereses y aptitudes
-        String interesesNombres = construirNombresAreas(resultado.getInteresesPrincipales());
-        String aptitudesNombres = construirNombresAreas(resultado.getAptitudesPrincipales());
+        // Letras de las áreas predominantes para mostrar en la vista (todas las
+        // que empatan en el máximo: no hay un orden real entre ellas)
+        List<String> interesesPredominantes = areaLetras(resultado.getInteresesPrincipales());
+        List<String> aptitudesPredominantes = areaLetras(resultado.getAptitudesPrincipales());
 
-        // Construir perfil recomendado con nombres completos
-        String perfilRecomendado = construirPerfilRecomendadoCompleto(resultado.getInteresesPrincipales(),
-                                                                     resultado.getAptitudesPrincipales());
+        // Puntaje por área, reconstruido desde el snapshot guardado en Resultado.
+        // Se usa para mostrar el acierto de cada área predominante y la barra de
+        // progreso, con el mismo diseño que la vista de resultado del alumno.
+        Map<String, Integer> puntajesInteres = parsearPuntajes(resultado.getPuntajesInteres());
+        Map<String, Integer> puntajesAptitud = parsearPuntajes(resultado.getPuntajesAptitud());
+
+        // El máximo de cada dimensión es el puntaje de cualquiera de sus áreas
+        // predominantes (por definición, todas empatan en ese valor).
+        int maxInteres = interesesPredominantes.isEmpty() ? 0
+                : puntajesInteres.getOrDefault(interesesPredominantes.get(0), 0);
+        int maxAptitud = aptitudesPredominantes.isEmpty() ? 0
+                : puntajesAptitud.getOrDefault(aptitudesPredominantes.get(0), 0);
 
         // Nombre del alumno con protección ante datos incompletos
         String alumnoNombre = "-";
@@ -81,53 +109,81 @@ public class ReportesDetallesController {
         model.addAttribute("alumnoNombre", alumnoNombre);
         model.addAttribute("preguntas", preguntas);
         model.addAttribute("mapaRespuestas", mapaRespuestas);
-        model.addAttribute("interesesNombres", interesesNombres);
-        model.addAttribute("aptitudesNombres", aptitudesNombres);
-        model.addAttribute("perfilRecomendado", perfilRecomendado);
+        model.addAttribute("interesesPredominantes", interesesPredominantes);
+        model.addAttribute("aptitudesPredominantes", aptitudesPredominantes);
+        model.addAttribute("puntajesInteres", puntajesInteres);
+        model.addAttribute("puntajesAptitud", puntajesAptitud);
+        model.addAttribute("maxInteres", maxInteres);
+        model.addAttribute("maxAptitud", maxAptitud);
+        model.addAttribute("categoriaMap", NOMBRE_CATEGORIA);
 
         return "detalle-test";
     }
 
     /**
-     * Construye el perfil recomendado con los NOMBRES COMPLETOS de las áreas.
-     * Ejemplo: "DEFENSA Y SEGURIDAD + ARTÍSTICAS"
+     * Convierte una cadena de letras de áreas separadas por coma en una lista.
+     * Si la cadena es nula o vacía devuelve una lista vacía.
      */
-    private String construirPerfilRecomendadoCompleto(String interesesStr, String aptitudesStr) {
-        String interesPrincipal = "";
-        String aptitudPrincipal = "";
-
-        if (interesesStr != null && !interesesStr.isEmpty()) {
-            String primeraLetra = interesesStr.split(",")[0].trim();
-            interesPrincipal = NOMBRE_CATEGORIA.getOrDefault(primeraLetra, primeraLetra);
+    private List<String> areaLetras(String areasStr) {
+        List<String> letras = new ArrayList<>();
+        if (areasStr == null || areasStr.isBlank()) {
+            return letras;
         }
-        if (aptitudesStr != null && !aptitudesStr.isEmpty()) {
-            String primeraLetra = aptitudesStr.split(",")[0].trim();
-            aptitudPrincipal = NOMBRE_CATEGORIA.getOrDefault(primeraLetra, primeraLetra);
+        for (String letra : areasStr.split(",")) {
+            String t = letra.trim();
+            if (!t.isEmpty()) {
+                letras.add(t);
+            }
         }
-
-        if (interesPrincipal.isEmpty() && aptitudPrincipal.isEmpty()) {
-            return "Sin perfil definido";
-        } else if (interesPrincipal.isEmpty()) {
-            return aptitudPrincipal;
-        } else if (aptitudPrincipal.isEmpty()) {
-            return interesPrincipal;
-        } else {
-            return interesPrincipal + " + " + aptitudPrincipal;
-        }
+        return letras;
     }
 
     /**
-     * Construye una cadena con los nombres de las áreas a partir de un string de letras separadas por coma.
+     * Redirige a un destino seguro cuando el usuario no tiene permiso para ver la
+     * evaluación. Los usuarios autenticados van a su listado de reportes; los
+     * invitados (sin autenticación) vuelven a la página pública del test. En ningún
+     * caso se cargan datos del propietario.
      */
-    private String construirNombresAreas(String areasStr) {
-        if (areasStr == null || areasStr.isEmpty()) {
-            return "No definido";
+    private String sinPermiso(RedirectAttributes redirectAttributes) {
+        redirectAttributes.addFlashAttribute("error",
+                "No tenés permisos para ver esta evaluación.");
+        return estaAutenticado() ? "redirect:/reportes" : "redirect:/test/publico";
+    }
+
+    private boolean estaAutenticado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        return auth != null
+                && auth.isAuthenticated()
+                && !(auth instanceof AnonymousAuthenticationToken);
+    }
+
+    /**
+     * Reconstruye el mapa área -> puntaje a partir del snapshot de texto guardado
+     * en Resultado (formato Map.toString(), ej. "{A=5, C=6, ...}"). Las áreas
+     * ausentes o con un valor no numérico quedan en 0.
+     */
+    private Map<String, Integer> parsearPuntajes(String puntajesStr) {
+        Map<String, Integer> mapa = new LinkedHashMap<>();
+        for (String area : NOMBRE_CATEGORIA.keySet()) {
+            mapa.put(area, 0);
         }
-        List<String> nombres = new ArrayList<>();
-        for (String letra : areasStr.split(",")) {
-            String nombre = NOMBRE_CATEGORIA.get(letra.trim());
-            if (nombre != null) nombres.add(nombre);
+        if (puntajesStr == null || puntajesStr.isBlank()) {
+            return mapa;
         }
-        return nombres.isEmpty() ? "No definido" : String.join(", ", nombres);
+        String contenido = puntajesStr.trim();
+        if (contenido.startsWith("{") && contenido.endsWith("}")) {
+            contenido = contenido.substring(1, contenido.length() - 1);
+        }
+        for (String par : contenido.split(",")) {
+            String[] kv = par.trim().split("=");
+            if (kv.length == 2 && mapa.containsKey(kv[0].trim())) {
+                try {
+                    mapa.put(kv[0].trim(), Integer.parseInt(kv[1].trim()));
+                } catch (NumberFormatException ignored) {
+                    // Valor no numérico: se conserva el 0 por defecto.
+                }
+            }
+        }
+        return mapa;
     }
 }

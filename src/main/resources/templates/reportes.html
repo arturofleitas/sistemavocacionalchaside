@@ -45,6 +45,18 @@
             <!-- Offcanvas para móvil (menú desplegable) -->
             <div th:replace="~{fragments/menu :: offcanvas}"></div>
 
+            <!-- Mensajes flash (errores / avisos) -->
+            <div th:if="${error}" class="alert alert-danger alert-dismissible fade show no-print" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span th:text="${error}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            <div th:if="${success}" class="alert alert-success alert-dismissible fade show no-print" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${success}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
             <!-- Barra de filtros (misma estructura para ambos roles, solo cambia si se ve "Filtrar por alumno") -->
             <div class="filter-bar no-print" id="filtrosReportes">
                 <div class="row g-2 g-md-3 align-items-end">

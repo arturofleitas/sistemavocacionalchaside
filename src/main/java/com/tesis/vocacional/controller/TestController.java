@@ -16,9 +16,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * Controlador para la realización del test vocacional CHASIDE. Gestiona el
@@ -35,35 +33,21 @@ public class TestController {
 	private final TestUsuarioService testUsuarioService;
 	private final TestUsuarioPreguntaService testUsuarioPreguntaService;
 	private final RespuestaService respuestaService;
-	private final ResultadoService resultadoService;
-
-	// Constantes para evitar repetir literales
-	private static final List<String> AREAS = Arrays.asList("C", "H", "A", "S", "I", "D", "E");
-	private static final Map<String, String> NOMBRE_CATEGORIA = new HashMap<>();
-
-	static {
-		NOMBRE_CATEGORIA.put("C", "ADMINISTRATIVAS Y CONTABLES");
-		NOMBRE_CATEGORIA.put("H", "HUMANÍSTICAS, CIENCIAS JURÍDICAS Y SOCIALES");
-		NOMBRE_CATEGORIA.put("A", "ARTÍSTICAS");
-		NOMBRE_CATEGORIA.put("S", "CIENCIAS DE LA SALUD");
-		NOMBRE_CATEGORIA.put("I", "INGENIERÍAS, CARRERAS TÉCNICAS Y COMPUTACIÓN");
-		NOMBRE_CATEGORIA.put("D", "DEFENSA Y SEGURIDAD");
-		NOMBRE_CATEGORIA.put("E", "CIENCIAS AGRARIAS, DE LA NATURALEZA, ZOOLÓGICAS Y BIOLÓGICAS");
-	}
+	private final CalculoTestService calculoTestService;
 
 	/**
 	 * Constructor con inyección de todas las dependencias necesarias.
 	 */
 	public TestController(PreguntaService preguntaService, UsuarioService usuarioService, TestService testService,
 			TestUsuarioService testUsuarioService, TestUsuarioPreguntaService testUsuarioPreguntaService,
-			RespuestaService respuestaService, ResultadoService resultadoService) {
+			RespuestaService respuestaService, CalculoTestService calculoTestService) {
 		this.preguntaService = preguntaService;
 		this.usuarioService = usuarioService;
 		this.testService = testService;
 		this.testUsuarioService = testUsuarioService;
 		this.testUsuarioPreguntaService = testUsuarioPreguntaService;
 		this.respuestaService = respuestaService;
-		this.resultadoService = resultadoService;
+		this.calculoTestService = calculoTestService;
 	}
 
 	/** Inicia un nuevo test o reanuda el test EN_CURSO del usuario. */
@@ -257,86 +241,21 @@ public class TestController {
 			return "redirect:/realizar-test";
 		}
 
-		// 1. Calcular puntajes de intereses y aptitudes
-		Map<String, Integer> puntajesInteres = inicializarMapaPuntajes();
-		Map<String, Integer> puntajesAptitud = inicializarMapaPuntajes();
+		// 1. Calcular y (si corresponde) persistir el resultado de forma reutilizable
+		ResultadoCalculo calculo = calculoTestService.calcularYGuardar(preguntas, respuestas, testUsuario);
 
-		for (int i = 0; i < preguntas.size(); i++) {
-			if ("SI".equalsIgnoreCase(respuestas.get(i))) {
-				Pregunta p = preguntas.get(i);
-				String area = p.getCategoria();
-				String dimension = p.getDimension() != null ? p.getDimension() : "INTERES";
-				if ("INTERES".equalsIgnoreCase(dimension)) {
-					puntajesInteres.merge(area, 1, Integer::sum);
-				} else {
-					puntajesAptitud.merge(area, 1, Integer::sum);
-				}
-			}
-		}
-
-		// 2. Obtener las áreas principales (top 2 con puntaje > 0)
-		List<String> interesesPrincipales = obtenerTopAreas(puntajesInteres);
-		List<String> aptitudesPrincipales = obtenerTopAreas(puntajesAptitud);
-
-		// 3. Construir nombres completos para la vista
-		String interesesNombres = interesesPrincipales.stream().map(NOMBRE_CATEGORIA::get)
-				.collect(Collectors.joining(" - "));
-		String aptitudesNombres = aptitudesPrincipales.stream().map(NOMBRE_CATEGORIA::get)
-				.collect(Collectors.joining(" - "));
-
-		// 4. Guardar resultado en base de datos
-		if (testUsuario != null) {
-			try {
-				Resultado resultado = new Resultado();
-				resultado.setTest(testUsuario);
-				resultado.setFechaRealizacion(LocalDateTime.now());
-
-				resultado.setInteresesPrincipales(String.join(",", interesesPrincipales));
-				resultado.setAptitudesPrincipales(String.join(",", aptitudesPrincipales));
-				resultado.setPuntajesInteres(puntajesInteres.toString());
-				resultado.setPuntajesAptitud(puntajesAptitud.toString());
-
-				String perfil = interesesPrincipales.stream().findFirst().orElse("")
-						+ (aptitudesPrincipales.stream().findFirst().isPresent() ? "+" + aptitudesPrincipales.get(0)
-								: "");
-				resultado.setPerfil(perfil);
-
-				int maxPuntaje = puntajesInteres.values().stream().max(Integer::compareTo).orElse(0);
-				resultado.setPuntaje(maxPuntaje);
-
-				resultadoService.guardar(resultado);
-				testUsuario.setEstado("COMPLETADO");
-				testUsuarioService.guardar(testUsuario);
-
-			} catch (Exception e) {
-				e.printStackTrace();
-				model.addAttribute("errorGuardado", "Error al guardar el resultado: " + e.getMessage());
-			}
-		}
-
-		// 5. Calcular valores máximos para escalar las barras
-		int maxInteres = puntajesInteres.values().stream().max(Integer::compareTo).orElse(1);
-		int maxAptitud = puntajesAptitud.values().stream().max(Integer::compareTo).orElse(1);
-
-		// 6. Perfil combinado: mayor puntaje de interés + mayor puntaje de aptitud (nombre legible)
-		String interesNombre = NOMBRE_CATEGORIA.getOrDefault(interesesPrincipales.stream().findFirst().orElse(""), "Sin interés");
-		String aptitudNombre = NOMBRE_CATEGORIA.getOrDefault(aptitudesPrincipales.stream().findFirst().orElse(""), "Sin aptitud");
-		String perfilCombinado = interesNombre + " + " + aptitudNombre;
-
-		// 7. Pasar datos al modelo
-		model.addAttribute("interesesPrincipales", interesesNombres);
-		model.addAttribute("aptitudesPrincipales", aptitudesNombres);
-		model.addAttribute("puntajesInteres", puntajesInteres); // <--- NUEVO: mapa para iterar en la vista
-		model.addAttribute("puntajesAptitud", puntajesAptitud); // <--- NUEVO
-		model.addAttribute("maxPuntaje", maxInteres); // <--- NUEVO
-		model.addAttribute("maxPuntajeAptitud", maxAptitud); // <--- NUEVO
-		model.addAttribute("perfilCombinado", perfilCombinado); // <--- NUEVO
-		model.addAttribute("totalPreguntas", preguntas.size());
-		model.addAttribute("nombresCategoria", NOMBRE_CATEGORIA);
-
-		String descripcion = "Tu perfil combina intereses en " + interesesNombres.toLowerCase() + " y aptitudes en "
-				+ aptitudesNombres.toLowerCase() + ".";
-		model.addAttribute("descripcion", descripcion);
+		// 2. Pasar datos al modelo
+		model.addAttribute("interesesPredominantes", calculo.getInteresesPredominantes());
+		model.addAttribute("aptitudesPredominantes", calculo.getAptitudesPredominantes());
+		model.addAttribute("puntajesInteres", calculo.getPuntajesInteres());
+		model.addAttribute("puntajesAptitud", calculo.getPuntajesAptitud());
+		model.addAttribute("maxPuntaje", calculo.getMaxInteres());
+		model.addAttribute("maxPuntajeAptitud", calculo.getMaxAptitud());
+		model.addAttribute("interesCero", calculo.isInteresCero());
+		model.addAttribute("aptitudCero", calculo.isAptitudCero());
+		model.addAttribute("totalPreguntas", calculo.getTotalPreguntas());
+		model.addAttribute("nombresCategoria", calculo.getNombresCategoria());
+		model.addAttribute("inconsistencias", calculo.getInconsistencias());
 
 		// Limpiar sesión
 		session.removeAttribute("preguntas");
@@ -415,30 +334,5 @@ public class TestController {
 	@SuppressWarnings("unchecked")
 	private <T> List<T> obtenerLista(HttpSession session, String key) {
 		return (List<T>) session.getAttribute(key);
-	}
-
-	/**
-	 * Inicializa un mapa con las 7 áreas vocacionales con valor 0.
-	 * 
-	 * @return Mapa con claves C, H, A, S, I, D, E y valor 0.
-	 */
-	private Map<String, Integer> inicializarMapaPuntajes() {
-		Map<String, Integer> mapa = new HashMap<>();
-		for (String area : AREAS) {
-			mapa.put(area, 0);
-		}
-		return mapa;
-	}
-
-	/**
-	 * Obtiene las dos áreas con mayor puntaje (excluyendo las que tienen 0).
-	 * 
-	 * @param puntajes Mapa de áreas y puntajes.
-	 * @return Lista con las dos áreas principales.
-	 */
-	private List<String> obtenerTopAreas(Map<String, Integer> puntajes) {
-		return puntajes.entrySet().stream().filter(e -> e.getValue() > 0)
-				.sorted((a, b) -> b.getValue().compareTo(a.getValue())).limit(2).map(Map.Entry::getKey)
-				.collect(Collectors.toList());
 	}
 }
