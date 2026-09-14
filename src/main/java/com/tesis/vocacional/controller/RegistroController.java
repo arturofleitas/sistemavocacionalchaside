@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class RegistroController {
 
+    private static final int PASSWORD_MIN_LENGTH = 5;
+
     private final UsuarioService usuarioService;
     private final PasswordEncoder passwordEncoder;
 
@@ -29,6 +31,15 @@ public class RegistroController {
     @PostMapping("/registrarse")
     public String registrarUsuario(@ModelAttribute Usuario usuario, Model model) {
         try {
+            // Validar el largo de la contraseña en el servidor (el "minlength" del
+            // formulario no protege contra una solicitud enviada directamente).
+            String passwordEnClaro = usuario.getPassword();
+            if (passwordEnClaro == null || passwordEnClaro.length() < PASSWORD_MIN_LENGTH) {
+                model.addAttribute("error", "La contraseña debe tener al menos " + PASSWORD_MIN_LENGTH + " caracteres.");
+                model.addAttribute("usuario", usuario);
+                return "registro";
+            }
+
             // Encriptam la contraseña antes de guardar
             usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
             usuario.setRol("ESTUDIANTE");
