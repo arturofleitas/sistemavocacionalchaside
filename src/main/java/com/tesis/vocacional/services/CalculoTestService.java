@@ -9,9 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Servicio de cálculo del test CHASIDE, reutilizable tanto para usuarios
@@ -199,5 +201,68 @@ public class CalculoTestService {
             }
         }
         return areas;
+    }
+
+    /**
+     * Top 3 con tolerancia a empates y exclusión de ceros, para la
+     * presentación del resultado. Es puramente de presentación: no altera los
+     * puntajes ni el cálculo de áreas predominantes usado para persistir el
+     * resultado (ver {@link #calcular} / {@link #calcularYGuardar}).
+     *
+     * IMPORTANTE: esto NO es un DENSE_RANK() &lt;= 3 puro. La regla tiene dos
+     * ramas, según si el primer escalón (el puntaje máximo) ya "satura" el
+     * podio o no:
+     *
+     * <ol>
+     *   <li><b>Podio saturado en la cima:</b> si 3 o más áreas comparten el
+     *   puntaje máximo, se devuelven ÚNICAMENTE esas áreas — no se baja a
+     *   escalones inferiores aunque el máximo sea el único valor mostrado.
+     *   Ej.: 9,9,9,8,8,8,6 → entran solo las tres con 9.</li>
+     *   <li><b>Podio no saturado:</b> si menos de 3 áreas comparten el
+     *   máximo, se completa el Top 3 con DENSE_RANK: se toman los 3 valores
+     *   únicos positivos más altos y entran todas las áreas cuyo puntaje sea
+     *   mayor o igual al tercero de ellos (con menos de 3 valores únicos, se
+     *   usa el menor de los disponibles como corte). Ej.: 5,4,4,4 → entran
+     *   los cuatro; 5,5,4,4,2 → entran los cinco.</li>
+     * </ol>
+     *
+     * Los empates se devuelven en el orden estable C-H-A-S-I-D-E. Si el
+     * máximo es 0 (o no hay puntajes positivos), devuelve lista vacía.
+     */
+    public List<String> topConEmpates(Map<String, Integer> puntajes) {
+        int maxPuntaje = puntajes.values().stream()
+                .filter(v -> v != null && v > 0)
+                .mapToInt(Integer::intValue)
+                .max()
+                .orElse(0);
+
+        if (maxPuntaje == 0) {
+            return new ArrayList<>();
+        }
+
+        long elementosConMaximo = AREAS.stream()
+                .filter(area -> puntajes.get(area) != null && puntajes.get(area) == maxPuntaje)
+                .count();
+
+        if (elementosConMaximo >= 3) {
+            // Podio saturado en el primer escalón: no se admiten escalones inferiores.
+            return AREAS.stream()
+                    .filter(area -> puntajes.get(area) != null && puntajes.get(area) == maxPuntaje)
+                    .collect(Collectors.toList());
+        }
+
+        // Podio no saturado: se completa con DENSE_RANK hasta el tercer valor único.
+        List<Integer> valoresUnicosDesc = puntajes.values().stream()
+                .filter(v -> v != null && v > 0)
+                .distinct()
+                .sorted(Comparator.reverseOrder())
+                .collect(Collectors.toList());
+
+        int limiteInferior = valoresUnicosDesc.get(Math.min(2, valoresUnicosDesc.size() - 1));
+
+        return AREAS.stream()
+                .filter(area -> puntajes.get(area) != null && puntajes.get(area) >= limiteInferior)
+                .sorted(Comparator.comparingInt((String area) -> puntajes.get(area)).reversed())
+                .collect(Collectors.toList());
     }
 }

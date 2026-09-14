@@ -94,9 +94,19 @@ public class UsuarioController {
             return "usuarios";
         }
 
-        // Contraseña nueva (no vacía) debe cumplir el mínimo; vacía = conservar la actual (edición).
-        if (usuario.getPassword() != null && !usuario.getPassword().isEmpty()
-                && usuario.getPassword().length() < PASSWORD_MIN_LENGTH) {
+        // Contraseña nueva (no vacía) debe cumplir el mínimo; vacía = conservar la actual, pero
+        // solo en edición. En alta (id <= 0) no hay contraseña anterior que conservar, así que
+        // una contraseña vacía no puede habilitar la creación de la cuenta.
+        boolean esAlta = usuario.getId() <= 0;
+        boolean passwordVacia = usuario.getPassword() == null || usuario.getPassword().isEmpty();
+        if (esAlta && passwordVacia) {
+            model.addAttribute("modalError", "La contraseña es obligatoria para crear una cuenta.");
+            model.addAttribute("abrirModal", true);
+            model.addAttribute("usuarios", usuarioService.listarTodos());
+            model.addAttribute("usuario", usuario);
+            return "usuarios";
+        }
+        if (!passwordVacia && usuario.getPassword().length() < PASSWORD_MIN_LENGTH) {
             model.addAttribute("modalError", "La contraseña debe tener al menos " + PASSWORD_MIN_LENGTH + " caracteres.");
             model.addAttribute("abrirModal", true);
             model.addAttribute("usuarios", usuarioService.listarTodos());

@@ -162,7 +162,7 @@
 						<label class="opcion-card">
 
 
-							<input type="radio" name="respuesta" value="SI" id="si">
+							<input type="radio" name="respuesta" value="SI" id="si" th:checked="${respuestaGuardada == 'SI'}">
 
 							<div class="opcion-box">
 
@@ -178,7 +178,7 @@
 
 						<label class="opcion-card">
 
-							<input type="radio" name="respuesta" value="NO" id="no">
+							<input type="radio" name="respuesta" value="NO" id="no" th:checked="${respuestaGuardada == 'NO'}">
 
 							<div class="opcion-box">
 
