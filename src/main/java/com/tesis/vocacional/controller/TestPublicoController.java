@@ -86,6 +86,7 @@ public class TestPublicoController {
         testUsuario.setEstado("EN_CURSO");
         testUsuarioService.guardar(testUsuario);
 
+        request.getSession().removeAttribute("invitadoIndiceVisualizado");
         response.addCookie(crearCookie(creada.tokenEnClaro(), request.isSecure()));
         return "redirect:/test/publico/pregunta";
     }
@@ -106,6 +107,7 @@ public class TestPublicoController {
         testUsuario.setEstado("EN_CURSO");
         testUsuarioService.guardar(testUsuario);
 
+        request.getSession().removeAttribute("invitadoIndiceVisualizado");
         return "redirect:/test/publico/pregunta";
     }
 
@@ -130,11 +132,20 @@ public class TestPublicoController {
             return "redirect:/test/publico/test-resultado";
         }
 
-        Pregunta preguntaActual = preguntas.get(indiceActual);
+        HttpSession session = request.getSession(false);
+        int indiceMostrar = resolverIndiceMostrado(session, indiceActual);
+
+        Pregunta preguntaActual = preguntas.get(indiceMostrar);
         model.addAttribute("pregunta", preguntaActual);
-        model.addAttribute("progreso", indiceActual + 1);
+        model.addAttribute("progreso", indiceMostrar + 1);
         model.addAttribute("total", preguntas.size());
-        model.addAttribute("esUltimaPregunta", indiceActual == preguntas.size() - 1);
+        model.addAttribute("esUltimaPregunta", indiceMostrar == preguntas.size() - 1);
+
+        // Si se está revisando una pregunta ya respondida (se volvió con
+        // "Anterior"), se expone su valor guardado para que la vista lo
+        // preseleccione en vez de mostrar "Sí" por defecto.
+        Boolean valorGuardado = mapaRespuestasPorPreguntaId(testUsuario).get(preguntaActual.getId());
+        model.addAttribute("respuestaGuardada", valorGuardado == null ? null : (valorGuardado ? "SI" : "NO"));
 
         // El aviso "Retomaste el test..." solo debe mostrarse cuando el usuario
         // vuelve tras haber estado ausente (cerró la ventana, perdió la conexión,
@@ -142,7 +153,6 @@ public class TestPublicoController {
         // se retrocede se marca un indicador que suprime el aviso en la siguiente
         // pregunta.
         boolean retomando = indiceActual > 0;
-        HttpSession session = request.getSession(false);
         if (session != null && session.getAttribute("avisoRetomandoSuprimido") != null) {
             session.removeAttribute("avisoRetomandoSuprimido");
             retomando = false;
@@ -178,7 +188,11 @@ public class TestPublicoController {
             return "redirect:/test/publico/test-resultado";
         }
 
-        Pregunta preguntaActual = preguntas.get(indiceActual);
+        // Si se está reviendo/cambiando una pregunta anterior (por "Anterior"),
+        // se guarda en esa posición, no en el frente natural de avance.
+        HttpSession sesionHttp = request.getSession(false);
+        int indiceAResponder = resolverIndiceMostrado(sesionHttp, indiceActual);
+        Pregunta preguntaActual = preguntas.get(indiceAResponder);
 
         Optional<TestUsuarioPregunta> optTUP = testUsuarioPreguntaService
                 .buscarPorTestUsuarioYPregunta(testUsuario, preguntaActual);
@@ -201,11 +215,19 @@ public class TestPublicoController {
         respuestaEntity.setValor("SI".equalsIgnoreCase(respuesta));
         respuestaService.guardar(respuestaEntity);
 
-        request.getSession().setAttribute("avisoRetomandoSuprimido", Boolean.TRUE);
+        HttpSession session = request.getSession();
+        session.removeAttribute("invitadoIndiceVisualizado");
+        session.setAttribute("avisoRetomandoSuprimido", Boolean.TRUE);
         return "redirect:/test/publico/pregunta";
     }
 
-    /** Retrocede a la pregunta anterior y elimina la respuesta guardada. */
+    /**
+     * Retrocede a la pregunta anterior para revisarla o cambiarla. Ya NO
+     * elimina la respuesta guardada: solo mueve el puntero de revisión de
+     * sesión un lugar atrás. La respuesta sigue intacta en la base de datos
+     * hasta que el usuario la reenvía (responder() reemplaza el valor previo
+     * sin duplicar el par evaluación-ítem).
+     */
     @PostMapping("/anterior")
     public String anterior(HttpServletRequest request) {
         SesionInvitado sesion = resolverSesion(request).orElse(null);
@@ -221,13 +243,11 @@ public class TestPublicoController {
             return "redirect:/test/publico/pregunta";
         }
 
-        Pregunta preguntaAAnular = preguntas.get(indiceActual - 1);
-        testUsuarioPreguntaService.buscarPorTestUsuarioYPregunta(testUsuario, preguntaAAnular).ifPresent(tup -> {
-            respuestaService.eliminarPorTestUsuarioPregunta(tup);
-            testUsuarioPreguntaService.eliminar(tup);
-        });
-
-        request.getSession().setAttribute("avisoRetomandoSuprimido", Boolean.TRUE);
+        HttpSession session = request.getSession();
+        int indiceMostradoActual = resolverIndiceMostrado(session, indiceActual);
+        int nuevoIndice = Math.max(0, indiceMostradoActual - 1);
+        session.setAttribute("invitadoIndiceVisualizado", nuevoIndice);
+        session.setAttribute("avisoRetomandoSuprimido", Boolean.TRUE);
         return "redirect:/test/publico/pregunta";
     }
 
@@ -256,6 +276,8 @@ public class TestPublicoController {
 
         model.addAttribute("interesesPredominantes", calculo.getInteresesPredominantes());
         model.addAttribute("aptitudesPredominantes", calculo.getAptitudesPredominantes());
+        model.addAttribute("topIntereses", calculoTestService.topConEmpates(calculo.getPuntajesInteres()));
+        model.addAttribute("topAptitudes", calculoTestService.topConEmpates(calculo.getPuntajesAptitud()));
         model.addAttribute("puntajesInteres", calculo.getPuntajesInteres());
         model.addAttribute("puntajesAptitud", calculo.getPuntajesAptitud());
         model.addAttribute("maxPuntaje", calculo.getMaxInteres());
@@ -340,16 +362,7 @@ public class TestPublicoController {
 
     private List<String> reconstruirRespuestas(TestUsuario testUsuario, List<Pregunta> preguntas) {
         List<String> respuestas = new ArrayList<>();
-        if (testUsuario == null || testUsuario.getId() == 0) {
-            return respuestas;
-        }
-
-        Map<Integer, Boolean> respuestasPorPregunta = new HashMap<>();
-        for (Respuesta r : respuestaService.obtenerPorTestUsuarioId(testUsuario.getId())) {
-            if (r.getPregunta() != null && r.getPregunta().getPregunta() != null) {
-                respuestasPorPregunta.put(r.getPregunta().getPregunta().getId(), r.getValor());
-            }
-        }
+        Map<Integer, Boolean> respuestasPorPregunta = mapaRespuestasPorPreguntaId(testUsuario);
 
         for (Pregunta p : preguntas) {
             Boolean valor = respuestasPorPregunta.get(p.getId());
@@ -359,6 +372,40 @@ public class TestPublicoController {
             respuestas.add(Boolean.TRUE.equals(valor) ? "SI" : "NO");
         }
         return respuestas;
+    }
+
+    /** Mapa preguntaId -> valor de respuesta guardado para esta evaluación de invitado. */
+    private Map<Integer, Boolean> mapaRespuestasPorPreguntaId(TestUsuario testUsuario) {
+        Map<Integer, Boolean> respuestasPorPregunta = new HashMap<>();
+        if (testUsuario == null || testUsuario.getId() == 0) {
+            return respuestasPorPregunta;
+        }
+        for (Respuesta r : respuestaService.obtenerPorTestUsuarioId(testUsuario.getId())) {
+            if (r.getPregunta() != null && r.getPregunta().getPregunta() != null) {
+                respuestasPorPregunta.put(r.getPregunta().getPregunta().getId(), r.getValor());
+            }
+        }
+        return respuestasPorPregunta;
+    }
+
+    /**
+     * Resuelve qué índice mostrar/responder: el de revisión guardado en
+     * sesión (cuando el usuario volvió con "Anterior" y todavía es válido,
+     * es decir menor al frente natural de avance), o si no el frente natural
+     * ({@code indiceActual}, la primera pregunta sin respuesta contigua).
+     */
+    private int resolverIndiceMostrado(HttpSession session, int indiceActual) {
+        if (session == null) {
+            return indiceActual;
+        }
+        Integer indiceVisualizado = (Integer) session.getAttribute("invitadoIndiceVisualizado");
+        if (indiceVisualizado != null && indiceVisualizado >= 0 && indiceVisualizado < indiceActual) {
+            return indiceVisualizado;
+        }
+        if (indiceVisualizado != null) {
+            session.removeAttribute("invitadoIndiceVisualizado");
+        }
+        return indiceActual;
     }
 
     private Cookie crearCookie(String token, boolean secure) {

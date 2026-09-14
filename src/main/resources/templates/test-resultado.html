@@ -73,11 +73,11 @@
 
                 <div th:unless="${interesCero and aptitudCero}">
 
-                    <!-- INTERESES PREDOMINANTES -->
+                    <!-- INTERESES PREDOMINANTES (Top 3 con tolerancia a empates) -->
                     <div class="seccion">
                         <h3>
                             <i class="fas fa-heart" style="color:#0d6efd;"></i> Intereses predominantes
-                            <span class="badge-interes" th:text="${interesesPredominantes.size()} + ' área(s)'">2 áreas</span>
+                            <span class="badge-interes" th:text="${topIntereses.size()} + ' área(s)'">2 áreas</span>
                         </h3>
                         <div th:if="${interesCero}" class="aviso">
                             <i class="fas fa-circle-info"></i>
@@ -85,7 +85,7 @@
                             son todos cero.
                         </div>
                         <div th:unless="${interesCero}">
-                            <div th:each="letra : ${interesesPredominantes}" class="item-area">
+                            <div th:each="letra : ${topIntereses}" class="item-area">
                                 <span class="letra" th:text="${letra}">H</span>
                                 <span class="nombre" th:text="${categoriaMap.get(letra)}">Humanísticas</span>
                                 <span class="puntaje" th:text="${puntajesInteres.get(letra)}">9</span>
@@ -96,11 +96,11 @@
                         </div>
                     </div>
 
-                    <!-- APTITUDES PREDOMINANTES -->
+                    <!-- APTITUDES PREDOMINANTES (Top 3 con tolerancia a empates) -->
                     <div class="seccion">
                         <h3>
                             <i class="fas fa-brain" style="color:#10b981;"></i> Aptitudes predominantes
-                            <span class="badge-aptitud" th:text="${aptitudesPredominantes.size()} + ' área(s)'">1 área</span>
+                            <span class="badge-aptitud" th:text="${topAptitudes.size()} + ' área(s)'">1 área</span>
                         </h3>
                         <div th:if="${aptitudCero}" class="aviso">
                             <i class="fas fa-circle-info"></i>
@@ -108,7 +108,7 @@
                             son todos cero.
                         </div>
                         <div th:unless="${aptitudCero}">
-                            <div th:each="letra : ${aptitudesPredominantes}" class="item-area">
+                            <div th:each="letra : ${topAptitudes}" class="item-area">
                                 <span class="letra" th:text="${letra}">A</span>
                                 <span class="nombre" th:text="${categoriaMap.get(letra)}">Artísticas</span>
                                 <span class="puntaje" th:text="${puntajesAptitud.get(letra)}">4</span>

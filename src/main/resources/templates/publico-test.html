@@ -60,14 +60,14 @@
                 <form id="formTest" th:action="@{/test/publico/responder}" method="post" class="mt-4">
                     <div class="opciones-container">
                         <label class="opcion-card">
-                            <input type="radio" name="respuesta" value="SI" id="si">
+                            <input type="radio" name="respuesta" value="SI" id="si" th:checked="${respuestaGuardada == 'SI'}">
                             <div class="opcion-box">
                                 <div class="cuadrado-indicador"></div>
                                 <span class="opcion-texto">Sí</span>
                             </div>
                         </label>
                         <label class="opcion-card">
-                            <input type="radio" name="respuesta" value="NO" id="no">
+                            <input type="radio" name="respuesta" value="NO" id="no" th:checked="${respuestaGuardada == 'NO'}">
                             <div class="opcion-box">
                                 <div class="cuadrado-indicador"></div>
                                 <span class="opcion-texto">No</span>

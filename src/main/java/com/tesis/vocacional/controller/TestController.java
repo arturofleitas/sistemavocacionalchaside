@@ -173,12 +173,17 @@ public class TestController {
 	}
 
 	/**
-	 * Muestra la pregunta actual según el índice de sesión.
-	 * 
+	 * Muestra la pregunta actual según el índice de sesión. Si esa pregunta ya
+	 * tenía una respuesta guardada (por ejemplo, porque se volvió con
+	 * "Anterior"), se expone en el modelo para que la vista la preseleccione:
+	 * no se debe mostrar "Sí" por defecto cuando en realidad se había
+	 * respondido "No".
+	 *
 	 * @return Nombre de la vista "realizar-test".
 	 */
 	private String mostrarPreguntaActual(HttpSession session, Model model) {
 		List<Pregunta> preguntas = obtenerLista(session, "preguntas");
+		List<String> respuestas = obtenerLista(session, "respuestas");
 		Integer indice = (Integer) session.getAttribute("indiceActual");
 
 		if (preguntas == null || indice == null || indice < 0 || indice >= preguntas.size()) {
@@ -190,37 +195,31 @@ public class TestController {
 		model.addAttribute("progreso", indice + 1);
 		model.addAttribute("total", preguntas.size());
 		model.addAttribute("esUltimaPregunta", indice == preguntas.size() - 1);
+		String respuestaGuardada = (respuestas != null && indice < respuestas.size()) ? respuestas.get(indice) : null;
+		model.addAttribute("respuestaGuardada", respuestaGuardada);
 
 		return "realizar-test";
 	}
 
 	/**
-	 * Permite retroceder a la pregunta anterior.
-	 * 
+	 * Permite retroceder a la pregunta anterior para revisarla o cambiarla.
+	 * A diferencia de una versión previa, ya NO borra la respuesta guardada:
+	 * solo mueve el puntero de sesión un lugar atrás. La respuesta sigue
+	 * intacta en la base de datos y en la sesión hasta que el usuario la
+	 * reenvíe (responder() ya reemplaza el valor anterior sin duplicar).
+	 *
 	 * @return Redirección o vista de la pregunta anterior.
 	 */
 	@PostMapping("/anterior")
 	public String anterior(HttpSession session, Model model) {
-		List<String> respuestas = obtenerLista(session, "respuestas");
 		List<Pregunta> preguntas = obtenerLista(session, "preguntas");
-		TestUsuario testUsuario = (TestUsuario) session.getAttribute("testUsuario");
 		Integer indice = (Integer) session.getAttribute("indiceActual");
 
-		if (respuestas == null || preguntas == null || testUsuario == null || indice == null || indice <= 0) {
+		if (preguntas == null || indice == null || indice <= 0) {
 			return "redirect:/realizar-test";
 		}
 
-		// Quitar de la sesión la respuesta y volver al índice anterior
-		respuestas.remove(indice - 1);
-		session.setAttribute("respuestas", respuestas);
-		session.setAttribute("indiceActual", --indice);
-
-		// Eliminar la respuesta de la base de datos para que el progreso sea consistente
-		Pregunta preguntaAAnular = preguntas.get(indice);
-		testUsuarioPreguntaService.buscarPorTestUsuarioYPregunta(testUsuario, preguntaAAnular).ifPresent(tup -> {
-			respuestaService.eliminarPorTestUsuarioPregunta(tup);
-			testUsuarioPreguntaService.eliminar(tup);
-		});
+		session.setAttribute("indiceActual", indice - 1);
 
 		return mostrarPreguntaActual(session, model);
 	}
@@ -247,6 +246,8 @@ public class TestController {
 		// 2. Pasar datos al modelo
 		model.addAttribute("interesesPredominantes", calculo.getInteresesPredominantes());
 		model.addAttribute("aptitudesPredominantes", calculo.getAptitudesPredominantes());
+		model.addAttribute("topIntereses", calculoTestService.topConEmpates(calculo.getPuntajesInteres()));
+		model.addAttribute("topAptitudes", calculoTestService.topConEmpates(calculo.getPuntajesAptitud()));
 		model.addAttribute("puntajesInteres", calculo.getPuntajesInteres());
 		model.addAttribute("puntajesAptitud", calculo.getPuntajesAptitud());
 		model.addAttribute("maxPuntaje", calculo.getMaxInteres());
