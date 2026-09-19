@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<html xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -30,118 +30,97 @@
                                             'E':'Ciencias Agrarias, de la Naturaleza, Zoológicas y Biológicas'} }">
 
                 <div class="header-resultado">
-                    <h1><i class="fas fa-clipboard-check"></i> Informe Vocacional</h1>
-                    <span class="badge-chaside">CHASIDE</span>
+                    <div class="header-resultado-titulo">
+                        <img th:src="@{/img/LogoFacitec.jpg}" alt="FACITEC" class="logo-informe">
+                        <h1>Informe Vocacional</h1>
+                    </div>
                 </div>
 
-                <!-- Ambos en cero -->
-                <div th:if="${interesCero and aptitudCero}" class="perfil-destacado">
-                    <div class="etiqueta"><i class="fas fa-circle-info"></i> Resultado</div>
-                    <h2>No se identificaron áreas predominantes</h2>
-                    <p class="texto-cero">
-                        Las respuestas registradas no generaron puntajes positivos en intereses
-                        ni en aptitudes. Por este motivo, no se presentan áreas vocacionales
-                        predominantes. Este resultado no significa que carezcas de intereses
-                        o aptitudes. Revisá que tus respuestas reflejen tus preferencias y
-                        considerá el acompañamiento de un profesional de orientación vocacional.
-                    </p>
+                <!--
+                    Vista de invitado: NO hay tarjeta "Datos del estudiante" (no hay Usuario
+                    autenticado con nombre/edad). Se va directo a la Interpretación.
+                -->
+                <div class="tarjeta-interpretacion">
+                    <div class="icono-avatar icono-interpretacion"><i class="fas fa-lightbulb"></i></div>
+                    <div>
+                        <h3>Interpretación del resultado</h3>
+                        <p>
+                            Este perfil no define tu futuro, sino que te ayuda a conocer mejor tus
+                            inclinaciones y explorar opciones que se ajusten a lo que te gusta y motiva.
+                        </p>
+                    </div>
                 </div>
 
-                <div th:unless="${interesCero and aptitudCero}">
+                <!-- PERFIL DE INTERESES (top 3, mismo diseño que la vista de estudiante registrado) -->
+                <div class="seccion-perfil">
+                    <h3 class="titulo-perfil">Perfil de intereses</h3>
 
-                    <!-- INTERESES PREDOMINANTES (Top 3 con tolerancia a empates) -->
-                    <div class="seccion">
-                        <h3>
-                            <i class="fas fa-heart" style="color:#0d6efd;"></i> Intereses predominantes
-                            <span class="badge-interes" th:text="${topIntereses.size()} + ' área(s)'">2 áreas</span>
-                        </h3>
-                        <div th:if="${interesCero}" class="aviso">
-                            <i class="fas fa-circle-info"></i>
-                            No se identificaron intereses predominantes: los puntajes de intereses
-                            son todos cero.
-                        </div>
-                        <div th:unless="${interesCero}">
-                            <div th:each="letra : ${topIntereses}" class="item-area">
-                                <span class="letra" th:text="${letra}">H</span>
-                                <span class="nombre" th:text="${categoriaMap.get(letra)}">Humanísticas</span>
-                                <span class="puntaje" th:text="${puntajesInteres.get(letra)}">9</span>
-                                <div class="barra-fondo">
-                                    <div class="barra-llena" th:style="'width: ' + (${puntajesInteres.get(letra)} * 100 / ${maxPuntaje}) + '%'"></div>
+                    <div th:if="${interesCero}" class="aviso-cero">
+                        <i class="fas fa-circle-info"></i>
+                        No se identificaron intereses predominantes: los puntajes de intereses son todos
+                        cero. Esto no significa que carezcas de intereses — revisá tus respuestas o
+                        consultá con un profesional de orientación vocacional.
+                    </div>
+
+                    <div th:unless="${interesCero}" class="ranking-intereses">
+                        <div th:each="letra, iterLetra : ${topIntereses}"
+                             th:if="${iterLetra.index < 3}"
+                             th:with="miPuntaje=${puntajesInteres.get(letra)},
+                                      empatado=${iterLetra.index > 0 and miPuntaje == puntajesInteres.get(topIntereses[iterLetra.index - 1])}"
+                             class="tarjeta-rank"
+                             th:classappend="${iterLetra.index == 0} ? 'rank-1' : (${iterLetra.index == 1} ? 'rank-2' : 'rank-3')">
+                            <span class="badge-rank" th:text="${iterLetra.count} + '.° LUGAR'">1.° LUGAR</span>
+                            <div class="tarjeta-rank-cuerpo">
+                                <h4 th:text="${categoriaMap.get(letra)}">Ciencias de la Salud</h4>
+                                <span class="subtitulo-rank" th:text="'Puntaje: ' + ${miPuntaje} + '/10'">Puntaje: 9/10</span>
+                                <div th:if="${empatado}" class="nota-empate">
+                                    <i class="fas fa-equals"></i> Empatado en puntaje con el puesto anterior
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- APTITUDES PREDOMINANTES (Top 3 con tolerancia a empates) -->
-                    <div class="seccion">
-                        <h3>
-                            <i class="fas fa-brain" style="color:#10b981;"></i> Aptitudes predominantes
-                            <span class="badge-aptitud" th:text="${topAptitudes.size()} + ' área(s)'">1 área</span>
-                        </h3>
-                        <div th:if="${aptitudCero}" class="aviso">
-                            <i class="fas fa-circle-info"></i>
-                            No se identificaron aptitudes predominantes: los puntajes de aptitudes
-                            son todos cero.
-                        </div>
-                        <div th:unless="${aptitudCero}">
-                            <div th:each="letra : ${topAptitudes}" class="item-area">
-                                <span class="letra" th:text="${letra}">A</span>
-                                <span class="nombre" th:text="${categoriaMap.get(letra)}">Artísticas</span>
-                                <span class="puntaje" th:text="${puntajesAptitud.get(letra)}">4</span>
-                                <div class="barra-fondo">
-                                    <div class="barra-llena aptitud" th:style="'width: ' + (${puntajesAptitud.get(letra)} * 100 / ${maxPuntajeAptitud}) + '%'"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                 </div>
 
                 <div class="total-preguntas">
                     <i class="far fa-file-alt"></i> Total preguntas: <span th:text="${totalPreguntas} ?: 98">98</span>
                 </div>
 
-                <div class="aviso">
-                    <i class="fas fa-lightbulb"></i>
-                    Este diagnóstico es una guía orientativa. Tu vocación se construye con experiencia, reflexión y asesoramiento profesional.
-                </div>
-
-                <div class="acciones">
+                <div class="acciones acciones-redondeadas">
                     <form th:action="@{/test/publico/reiniciar}" method="post" style="flex: 1; min-width: 100px;">
-                        <button type="submit" class="btn-outline w-100">
+                        <button type="submit" class="btn-primary rounded-pill w-100">
                             <i class="fas fa-redo"></i> Realizar otro test
                         </button>
                     </form>
-                    <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Imprimir / Descargar</button>
+                    <button onclick="window.print()" class="btn-print rounded-pill"><i class="fas fa-print"></i> Imprimir</button>
                 </div>
 
-                <!-- Guardar en historial -->
+                <!--
+                    Guardar en historial: esta es la URL PÚBLICA (varias personas distintas
+                    pueden pasar por el mismo dispositivo/navegador). Por eso NO se confía
+                    en que "isAuthenticated()" sea la persona correcta — podría ser una
+                    sesión de otro usuario que quedó abierta. Siempre se pide un login
+                    explícito para guardar, sin importar si ya hay una sesión activa.
+
+                    El enlace "Iniciar sesión y guardar" no necesita lógica adicional: al
+                    autenticarse, LoginSuccessHandler ya vincula automáticamente el test de
+                    invitado (por la cookie de sesión de invitado) a la cuenta que acaba de
+                    iniciar sesión — esa parte no se tocó.
+                -->
                 <div class="card mt-4 d-print-none">
                     <div class="card-body">
-                        <div sec:authorize="isAuthenticated()">
-                            <h5 class="text-primary"><i class="fas fa-save me-2"></i>Guardar en tu historial</h5>
-                            <p class="text-muted small mb-3">
-                                Podés conservar esta evaluación en tu cuenta y consultarla posteriormente.
-                            </p>
-                            <form th:action="@{/test/publico/guardar}" method="post">
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-save me-1"></i> Guardar en mi historial
-                                </button>
-                            </form>
-                        </div>
-                        <div sec:authorize="!isAuthenticated()">
-                            <h5 class="text-primary"><i class="fas fa-save me-2"></i>¿Querés conservar esta evaluación?</h5>
-                            <p class="text-muted small mb-3">
-                                Iniciá sesión o creá una cuenta para guardar tus respuestas y resultados en tu historial.
-                                También podés continuar sin cuenta: el informe ya está disponible.
-                            </p>
-                            <a th:href="@{/login}" class="btn btn-primary me-2">
+                        <h5 class="text-primary"><i class="fas fa-save me-2"></i>¿Querés conservar esta evaluación?</h5>
+                        <p class="text-muted small mb-3">
+                            Iniciá sesión o creá una cuenta para guardar tus respuestas y resultados en tu historial.
+                            También podés continuar sin cuenta: el informe ya está disponible.
+                        </p>
+                        <div class="botonera-historial">
+                            <a th:href="@{/login}" class="btn btn-primary rounded-pill">
                                 <i class="fas fa-sign-in-alt me-1"></i> Iniciar sesión y guardar
                             </a>
-                            <a th:href="@{/registrarse}" class="btn btn-outline-primary">
+                            <a th:href="@{/registrarse}" class="btn btn-outline-primary rounded-pill">
                                 <i class="fas fa-user-plus me-1"></i> Crear cuenta y guardar
                             </a>
-                            <a th:href="@{/home}" class="btn btn-outline-secondary">
+                            <a th:href="@{/home}" class="btn btn-outline-primary rounded-pill">
                                 Continuar sin cuenta
                             </a>
                         </div>

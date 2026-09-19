@@ -29,6 +29,7 @@ public class ReportesDetallesController {
     private final TestUsuarioPreguntaService testUsuarioPreguntaService;
     private final RespuestaService respuestaService;
     private final AccesoReporteService accesoReporteService;
+    private final com.tesis.vocacional.services.CalculoTestService calculoTestService;
 
     // Mapa de nombres completos de las áreas (orden fijo para la vista)
     private static final Map<String, String> NOMBRE_CATEGORIA = new LinkedHashMap<>();
@@ -45,11 +46,13 @@ public class ReportesDetallesController {
     public ReportesDetallesController(ResultadoService resultadoService,
                                       TestUsuarioPreguntaService testUsuarioPreguntaService,
                                       RespuestaService respuestaService,
-                                      AccesoReporteService accesoReporteService) {
+                                      AccesoReporteService accesoReporteService,
+                                      com.tesis.vocacional.services.CalculoTestService calculoTestService) {
         this.resultadoService = resultadoService;
         this.testUsuarioPreguntaService = testUsuarioPreguntaService;
         this.respuestaService = respuestaService;
         this.accesoReporteService = accesoReporteService;
+        this.calculoTestService = calculoTestService;
     }
 
     @GetMapping("/test/{id}")
@@ -105,6 +108,12 @@ public class ReportesDetallesController {
                     + resultado.getTest().getUsuario().getApellido();
         }
 
+        // Top 3 de intereses con la misma lógica de empates usada en el resultado
+        // recién finalizado (CalculoTestService.topConEmpates), reutilizando el
+        // snapshot de puntajes ya reconstruido arriba. Puramente de presentación.
+        boolean interesCero = maxInteres == 0;
+        java.util.List<String> topIntereses = calculoTestService.topConEmpates(puntajesInteres);
+
         model.addAttribute("resultado", resultado);
         model.addAttribute("alumnoNombre", alumnoNombre);
         model.addAttribute("preguntas", preguntas);
@@ -116,6 +125,8 @@ public class ReportesDetallesController {
         model.addAttribute("maxInteres", maxInteres);
         model.addAttribute("maxAptitud", maxAptitud);
         model.addAttribute("categoriaMap", NOMBRE_CATEGORIA);
+        model.addAttribute("topIntereses", topIntereses);
+        model.addAttribute("interesCero", interesCero);
 
         return "detalle-test";
     }

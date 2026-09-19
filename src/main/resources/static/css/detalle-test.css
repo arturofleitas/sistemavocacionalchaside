@@ -4,125 +4,6 @@ body {
     padding: 20px 0;
 }
 
-.report-header {
-    background: white;
-    border-radius: 16px;
-    padding: 16px 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-.report-header h2 { font-size: 1.5rem; }
-.btn-lg-custom { padding: 8px 20px; font-size: 0.95rem; border-radius: 30px; }
-
-.info-card {
-    background: white;
-    border-radius: 16px;
-    padding: 16px 24px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    margin-bottom: 20px;
-}
-.info-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 12px;
-}
-.info-item {
-    display: flex;
-    flex-direction: column;
-}
-.info-item strong {
-    font-size: 0.75rem;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 2px;
-}
-.info-item span {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1e293b;
-}
-.badge-perfil {
-    background: #0d6efd;
-    color: white;
-    padding: 6px 24px;
-    border-radius: 30px;
-    font-weight: 600;
-    font-size: 1rem;
-    display: inline-block;
-    width: fit-content;
-}
-
-/* Lista de áreas predominantes (intereses/aptitudes): una por fila, ya que
-   varias pueden empatar en el puntaje máximo y no hay un orden real entre
-   ellas. Mismo patrón visual que la vista de resultado del alumno. */
-.lista-areas {
-    margin-top: 6px;
-}
-
-.item-area {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 6px 0;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.item-area:last-child {
-    border-bottom: none;
-}
-
-.item-area .letra {
-    font-weight: 700;
-    font-size: 0.95rem;
-    width: 22px;
-    flex: none;
-    color: #0d6efd;
-}
-
-.item-area .nombre {
-    flex: 1;
-    font-size: 0.9rem;
-    color: #1e293b;
-}
-
-.item-area .puntaje {
-    font-weight: 600;
-    font-size: 0.9rem;
-    min-width: 24px;
-    text-align: right;
-    color: #0d6efd;
-}
-
-.item-area .barra-fondo {
-    flex: 0 0 90px;
-    height: 7px;
-    background: #e9ecef;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.item-area .barra-llena {
-    height: 100%;
-    border-radius: 10px;
-    background: #0d6efd;
-}
-
-.item-area .barra-llena.aptitud {
-    background: #10b981;
-}
-
-@media (max-width: 480px) {
-    .item-area {
-        flex-wrap: wrap;
-    }
-    .item-area .barra-fondo {
-        flex: 0 0 100%;
-        order: 4;
-        margin-top: 2px;
-    }
-}
-
 .table-reporte {
     background: white;
     border-radius: 16px;
@@ -174,25 +55,17 @@ body {
 
 @media (max-width: 768px) {
     .scroll-top-btn .btn { width: 45px; height: 45px; font-size: 1.2rem; bottom: 20px; right: 20px; }
-    .info-grid { grid-template-columns: 1fr; }
-    .info-item { grid-column: auto !important; }
-}
-
-@media (max-width: 480px) {
-    .report-header h2 { font-size: 1.2rem; }
-    .btn-lg-custom { padding: 6px 14px; font-size: 0.85rem; }
 }
 
 @media print {
     .no-print { display: none !important; }
     body { background: white !important; padding: 10px !important; }
-    .report-header, .info-card {
+    .header-resultado {
         box-shadow: none !important;
         border: 1px solid #dee2e6;
         break-inside: avoid;
     }
-    .report-header { border-bottom: 2px solid #0d6efd; border-radius: 0; }
-    .badge-perfil, .badge-si, .badge-no { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+    .badge-si, .badge-no { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
 
     /* La tabla de respuestas: visible, sin scroll, y repetir encabezado por página */
     .table-reporte {

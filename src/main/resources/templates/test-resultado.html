@@ -29,7 +29,7 @@
         <!-- Contenido principal -->
         <div class="content">
 
-            <!-- Encabezado con toggle de menú y datos de usuario -->
+            <!-- Encabezado con toggle de menú y datos de usuario (sin cambios) -->
             <div class="header">
                 <div style="display: flex; align-items: center; gap: 12px;">
                     <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
@@ -43,6 +43,11 @@
                 <div th:replace="~{fragments/menu :: userInfo}"></div>
             </div>
 
+            <!--
+                Contenedor central (fondo gris-azulino claro). Se reutiliza la variable
+                --light-blue ya definida en home.css (#f8fbff) en vez de introducir un
+                tono nuevo casi idéntico al pedido (#f4f7fc).
+            -->
             <div class="container-resultado"
                  th:with="categoriaMap=${ {'C':'Administrativas y Contables',
                                            'H':'Humanísticas, Ciencias Jurídicas y Sociales',
@@ -50,93 +55,106 @@
                                            'S':'Ciencias de la Salud',
                                            'I':'Ingenierías, Carreras Técnicas y Computación',
                                            'D':'Defensa y Seguridad',
-                                           'E':'Ciencias Agrarias, de la Naturaleza, Zoológicas y Biológicas'} }">
+                                           'E':'Ciencias Agrarias, de la Naturaleza, Zoológicas y Biológicas'} },
+                          hoy=${T(java.time.LocalDate).now()},
+                          fechaNac=${currentUser != null ? currentUser.fecha_nacimiento.toLocalDate() : null},
+                          edad=${fechaNac != null ? T(java.time.Period).between(fechaNac, hoy).getYears() : null}">
 
-                <!-- Encabezado -->
+                <!-- Encabezado del informe, con el logo institucional (igual que en login/registro).
+                     Sin ícono junto al título ni badge CHASIDE (se eliminaron del todo, no solo
+                     ocultos en mobile, para que tampoco aparezcan en la impresión). -->
                 <div class="header-resultado">
-                    <h1><i class="fas fa-clipboard-check"></i> Informe Vocacional</h1>
-                    <span class="badge-chaside">CHASIDE</span>
+                    <div class="header-resultado-titulo">
+                        <img th:src="@{/img/LogoFacitec.jpg}" alt="FACITEC" class="logo-informe">
+                        <h1>Informe Vocacional</h1>
+                    </div>
                 </div>
 
-                <!-- Ambos en cero -->
-                <div th:if="${interesCero and aptitudCero}" class="perfil-destacado">
-                    <div class="etiqueta"><i class="fas fa-circle-info"></i> Resultado</div>
-                    <h2>No se identificaron áreas predominantes</h2>
-                    <p class="texto-cero">
-                        Las respuestas registradas no generaron puntajes positivos en intereses
-                        ni en aptitudes. Por este motivo, no se presentan áreas vocacionales
-                        predominantes. Este resultado no significa que carezcas de intereses
-                        o aptitudes. Revisá que tus respuestas reflejen tus preferencias y
-                        considerá el acompañamiento de un profesional de orientación vocacional.
-                    </p>
-                </div>
+                <!-- Datos del estudiante + Interpretación: en escritorio van lado a lado
+                     (misma fila) para no alargar la página; en mobile se apilan. -->
+                <div class="fila-info-superior">
 
-                <div th:unless="${interesCero and aptitudCero}">
-
-                    <!-- INTERESES PREDOMINANTES (Top 3 con tolerancia a empates) -->
-                    <div class="seccion">
-                        <h3>
-                            <i class="fas fa-heart" style="color:#0d6efd;"></i> Intereses predominantes
-                            <span class="badge-interes" th:text="${topIntereses.size()} + ' área(s)'">2 áreas</span>
-                        </h3>
-                        <div th:if="${interesCero}" class="aviso">
-                            <i class="fas fa-circle-info"></i>
-                            No se identificaron intereses predominantes: los puntajes de intereses
-                            son todos cero.
-                        </div>
-                        <div th:unless="${interesCero}">
-                            <div th:each="letra : ${topIntereses}" class="item-area">
-                                <span class="letra" th:text="${letra}">H</span>
-                                <span class="nombre" th:text="${categoriaMap.get(letra)}">Humanísticas</span>
-                                <span class="puntaje" th:text="${puntajesInteres.get(letra)}">9</span>
-                                <div class="barra-fondo">
-                                    <div class="barra-llena" th:style="'width: ' + (${puntajesInteres.get(letra)} * 100 / ${maxPuntaje}) + '%'"></div>
-                                </div>
+                    <!-- TARJETA: Datos del estudiante -->
+                    <div class="tarjeta-datos-estudiante">
+                        <div class="icono-avatar"><i class="fas fa-user"></i></div>
+                        <div class="datos-grid">
+                            <div class="dato">
+                                <span class="dato-etiqueta">Nombre y Apellido</span>
+                                <span class="dato-valor"
+                                      th:text="${currentUser != null ? (currentUser.nombre + ' ' + currentUser.apellido) : '-'}">
+                                    Juan Pérez García
+                                </span>
+                            </div>
+                            <div class="dato">
+                                <span class="dato-etiqueta">Edad</span>
+                                <span class="dato-valor" th:text="${edad != null ? edad + ' años' : '-'}">16 años</span>
+                            </div>
+                            <div class="dato">
+                                <span class="dato-etiqueta">Fecha de realización</span>
+                                <span class="dato-valor" th:text="${#temporals.format(hoy, 'dd/MM/yyyy')}">15/08/2025</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- APTITUDES PREDOMINANTES (Top 3 con tolerancia a empates) -->
-                    <div class="seccion">
-                        <h3>
-                            <i class="fas fa-brain" style="color:#10b981;"></i> Aptitudes predominantes
-                            <span class="badge-aptitud" th:text="${topAptitudes.size()} + ' área(s)'">1 área</span>
-                        </h3>
-                        <div th:if="${aptitudCero}" class="aviso">
-                            <i class="fas fa-circle-info"></i>
-                            No se identificaron aptitudes predominantes: los puntajes de aptitudes
-                            son todos cero.
-                        </div>
-                        <div th:unless="${aptitudCero}">
-                            <div th:each="letra : ${topAptitudes}" class="item-area">
-                                <span class="letra" th:text="${letra}">A</span>
-                                <span class="nombre" th:text="${categoriaMap.get(letra)}">Artísticas</span>
-                                <span class="puntaje" th:text="${puntajesAptitud.get(letra)}">4</span>
-                                <div class="barra-fondo">
-                                    <div class="barra-llena aptitud" th:style="'width: ' + (${puntajesAptitud.get(letra)} * 100 / ${maxPuntajeAptitud}) + '%'"></div>
-                                </div>
-                            </div>
+                    <!-- TARJETA: Interpretación del resultado -->
+                    <div class="tarjeta-interpretacion">
+                        <div class="icono-avatar icono-interpretacion"><i class="fas fa-lightbulb"></i></div>
+                        <div>
+                            <h3>Interpretación del resultado</h3>
+                            <p>
+                                Este perfil no define tu futuro, sino que te ayuda a conocer mejor tus
+                                inclinaciones y explorar opciones que se ajusten a lo que te gusta y motiva.
+                            </p>
                         </div>
                     </div>
 
                 </div>
 
-                <!-- Total preguntas -->
+                <!-- PERFIL DE INTERESES (Top 3 con tolerancia a empates) -->
+                <div class="seccion-perfil">
+                    <h3 class="titulo-perfil">Perfil de intereses</h3>
+
+                    <!-- Caso: todos los puntajes de interés son cero -->
+                    <div th:if="${interesCero}" class="aviso-cero">
+                        <i class="fas fa-circle-info"></i>
+                        No se identificaron intereses predominantes: los puntajes de intereses son todos
+                        cero. Esto no significa que carezcas de intereses — revisá tus respuestas o
+                        consultá con un profesional de orientación vocacional.
+                    </div>
+
+                    <!-- Caso: hay intereses predominantes. Se muestran SOLO los primeros 3 de
+                         topIntereses (aunque haya más áreas empatadas más abajo, no se listan:
+                         "top 3 y nada más"). Si dos de esos 3 comparten puntaje, se aclara con
+                         la nota de empate; el ranking igual se numera 1°/2°/3°. -->
+                    <div th:unless="${interesCero}" class="ranking-intereses">
+                        <div th:each="letra, iterLetra : ${topIntereses}"
+                             th:if="${iterLetra.index < 3}"
+                             th:with="miPuntaje=${puntajesInteres.get(letra)},
+                                      empatado=${iterLetra.index > 0 and miPuntaje == puntajesInteres.get(topIntereses[iterLetra.index - 1])}"
+                             class="tarjeta-rank"
+                             th:classappend="${iterLetra.index == 0} ? 'rank-1' : (${iterLetra.index == 1} ? 'rank-2' : 'rank-3')">
+                            <span class="badge-rank" th:text="${iterLetra.count} + '.° LUGAR'">1.° LUGAR</span>
+                            <div class="tarjeta-rank-cuerpo">
+                                <h4 th:text="${categoriaMap.get(letra)}">Ciencias de la Salud</h4>
+                                <span class="subtitulo-rank" th:text="'Puntaje: ' + ${miPuntaje} + '/10'">Puntaje: 9/10</span>
+                                <div th:if="${empatado}" class="nota-empate">
+                                    <i class="fas fa-equals"></i> Empatado en puntaje con el puesto anterior
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total preguntas (dato real, se conserva como detalle menor) -->
                 <div class="total-preguntas">
                     <i class="far fa-file-alt"></i> Total preguntas: <span th:text="${totalPreguntas} ?: 98">98</span>
                 </div>
 
-                <!-- Mensaje orientativo -->
-                <div class="aviso">
-                    <i class="fas fa-lightbulb"></i>
-                    Este diagnóstico es una guía orientativa. Tu vocación se construye con experiencia, reflexión y asesoramiento profesional.
-                </div>
-
-                <!-- Botones de acción -->
-                <div class="acciones">
-                    <a th:href="@{/home}" class="btn-primary"><i class="fas fa-home"></i> Inicio</a>
-                    <a th:href="@{/realizar-test}" class="btn-outline"><i class="fas fa-redo"></i> Nuevo test</a>
-                    <button onclick="window.print()" class="btn-print"><i class="fas fa-print"></i> Imprimir</button>
+                <!-- Botones de acción: mismos enlaces/acciones de siempre, estilo redondeado -->
+                <div class="acciones acciones-redondeadas">
+                    <a th:href="@{/home}" class="btn-primary rounded-pill"><i class="fas fa-home"></i> Inicio</a>
+                    <a th:href="@{/realizar-test}" class="btn-outline rounded-pill"><i class="fas fa-redo"></i> Nuevo test</a>
+                    <button onclick="window.print()" class="btn-print rounded-pill"><i class="fas fa-print"></i> Imprimir</button>
                 </div>
 
                 <div class="footer-resultado">
