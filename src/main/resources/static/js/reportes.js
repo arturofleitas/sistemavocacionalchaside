@@ -41,6 +41,8 @@
             const fechaDesde = filtroFechaDesde ? filtroFechaDesde.value : ''; // YYYY-MM-DD
             const fechaHasta = filtroFechaHasta ? filtroFechaHasta.value : '';
 
+            let visibles = 0;
+
             allRows.forEach(row => {
                 const nombreAlumno = row.getAttribute('data-nombre')?.toLowerCase() || '';
                 let fechaISO = row.getAttribute('data-fecha') || '';
@@ -57,7 +59,75 @@
                 if (visible && fechaHasta && fechaISO > fechaHasta) visible = false;
 
                 row.style.display = visible ? '' : 'none';
+                if (visible) visibles++;
             });
+
+            actualizarResumenConteo(visibles, allRows.length);
+        }
+
+        // --- Texto "Mostrando X de Y registros" debajo de la tabla ---
+        const resumenConteo = document.getElementById('resumenConteo');
+        function actualizarResumenConteo(visibles, total) {
+            if (!resumenConteo) return;
+            if (total === 0) {
+                resumenConteo.textContent = '';
+                return;
+            }
+            resumenConteo.textContent = 'Mostrando ' + visibles + ' de ' + total + ' registro' + (total === 1 ? '' : 's');
+        }
+
+        // --- Indicadores resumen: se calculan una sola vez a partir de TODOS los
+        // registros reales ya renderizados (data-fecha / data-puntaje), sin pedir
+        // nada nuevo al backend. No varían al filtrar (son el resumen general). ---
+        function calcularIndicadores() {
+            const indEvaluaciones = document.getElementById('indEvaluaciones');
+            const indUltimoTest = document.getElementById('indUltimoTest');
+            const indPromedio = document.getElementById('indPromedio');
+            if (!indEvaluaciones && !indUltimoTest && !indPromedio) return;
+
+            const total = allRows.length;
+            if (indEvaluaciones) indEvaluaciones.textContent = String(total);
+
+            if (total === 0) {
+                if (indUltimoTest) indUltimoTest.textContent = '—';
+                if (indPromedio) indPromedio.textContent = '—';
+                return;
+            }
+
+            let fechaMasReciente = null;
+            let sumaPuntajes = 0;
+            let cantidadPuntajesValidos = 0;
+
+            allRows.forEach(row => {
+                const fechaISO = row.getAttribute('data-fecha') || '';
+                if (fechaISO) {
+                    const fecha = new Date(fechaISO);
+                    if (!isNaN(fecha.getTime()) && (fechaMasReciente === null || fecha > fechaMasReciente)) {
+                        fechaMasReciente = fecha;
+                    }
+                }
+
+                const puntajeStr = row.getAttribute('data-puntaje');
+                if (puntajeStr !== null && puntajeStr !== '') {
+                    const puntaje = parseFloat(puntajeStr);
+                    if (!isNaN(puntaje)) {
+                        sumaPuntajes += puntaje;
+                        cantidadPuntajesValidos++;
+                    }
+                }
+            });
+
+            if (indUltimoTest) {
+                indUltimoTest.textContent = fechaMasReciente
+                    ? fechaMasReciente.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' })
+                    : '—';
+            }
+
+            if (indPromedio) {
+                indPromedio.textContent = cantidadPuntajesValidos > 0
+                    ? (sumaPuntajes / cantidadPuntajesValidos).toLocaleString('es-AR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+                    : '—';
+            }
         }
 
         // Asignar eventos solo a los elementos que efectivamente existen en el DOM.
@@ -75,6 +145,7 @@
 
         // Ejecutar al inicio por si hay valores por defecto.
         aplicarFiltros();
+        calcularIndicadores();
 
         // --- Botón "Imprimir Reporte" ---
         // Antes estaba como onclick="window.print()" en el HTML.

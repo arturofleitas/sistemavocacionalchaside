@@ -1,22 +1,116 @@
-/* Estilos específicos para la página de reportes y estadísticas */
+/* Estilos específicos para la página de reportes y estadísticas
+ *
+ * Paleta reutilizada del resto del sistema (no se define ninguna paleta
+ * nueva): azul principal #0d6efd, azul oscuro #1e40af / #1e3a8a, fondo
+ * claro #f8fafc / #f8fbff, texto #1e293b, texto secundario #64748b /
+ * #94a3b8, bordes #e2e8f0 / #eef2f6 / #f1f5f9, chip de interés #dbeafe /
+ * #1e40af y chip de aptitud #d1fae5 / #065f46 (mismos colores que
+ * .badge-interes / .badge-aptitud en test-resultado.css).
+ */
 
-.filter-bar {
+/* ===== ENCABEZADO ===== */
+
+.header-reportes {
+	flex-wrap: wrap;
+	row-gap: 10px;
+}
+
+.header-titulo-grupo {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.icono-seccion {
+	width: 44px;
+	height: 44px;
+	border-radius: 12px;
+	background: #dbeafe;
+	color: #0d6efd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.2rem;
+	flex-shrink: 0;
+}
+
+.header-reportes .header-title {
+	margin: 0;
+}
+
+.header-subtitle {
+	margin: 2px 0 0;
+	font-size: 0.85rem;
+	font-weight: 400;
+	color: #64748b;
+}
+
+/* ===== TARJETA DE FILTROS ===== */
+
+.filter-card {
 	background: white;
 	border-radius: 20px;
-	padding: 1rem;
-	margin-bottom: 1.5rem;
+	padding: 1.1rem 1.25rem;
+	margin-bottom: 1.25rem;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
 }
 
-.filter-bar .form-label {
+.filter-card-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: 10px;
+	margin-bottom: 14px;
+}
+
+.filter-card-titulo {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-weight: 600;
+	color: #1e293b;
+	font-size: 0.95rem;
+}
+
+.filter-card-titulo i {
+	color: #0d6efd;
+}
+
+.btn-limpiar-filtros {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	background: #f8fafc;
+	border: 1px solid #d1d5db;
+	color: #475569;
+	padding: 8px 16px;
+	border-radius: 10px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.2s, border-color 0.2s;
+	white-space: nowrap;
+}
+
+.btn-limpiar-filtros:hover {
+	background: #eef2f6;
+	border-color: #94a3b8;
+}
+
+.btn-limpiar-filtros i {
+	color: #0d6efd;
+}
+
+.filter-card .form-label {
 	font-size: 0.85rem;
 	font-weight: 600;
 	color: #1e293b;
 	margin-bottom: 4px;
 }
 
-.filter-bar .form-control,
-.filter-bar .form-select {
+.filter-card .form-control,
+.filter-card .form-select {
 	font-size: 0.9rem;
 	padding: 6px 12px;
 	border-radius: 10px;
@@ -24,11 +118,94 @@
 	transition: border-color 0.2s;
 }
 
-.filter-bar .form-control:focus,
-.filter-bar .form-select:focus {
+.filter-card .form-control:focus,
+.filter-card .form-select:focus {
 	border-color: #0d6efd;
 	box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.1);
 }
+
+.input-icon {
+	position: relative;
+}
+
+.input-icon i {
+	position: absolute;
+	left: 12px;
+	top: 50%;
+	transform: translateY(-50%);
+	color: #94a3b8;
+	font-size: 0.85rem;
+	pointer-events: none;
+}
+
+.input-icon .form-control {
+	padding-left: 34px;
+}
+
+/* ===== INDICADORES ===== */
+
+.indicadores-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+	margin-bottom: 1.5rem;
+}
+
+.indicador-card {
+	background: white;
+	border-radius: 16px;
+	padding: 16px 18px;
+	box-shadow: 0 4px 14px rgba(13, 110, 253, 0.08);
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.indicador-icono {
+	width: 46px;
+	height: 46px;
+	border-radius: 12px;
+	background: #dbeafe;
+	color: #0d6efd;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 1.2rem;
+	flex-shrink: 0;
+}
+
+.indicador-icono-fecha {
+	background: #fef3c7;
+	color: #b45309;
+}
+
+.indicador-icono-puntaje {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.indicador-texto {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.indicador-valor {
+	font-size: 1.25rem;
+	font-weight: 700;
+	color: #1e293b;
+	line-height: 1.25;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.indicador-etiqueta {
+	font-size: 0.75rem;
+	color: #64748b;
+}
+
+/* ===== TABLA DE HISTORIAL ===== */
 
 .table-responsive-custom {
 	background: white;
@@ -65,145 +242,155 @@
 	border-bottom: 1px solid #f1f5f9;
 }
 
-
-.table-responsive-custom .table .col-perfil,
-.table-responsive-custom .table .col-alumno,
-.table-responsive-custom .table .col-fecha {
-	white-space: normal;
-	word-break: break-word;
-}
-
-
 .table-responsive-custom .table .col-index {
 	white-space: nowrap;
 	text-align: center;
-	color: #94a3b8;
-	font-weight: 500;
 	width: 1%;
-	/* Ancho por defecto (desktop); en mobile se sobreescribe más abajo, en el media query, con un % fijo por rol */
 }
 
 .table-responsive-custom .table tbody tr:hover {
 	background-color: #f8fafc;
 }
 
-.table-responsive-custom .table .btn-info {
-	background-color: #0d6efd;
-	border: none;
-	color: white;
+.resumen-conteo {
+	margin: 10px 2px 0;
 	font-size: 0.8rem;
-	padding: 4px 14px;
-	border-radius: 20px;
-	transition: background-color 0.2s;
+	color: #94a3b8;
+	text-align: right;
 }
 
-.table-responsive-custom .table .btn-info:hover {
-	background-color: #1e40af;
+/* Numeración (#) */
+.badge-index {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 26px;
+	height: 26px;
+	padding: 0 6px;
+	border-radius: 50%;
+	background: #f1f5f9;
+	color: #64748b;
+	font-weight: 600;
+	font-size: 0.85rem;
 }
 
-
-.container-reportes {
-	max-width: 800px;
-	margin: 0 auto;
-	background: #ffffff;
-	border-radius: 24px;
-	padding: 20px;
-	box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-}
-
-.lista-evaluaciones {
+/* Fecha compacta (dos líneas) */
+.fecha-compacta {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 2px;
+	line-height: 1.3;
 }
 
-.card-evaluacion {
-	background: #ffffff;
-	border-radius: 16px;
-	padding: 14px 16px;
-	box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
-	border: 1px solid #eef2f6;
-	display: flex;
-	flex-wrap: wrap;
-	align-items: center;
-	justify-content: space-between;
-	transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.card-evaluacion:hover {
-	border-color: #0d6efd;
-	box-shadow: 0 4px 16px rgba(13, 110, 253, 0.08);
-}
-
-.card-evaluacion .info {
-	flex: 1 1 200px;
-}
-
-.card-evaluacion .info .fecha {
-	font-size: 0.8rem;
-	color: #64748b;
-	margin-bottom: 2px;
-}
-
-.card-evaluacion .info .fecha i {
-	margin-right: 6px;
-}
-
-.card-evaluacion .info .perfil {
-	font-size: 1rem;
-	font-weight: 600;
+.fecha-dia {
+	font-size: 0.88rem;
 	color: #1e293b;
-	line-height: 1.4;
-}
-
-.card-evaluacion .info .perfil small {
-	font-weight: 400;
-	color: #64748b;
-	margin: 0 4px;
-}
-
-.card-evaluacion .info .puntaje {
-	font-size: 0.85rem;
-	color: #0d6efd;
 	font-weight: 500;
-	margin-top: 2px;
-}
-
-.card-evaluacion .info .puntaje i {
-	margin-right: 4px;
-}
-
-.card-evaluacion .accion {
-	flex: 0 0 auto;
-	margin-top: 0;
-}
-
-.card-evaluacion .accion a {
-	display: inline-block;
-	padding: 6px 16px;
-	background: #0d6efd;
-	color: white;
-	border-radius: 40px;
-	text-decoration: none;
-	font-size: 0.85rem;
-	font-weight: 500;
-	transition: background-color 0.2s, transform 0.1s;
 	white-space: nowrap;
 }
 
-.card-evaluacion .accion a:hover {
-	background: #1e40af;
-	transform: translateY(-1px);
+.fecha-dia i {
+	color: #94a3b8;
+	margin-right: 5px;
+	font-size: 0.8rem;
 }
 
-.card-evaluacion .accion a i {
-	margin-right: 6px;
+.fecha-hora {
+	font-size: 0.78rem;
+	color: #94a3b8;
+	padding-left: 19px;
+}
+
+/* Nombre del alumno */
+.nombre-alumno {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.92rem;
+	color: #1e293b;
+	font-weight: 500;
+	white-space: nowrap;
+}
+
+.nombre-alumno i {
+	color: #0d6efd;
+	font-size: 0.85rem;
+}
+
+/* Puntaje: badge circular */
+.badge-puntaje {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 46px;
+	height: 46px;
+	border-radius: 50%;
+	border: 3px solid #dbeafe;
+	background: #f8fbff;
+	color: #0d6efd;
+	font-weight: 700;
+	font-size: 0.72rem;
+}
+
+/* Chips de intereses / aptitudes */
+.chips-area {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	max-width: 260px;
+}
+
+.chip {
+	display: inline-block;
+	padding: 3px 10px;
+	border-radius: 20px;
+	font-size: 0.72rem;
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 160px;
+}
+
+.chip-interes {
+	background: #dbeafe;
+	color: #1e40af;
+}
+
+.chip-aptitud {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.chip-mas {
+	background: #f1f5f9;
+	color: #64748b;
+}
+
+/* Botón "Ver detalles" */
+.btn-ver-detalle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	background: #0d6efd;
+	color: white;
+	padding: 7px 16px;
+	border-radius: 20px;
+	font-size: 0.82rem;
+	font-weight: 600;
+	text-decoration: none;
+	transition: background-color 0.2s;
+	white-space: nowrap;
+}
+
+.btn-ver-detalle:hover {
+	background: #1e40af;
+	color: white;
 }
 
 /* Botón flotante - solo visible en móvil (oculto en desktop) */
 .btn-flotante {
 	display: none;
-	/* Por defecto oculto */
 	position: fixed;
 	bottom: 30px;
 	right: 30px;
@@ -228,11 +415,9 @@
 	box-shadow: 0 6px 20px rgba(13, 110, 253, 0.4);
 }
 
-/* En móvil se muestra cuando hay scroll (controlado por JS) */
-@media (max-width: 768px) {
+@media screen and (max-width: 768px) {
 	.btn-flotante {
 		display: flex;
-		/* Visible en móvil, pero controlado por JS */
 		bottom: 20px;
 		right: 20px;
 		width: 44px;
@@ -260,35 +445,6 @@
 	color: #0d6efd;
 }
 
-.sin-evaluaciones {
-	text-align: center;
-	padding: 40px 20px;
-	color: #94a3b8;
-}
-
-.sin-evaluaciones i {
-	font-size: 3rem;
-	margin-bottom: 12px;
-	color: #cbd5e1;
-}
-
-.sin-evaluaciones h4 {
-	color: #475569;
-	margin-bottom: 12px;
-}
-
-.sin-evaluaciones .btn-primary {
-	background-color: #0d6efd;
-	border: none;
-	padding: 10px 28px;
-	border-radius: 40px;
-	font-weight: 500;
-}
-
-.sin-evaluaciones .btn-primary:hover {
-	background-color: #1e40af;
-}
-
 .header-title {
 	color: #1e40af;
 	font-weight: 700;
@@ -299,25 +455,6 @@
 .header-title i {
 	color: #0d6efd;
 }
-
-.user-info {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-
-.user-info .avatar {
-	width: 38px;
-	height: 38px;
-	background: #0d6efd;
-	color: white;
-	border-radius: 50%;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 1.2rem;
-}
-
 
 .btn-imprimir {
 	padding: 10px 22px;
@@ -330,6 +467,8 @@
 .btn-imprimir i {
 	font-size: 1.05rem;
 }
+
+/* ===== IMPRESIÓN ===== */
 
 @media print {
 	.no-print {
@@ -360,27 +499,12 @@
 		print-color-adjust: exact !important;
 	}
 
-	.card-evaluacion {
-		box-shadow: none !important;
-		border: 1px solid #d1d5db !important;
-		break-inside: avoid;
-		page-break-inside: avoid;
-	}
-
-	.card-evaluacion .accion a {
-		background: #1e40af !important;
-		-webkit-print-color-adjust: exact !important;
-		print-color-adjust: exact !important;
-	}
-
-
 	#scrollableTable {
 		max-height: none !important;
 		overflow: visible !important;
 	}
 
-
-	.table-responsive-custom .table .col-detalle {
+	.table-responsive-custom .table .col-acciones {
 		display: none !important;
 	}
 
@@ -393,9 +517,20 @@
 	.table-responsive-custom .table thead th {
 		position: static !important;
 	}
+
+	/* En impresión siempre se usa el diseño tabular, nunca las tarjetas de móvil */
+	.tabla-historial,
+	.tabla-historial thead,
+	.tabla-historial tbody,
+	.tabla-historial tr,
+	.tabla-historial td {
+		display: revert !important;
+	}
 }
 
-@media (max-width: 992px) {
+/* ===== RESPONSIVE ===== */
+
+@media screen and (max-width: 992px) {
 	.header-title {
 		font-size: 1.4rem;
 	}
@@ -403,40 +538,64 @@
 	.table-responsive-custom .table {
 		font-size: 0.85rem;
 	}
-
-	.table-responsive-custom .table thead th,
-	.table-responsive-custom .table tbody td {
-		padding: 8px 10px;
-	}
 }
 
-@media (max-width: 768px) {
-	.filter-bar .row .col-6 {
-		flex: 0 0 50%;
-		max-width: 50%;
+@media screen and (max-width: 768px) {
+	.icono-seccion {
+		width: 38px;
+		height: 38px;
+		font-size: 1.05rem;
+		border-radius: 10px;
 	}
 
-	.filter-bar .row .col-12 {
-		flex: 0 0 100%;
-		max-width: 100%;
-		margin-top: 8px;
+	.header-title {
+		font-size: 1.2rem;
 	}
 
-	.filter-bar .row .col-md-4 {
-		flex: 0 0 100%;
-		max-width: 100%;
-		margin-bottom: 8px;
+	.header-subtitle {
+		font-size: 0.78rem;
 	}
 
-	.filter-bar {
+	.filter-card {
 		padding: 0.8rem;
 		border-radius: 16px;
 	}
 
-	.filter-bar .form-control,
-	.filter-bar .form-select {
+	.filter-card .form-control,
+	.filter-card .form-select {
 		font-size: 0.85rem;
 		padding: 4px 10px;
+	}
+
+	.btn-limpiar-filtros {
+		width: 100%;
+		justify-content: center;
+	}
+
+	.indicadores-grid {
+		gap: 8px;
+	}
+
+	.indicador-card {
+		padding: 10px;
+		border-radius: 12px;
+		gap: 8px;
+	}
+
+	.indicador-icono {
+		width: 34px;
+		height: 34px;
+		font-size: 0.95rem;
+		border-radius: 9px;
+	}
+
+	.indicador-valor {
+		font-size: 0.95rem;
+	}
+
+	.indicador-etiqueta {
+		font-size: 0.65rem;
+		line-height: 1.2;
 	}
 
 	.table-responsive-custom {
@@ -444,83 +603,104 @@
 		border-radius: 16px;
 	}
 
-	.table-responsive-custom .table {
-		font-size: 0.8rem;
-		table-layout: fixed;
-		width: 100%;
+	/* En móvil el historial no debe tener un scroll interno propio (eso generaba
+	   doble scroll y hacía que el botón flotante "volver arriba" se superpusiera
+	   con el botón de detalle de las tarjetas): se deja que la página fluya
+	   normalmente, igual que en la imagen de referencia. Como consecuencia,
+	   #btnSubir (atado al scroll de este contenedor) simplemente no se activa
+	   en móvil, que es el comportamiento correcto al no haber scroll interno. */
+	#scrollableTable {
+		max-height: none !important;
+		overflow-y: visible !important;
 	}
 
-	.table-responsive-custom .table thead th,
-	.table-responsive-custom .table tbody td {
-		padding: 6px 8px;
-	}
-
-	.tabla-admin.table .col-index {
-		width: 8%;
-	}
-
-	.tabla-admin.table .col-alumno {
-		width: 26%;
-	}
-
-	.tabla-admin.table .col-fecha {
-		width: 18%;
-	}
-
-	.tabla-admin.table .col-perfil {
-		width: 28%;
-	}
-
-	.tabla-admin.table .col-detalle {
-		width: 20%;
-	}
-
-	/* En ADMIN + mobile no hay espacio para Puntaje: se prioriza Alumno */
-	.tabla-admin .col-puntaje {
+	/* --- Tabla de historial -> tarjetas (mismos <tr>/<td>, sin duplicar HTML ni JS) --- */
+	.tabla-historial thead {
 		display: none;
 	}
 
-	.tabla-estudiante.table .col-index {
-		width: 8%;
+	.tabla-historial,
+	.tabla-historial tbody {
+		display: block;
+		width: 100%;
 	}
 
-	.tabla-estudiante.table .col-fecha {
-		width: 18%;
-	}
-
-	.tabla-estudiante.table .col-perfil {
-		width: 34%;
-	}
-
-	.tabla-estudiante.table .col-puntaje {
-		width: 16%;
-	}
-
-	.tabla-estudiante.table .col-detalle {
-		width: 24%;
-	}
-
-	.container-reportes {
-		padding: 12px;
+	.tabla-historial tbody tr {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		column-gap: 10px;
+		row-gap: 8px;
+		background: #ffffff;
+		border: 1px solid #eef2f6;
 		border-radius: 16px;
+		padding: 12px 14px;
+		margin-bottom: 10px;
 	}
 
-	.lista-evaluaciones {
-		gap: 8px;
+	.tabla-historial tbody tr:hover {
+		background-color: #ffffff;
 	}
 
-	.header-title {
-		font-size: 1.2rem;
+	.tabla-historial tbody td {
+		display: block;
+		border: none !important;
+		padding: 0 !important;
+		vertical-align: middle;
+	}
+
+	.tabla-historial .col-index {
+		order: 1;
+		width: auto !important;
+	}
+
+	/* En tarjeta móvil el índice pierde contraste sobre el fondo blanco;
+	   se refuerza con un borde y fondo más marcado solo en esta vista. */
+	.tabla-historial .badge-index {
+		background: #e2e8f0;
+		border: 1px solid #cbd5e1;
+		color: #475569;
+	}
+
+	.tabla-historial .col-fecha {
+		order: 2;
+		flex: 1 1 auto;
+	}
+
+	.tabla-historial .col-puntaje {
+		order: 3;
+		margin-left: auto;
+	}
+
+	.tabla-historial .col-nombre {
+		order: 4;
+		flex: 0 0 100%;
+		padding-top: 2px !important;
+	}
+
+	.tabla-historial .col-intereses {
+		order: 5;
+		flex: 0 0 100%;
+	}
+
+	.tabla-historial .col-aptitudes {
+		order: 6;
+		flex: 0 0 100%;
+	}
+
+	.tabla-historial .col-acciones {
+		order: 7;
+		flex: 0 0 100%;
+		text-align: right;
+		margin-top: 2px;
+	}
+
+	.chips-area {
+		max-width: 100%;
 	}
 
 	.user-info span {
 		font-size: 0.85rem;
-	}
-
-	.user-info .avatar {
-		width: 32px;
-		height: 32px;
-		font-size: 1rem;
 	}
 
 	.alert-info {
@@ -529,39 +709,44 @@
 		margin-bottom: 16px;
 	}
 
-	/* El botón de imprimir se achica un poco en móvil para no romper el header, pero sigue siendo más grande que el original */
 	.btn-imprimir {
 		padding: 8px 16px;
 		font-size: 0.9rem;
 	}
 }
 
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
 	.header-title {
 		font-size: 1.05rem;
 	}
 
-	.table-responsive-custom .table {
-		font-size: 0.75rem;
+	.header-subtitle {
+		font-size: 0.72rem;
 	}
 
-	.table-responsive-custom .table thead th,
-	.table-responsive-custom .table tbody td {
-		padding: 4px 6px;
+	.indicador-etiqueta {
+		display: none;
 	}
 
-	.container-reportes {
+	.indicador-card {
+		flex-direction: column;
+		text-align: center;
+		gap: 4px;
+		padding: 10px 6px;
+	}
+
+	.table-responsive-custom {
 		padding: 10px;
 		border-radius: 12px;
 	}
 
-	.filter-bar {
+	.filter-card {
 		padding: 0.6rem;
 		border-radius: 12px;
 	}
 
-	.filter-bar .form-control,
-	.filter-bar .form-select {
+	.filter-card .form-control,
+	.filter-card .form-select {
 		font-size: 0.8rem;
 		padding: 4px 8px;
 	}
@@ -569,5 +754,24 @@
 	.btn-imprimir {
 		padding: 6px 14px;
 		font-size: 0.85rem;
+	}
+
+	/* Punto 17 del pedido: en pantallas muy angostas el botón de detalle
+	   pasa a ser exclusivamente el ícono de ojo, circular. */
+	.btn-ver-detalle {
+		width: 38px;
+		height: 38px;
+		padding: 0;
+		justify-content: center;
+		border-radius: 50%;
+	}
+
+	.texto-ver-detalle {
+		display: none;
+	}
+
+	.chip {
+		font-size: 0.68rem;
+		padding: 2px 8px;
 	}
 }
