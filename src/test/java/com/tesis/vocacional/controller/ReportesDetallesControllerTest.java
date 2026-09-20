@@ -4,6 +4,7 @@ import com.tesis.vocacional.model.Resultado;
 import com.tesis.vocacional.model.TestUsuario;
 import com.tesis.vocacional.model.Usuario;
 import com.tesis.vocacional.services.AccesoReporteService;
+import com.tesis.vocacional.services.CalculoTestService;
 import com.tesis.vocacional.services.RespuestaService;
 import com.tesis.vocacional.services.ResultadoService;
 import com.tesis.vocacional.services.TestUsuarioPreguntaService;
@@ -55,6 +56,9 @@ class ReportesDetallesControllerTest {
     @Mock
     private AccesoReporteService accesoReporteService;
 
+    @Mock
+    private CalculoTestService calculoTestService;
+
     private ReportesDetallesController controlador;
 
     private Resultado resultadoDeDueno;
@@ -62,7 +66,7 @@ class ReportesDetallesControllerTest {
     @BeforeEach
     void setUp() {
         controlador = new ReportesDetallesController(resultadoService, testUsuarioPreguntaService,
-                respuestaService, accesoReporteService);
+                respuestaService, accesoReporteService, calculoTestService);
 
         Usuario dueno = new Usuario();
         dueno.setId(1);

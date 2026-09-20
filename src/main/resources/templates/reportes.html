@@ -12,7 +12,19 @@
     <link rel="stylesheet" th:href="@{/css/reportes.css}">
 </head>
 <body>
-    <div class="main-container">
+    <!--
+        Mapa corto de categorías CHASIDE, reutilizado tal cual del mapeo ya
+        existente en Resultado.java (mismo texto, para no inventar nombres
+        nuevos), disponible para toda la tabla vía th:with a nivel de body.
+    -->
+    <div class="main-container"
+         th:with="categoriaCorta=${ {'C':'Administrativas y Contables',
+                                      'H':'Humanísticas, Jurídicas y Sociales',
+                                      'A':'Artísticas',
+                                      'S':'Ciencias de la Salud',
+                                      'I':'Ingenierías, Técnicas y Computación',
+                                      'D':'Defensa y Seguridad',
+                                      'E':'Ciencias Agrarias, Naturales y Biológicas'} }">
 
         <!-- Menú lateral (sidebar) reutilizado desde fragmentos -->
         <div th:replace="~{fragments/menu :: sidebar}"></div>
@@ -20,19 +32,23 @@
         <!-- Contenido principal -->
         <div class="content">
 
-            <!-- Encabezado con botón hamburguesa y datos del usuario -->
-            <!-- Clase "no-print" agregada: al imprimir, este bloque completo (título, ícono
-                 hamburguesa y "Bienvenido, X") no debe salir; solo debe verse el encabezado
-                 "Historial de evaluaciones" y la tabla de resultados. -->
-            <div class="header no-print">
-                <div style="display: flex; align-items: center; gap: 12px;">
+            <!-- Encabezado con botón hamburguesa, título+subtítulo y datos del usuario -->
+            <!-- Clase "no-print" agregada: al imprimir, este bloque completo no debe salir. -->
+            <div class="header header-reportes no-print">
+                <div class="header-titulo-grupo">
                     <button class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasMenu">
                         <i class="fas fa-bars"></i>
                     </button>
                     <button class="btn-toggle-sidebar d-none d-md-inline-block" type="button" title="Mostrar/ocultar menú">
                         <i class="fas fa-bars"></i>
                     </button>
-                    <h2 class="header-title"><i class="fas fa-chart-line me-2"></i>Reportes y Estadísticas</h2>
+                    <div class="icono-seccion">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div>
+                        <h2 class="header-title">Reportes y Estadísticas</h2>
+                        <p class="header-subtitle">Historial de evaluaciones del test de orientación vocacional CHASIDE</p>
+                    </div>
                 </div>
                 <div class="d-flex gap-3 align-items-center">
                     <button id="btnImprimir" type="button" class="btn btn-outline-primary btn-imprimir">
@@ -57,31 +73,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
 
-            <!-- Barra de filtros (misma estructura para ambos roles, solo cambia si se ve "Filtrar por alumno") -->
-            <div class="filter-bar no-print" id="filtrosReportes">
-                <div class="row g-2 g-md-3 align-items-end">
-                    <!-- Filtro por alumno (solo administradores) -->
-                    <div class="col-md-4" th:if="${rol == 'ADMIN'}">
-                        <label for="filtroNombre" class="form-label">Filtrar por alumno</label>
-                        <input type="text" id="filtroNombre" class="form-control" placeholder="Ej: Juan Pérez">
-                    </div>
-                    <!-- Filtro fecha desde -->
-                    <div class="col-6 col-md-3" th:classappend="${rol == 'ESTUDIANTE'} ? 'col-md-4' : ''">
-                        <label for="filtroFechaDesde" class="form-label">Fecha desde</label>
-                        <input type="date" id="filtroFechaDesde" class="form-control">
-                    </div>
-                    <!-- Filtro fecha hasta -->
-                    <div class="col-6 col-md-3" th:classappend="${rol == 'ESTUDIANTE'} ? 'col-md-4' : ''">
-                        <label for="filtroFechaHasta" class="form-label">Fecha hasta</label>
-                        <input type="date" id="filtroFechaHasta" class="form-control">
-                    </div>
-                    <!-- Botón limpiar -->
-                    <div class="col-12 col-md-2" th:classappend="${rol == 'ESTUDIANTE'} ? 'col-md-4' : ''">
-                        <button id="limpiarFiltros" class="btn btn-outline-secondary w-100">Limpiar</button>
-                    </div>
-                </div>
-            </div>
-
             <!-- Mensaje informativo (solo estudiante) -->
             <div class="alert alert-info no-print" th:if="${rol == 'ESTUDIANTE'}">
                 <i class="fas fa-info-circle"></i> <strong>Aquí puedes ver tus evaluaciones realizadas.</strong>
@@ -91,8 +82,8 @@
             <!--
                 Estado vacío exclusivo del estudiante (invita a realizar el primer test).
                 El admin, si no hay resultados, simplemente ve la fila "No se encontraron
-                evaluaciones." dentro de la tabla (ver más abajo), por lo que este bloque
-                solo aplica cuando el rol es ESTUDIANTE.
+                evaluaciones." dentro de la tabla, por lo que este bloque solo aplica
+                cuando el rol es ESTUDIANTE.
             -->
             <div th:if="${rol == 'ESTUDIANTE' and (resultados == null || resultados.isEmpty())}"
                  class="text-center p-5 bg-light rounded-4">
@@ -101,77 +92,163 @@
                 <a th:href="@{/realizar-test}" class="btn btn-primary">Iniciar test ahora</a>
             </div>
 
-            <!--
-                TABLA ÚNICA de historial de evaluaciones, usada tanto por ADMIN como por ESTUDIANTE.
-                Se oculta completamente cuando el estudiante no tiene resultados (ya se mostró
-                el estado vacío arriba). Para el admin siempre se muestra (aunque esté vacía,
-                muestra el mensaje "No se encontraron evaluaciones." dentro del tbody).
-            -->
-            <div class="table-responsive-custom"
-                 th:if="${rol == 'ADMIN' || !(resultados == null || resultados.isEmpty())}">
-                <h5 class="mb-3"><i class="fas fa-history me-2"></i>Historial de evaluaciones</h5>
-                <div style="max-height: 500px; overflow-y: auto;" id="scrollableTable">
-                    <!--
-                        La clase "tabla-admin" / "tabla-estudiante" en la tabla permite que el CSS
-                        (reportes.css) afine el ancho de columnas de forma distinta según el rol,
-                        sobre todo en mobile, sin duplicar HTML.
-                    -->
-                    <table class="table table-hover"
-                           id="tablaReportes"
-                           th:classappend="${rol == 'ADMIN'} ? 'tabla-admin' : 'tabla-estudiante'">
-                        <thead class="table-light sticky-top">
-                            <tr>
-                                <!-- Columna de numeración correlativa (1, 2, 3...), igual para ambos roles -->
-                                <th class="col-index">#</th>
-                                <!-- Columna "Alumno" solo tiene sentido para el admin -->
-                                <th class="col-alumno" th:if="${rol == 'ADMIN'}">Alumno</th>
-                                <th class="col-fecha">Fecha</th>
-                                <th class="col-perfil">Perfil</th>
-                                <!--
-                                    Puntaje: en desktop se muestra siempre (hay espacio de sobra).
-                                    En mobile, se oculta SOLO para admin (ver reportes.css, regla
-                                    .tabla-admin .col-puntaje), porque ahí el espacio lo necesita
-                                    la columna Alumno. Para estudiante, en mobile, sí se ve.
-                                -->
-                                <th class="col-puntaje">Puntaje</th>
-                                <th class="col-detalle">Detalle</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tablaReportesBody">
-                            <!-- Fila de "sin datos" -->
-                            <tr th:if="${resultados == null || resultados.isEmpty()}">
-                                <td th:attr="colspan=${rol == 'ADMIN'} ? 6 : 5" class="text-center text-muted">
-                                    No se encontraron evaluaciones.
-                                </td>
-                            </tr>
-                            <!--
-                                Fila de datos. Los atributos data-nombre y data-fecha se agregan
-                                siempre (los use el admin para filtrar o no), ya que no afectan
-                                al estudiante y así reportes.js funciona igual para ambos roles.
-                            -->
-                            <!--
-                                Se agrega la variable de iteración "iterStat" (propia de Thymeleaf)
-                                para poder numerar las filas de forma correlativa con iterStat.count,
-                                sin depender de ningún campo de la base de datos.
-                            -->
-                            <tr th:each="res, iterStat : ${resultados}"
-                                th:attr="data-nombre=${res.test.usuario.nombre + ' ' + res.test.usuario.apellido},
-                                         data-fecha=${res.fechaRealizacion}">
-                                <td class="col-index" th:text="${iterStat.count}">1</td>
-                                <td class="col-alumno" th:if="${rol == 'ADMIN'}" th:text="${res.test.usuario.nombre + ' ' + res.test.usuario.apellido}">-</td>
-                                <td class="col-fecha" th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">-</td>
-                                <td class="col-perfil" th:text="${res.getNombrePerfil()}">-</td>
-                                <td class="col-puntaje" th:text="${res.puntaje}">-</td>
-                                <td class="col-detalle">
-                                    <a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}" class="btn btn-sm btn-info">
-                                        <!-- El texto "Ver" se oculta en pantallas muy angostas (< 576px), dejando solo el ícono, para ahorrar espacio -->
-                                        <i class="fas fa-eye"></i> <span class="d-none d-sm-inline">Ver</span>
-                                    </a>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- Filtros + indicadores + historial: se muestran cuando hay tabla que mostrar -->
+            <div th:if="${rol == 'ADMIN' || !(resultados == null || resultados.isEmpty())}">
+
+                <!-- Tarjeta de filtros -->
+                <div class="filter-card no-print" id="filtrosReportes">
+                    <div class="filter-card-header">
+                        <span class="filter-card-titulo">
+                            <i class="fas fa-filter"></i>
+                            <span th:text="${rol == 'ADMIN'} ? 'Filtrar por alumno' : 'Filtrar por fecha'">Filtrar por alumno</span>
+                        </span>
+                        <button id="limpiarFiltros" type="button" class="btn-limpiar-filtros">
+                            <i class="fas fa-broom"></i> Limpiar filtros
+                        </button>
+                    </div>
+                    <div class="row g-2 g-md-3">
+                        <!-- Filtro por alumno (solo administradores) -->
+                        <div class="col-12 col-md-5" th:if="${rol == 'ADMIN'}">
+                            <label for="filtroNombre" class="form-label">Buscar por alumno</label>
+                            <div class="input-icon">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="filtroNombre" class="form-control" placeholder="Buscar por nombre o usuario...">
+                            </div>
+                        </div>
+                        <!-- Filtro fecha desde -->
+                        <div class="col-6" th:classappend="${rol == 'ADMIN'} ? 'col-md-3' : 'col-md-6'">
+                            <label for="filtroFechaDesde" class="form-label">Fecha desde</label>
+                            <input type="date" id="filtroFechaDesde" class="form-control">
+                        </div>
+                        <!-- Filtro fecha hasta -->
+                        <div class="col-6" th:classappend="${rol == 'ADMIN'} ? 'col-md-4' : 'col-md-6'">
+                            <label for="filtroFechaHasta" class="form-label">Fecha hasta</label>
+                            <input type="date" id="filtroFechaHasta" class="form-control">
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Fila de indicadores resumen (calculados en el navegador a partir de los datos reales ya renderizados) -->
+                <div class="indicadores-grid no-print" id="indicadoresReportes">
+                    <div class="indicador-card">
+                        <div class="indicador-icono"><i class="fas fa-clipboard-list"></i></div>
+                        <div class="indicador-texto">
+                            <span class="indicador-valor" id="indEvaluaciones">-</span>
+                            <span class="indicador-etiqueta">Evaluaciones realizadas</span>
+                        </div>
+                    </div>
+                    <div class="indicador-card">
+                        <div class="indicador-icono indicador-icono-fecha"><i class="fas fa-calendar-check"></i></div>
+                        <div class="indicador-texto">
+                            <span class="indicador-valor" id="indUltimoTest">-</span>
+                            <span class="indicador-etiqueta">Último test realizado</span>
+                        </div>
+                    </div>
+                    <div class="indicador-card">
+                        <div class="indicador-icono indicador-icono-puntaje"><i class="fas fa-star"></i></div>
+                        <div class="indicador-texto">
+                            <span class="indicador-valor" id="indPromedio">-</span>
+                            <span class="indicador-etiqueta">Puntaje promedio</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!--
+                    TABLA ÚNICA de historial de evaluaciones, usada tanto por ADMIN como por
+                    ESTUDIANTE. En móvil, la misma tabla se transforma en tarjetas mediante CSS
+                    (ver reportes.css), sin duplicar HTML ni tocar el JavaScript de filtros.
+                -->
+                <div class="table-responsive-custom">
+                    <h5 class="mb-3"><i class="fas fa-history me-2"></i>Historial de evaluaciones</h5>
+                    <div style="max-height: 560px; overflow-y: auto;" id="scrollableTable">
+                        <table class="table table-hover tabla-historial"
+                               id="tablaReportes"
+                               th:classappend="${rol == 'ADMIN'} ? 'tabla-admin' : 'tabla-estudiante'">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th class="col-index">#</th>
+                                    <th class="col-fecha">Fecha</th>
+                                    <th class="col-nombre" th:if="${rol == 'ADMIN'}">Nombre</th>
+                                    <th class="col-puntaje">Puntaje</th>
+                                    <th class="col-intereses">Intereses</th>
+                                    <th class="col-aptitudes">Aptitudes</th>
+                                    <th class="col-acciones">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tablaReportesBody">
+                                <!-- Fila de "sin datos" -->
+                                <tr th:if="${resultados == null || resultados.isEmpty()}">
+                                    <td th:attr="colspan=${rol == 'ADMIN'} ? 7 : 6" class="text-center text-muted">
+                                        No se encontraron evaluaciones.
+                                    </td>
+                                </tr>
+                                <!--
+                                    Los atributos data-nombre / data-fecha se conservan igual que
+                                    antes (los usa reportes.js para filtrar); se agrega data-puntaje
+                                    (dato real, ya existente en el modelo) para calcular los
+                                    indicadores en el navegador sin tocar el backend.
+                                -->
+                                <tr th:each="res, iterStat : ${resultados}"
+                                    th:attr="data-nombre=${res.test.usuario.nombre + ' ' + res.test.usuario.apellido},
+                                             data-fecha=${res.fechaRealizacion},
+                                             data-puntaje=${res.puntaje}">
+                                    <td class="col-index" data-label="#">
+                                        <span class="badge-index" th:text="${iterStat.count}">1</span>
+                                    </td>
+                                    <td class="col-fecha" data-label="Fecha">
+                                        <div class="fecha-compacta">
+                                            <span class="fecha-dia">
+                                                <i class="fas fa-calendar-alt"></i>
+                                                <span th:text="${#temporals.format(res.fechaRealizacion, 'dd/MM/yyyy')}">14/09/2026</span>
+                                            </span>
+                                            <span class="fecha-hora" th:text="${#temporals.format(res.fechaRealizacion, 'HH:mm')}">10:26</span>
+                                        </div>
+                                    </td>
+                                    <td class="col-nombre" th:if="${rol == 'ADMIN'}" data-label="Nombre">
+                                        <span class="nombre-alumno">
+                                            <i class="fas fa-user"></i>
+                                            <span th:text="${res.test.usuario.nombre + ' ' + res.test.usuario.apellido}">-</span>
+                                        </span>
+                                    </td>
+                                    <td class="col-puntaje" data-label="Puntaje">
+                                        <span class="badge-puntaje" th:text="${res.puntaje} + '/10'">10/10</span>
+                                    </td>
+                                    <td class="col-intereses" data-label="Intereses">
+                                        <div class="chips-area" th:if="${res.interesesPrincipales != null and !#strings.isEmpty(res.interesesPrincipales)}">
+                                            <span class="chip chip-interes"
+                                                  th:each="letra, iterLetra : ${#strings.arraySplit(res.interesesPrincipales, ',')}"
+                                                  th:if="${iterLetra.index < 3}"
+                                                  th:text="${categoriaCorta.get(#strings.trim(letra))}">Área</span>
+                                            <span class="chip chip-mas"
+                                                  th:if="${#strings.arraySplit(res.interesesPrincipales, ',').length > 3}"
+                                                  th:text="'+' + (${#strings.arraySplit(res.interesesPrincipales, ',').length - 3}) + ' más'">+2 más</span>
+                                        </div>
+                                        <span class="text-muted small" th:unless="${res.interesesPrincipales != null and !#strings.isEmpty(res.interesesPrincipales)}">Sin datos</span>
+                                    </td>
+                                    <td class="col-aptitudes" data-label="Aptitudes">
+                                        <div class="chips-area" th:if="${res.aptitudesPrincipales != null and !#strings.isEmpty(res.aptitudesPrincipales)}">
+                                            <span class="chip chip-aptitud"
+                                                  th:each="letra, iterLetra : ${#strings.arraySplit(res.aptitudesPrincipales, ',')}"
+                                                  th:if="${iterLetra.index < 3}"
+                                                  th:text="${categoriaCorta.get(#strings.trim(letra))}">Área</span>
+                                            <span class="chip chip-mas"
+                                                  th:if="${#strings.arraySplit(res.aptitudesPrincipales, ',').length > 3}"
+                                                  th:text="'+' + (${#strings.arraySplit(res.aptitudesPrincipales, ',').length - 3}) + ' más'">+2 más</span>
+                                        </div>
+                                        <span class="text-muted small" th:unless="${res.aptitudesPrincipales != null and !#strings.isEmpty(res.aptitudesPrincipales)}">Sin datos</span>
+                                    </td>
+                                    <td class="col-acciones" data-label="Acciones">
+                                        <a th:href="@{/reportes-detalles/test/{id}(id=${res.id})}" class="btn-ver-detalle">
+                                            <i class="fas fa-eye"></i> <span class="texto-ver-detalle">Ver detalles</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <p class="resumen-conteo no-print" id="resumenConteo"></p>
+                </div>
+
             </div>
 
         </div><!-- /content -->
