@@ -146,11 +146,29 @@
 }
 
 /* ===== PERFIL DE INTERESES (ranking con empates) ===== */
+.intro-perfil {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 16px 20px;
+    box-shadow: 0 4px 14px rgba(13, 110, 253, 0.06);
+}
+
+.container-resultado > .intro-perfil {
+    margin-bottom: 12px;
+}
+
+.intro-perfil p {
+    margin: 0;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    color: #475569;
+}
+
 .titulo-perfil {
     font-size: 1.25rem;
     font-weight: 700;
     color: #1e3a8a;
-    margin-bottom: 14px;
+    margin-bottom: 6px;
 }
 
 .aviso-cero {
@@ -364,18 +382,45 @@
         gap: 16px;
     }
 
-    .tarjeta-datos-estudiante,
+    /* Interpretación: igual que en impresión/escritorio, ícono a la izquierda
+       y texto alineado a la izquierda (no se apila ni se centra). */
     .tarjeta-interpretacion {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding: 16px;
+        flex-direction: row;
+        align-items: flex-start;
+        text-align: left;
+        gap: 10px;
+        padding: 12px;
+    }
+    .tarjeta-interpretacion .icono-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
     }
 
-    /* El ícono de la lamparita ocupa mucho espacio vertical en mobile;
-       se oculta ahí y se deja únicamente en escritorio. */
-    .tarjeta-interpretacion .icono-avatar {
-        display: none;
+    /* Datos del estudiante: se mantienen en fila (avatar + 3 columnas) y
+       compactos, igual que en escritorio/impresión. */
+    .tarjeta-datos-estudiante {
+        flex-direction: row;
+        align-items: center;
+        text-align: left;
+        gap: 10px;
+        padding: 12px;
+    }
+    .tarjeta-datos-estudiante .icono-avatar {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+    .datos-grid {
+        gap: 8px;
+        min-width: 0;
+    }
+    .dato-etiqueta {
+        font-size: 0.68rem;
+    }
+    .dato-valor {
+        font-size: 0.8rem;
+        overflow-wrap: anywhere;
     }
 
     .ranking-intereses {
@@ -437,13 +482,23 @@
     .container-resultado,
     .tarjeta-datos-estudiante,
     .tarjeta-interpretacion,
+    .intro-perfil,
     .tarjeta-rank {
         box-shadow: none !important;
     }
+    /* Contenedor general y tarjetas se conservan en la impresión (con borde
+       en lugar de sombra) para mantener el mismo orden visual que en pantalla. */
     .container-resultado {
         max-width: 100% !important;
-        padding: 0 !important;
-        border-radius: 0 !important;
+        padding: 14px !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 16px !important;
+    }
+    .tarjeta-datos-estudiante,
+    .tarjeta-interpretacion,
+    .intro-perfil {
+        border: 1px solid #cbd5e1 !important;
+        break-inside: avoid;
     }
 
     /*
@@ -487,6 +542,8 @@
         en cada elemento con color propio para que la impresión se vea
         igual que en pantalla.
     */
+    .container-resultado,
+    .intro-perfil,
     .icono-avatar,
     .tarjeta-datos-estudiante,
     .tarjeta-interpretacion,

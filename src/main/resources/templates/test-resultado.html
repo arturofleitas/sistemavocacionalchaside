@@ -96,6 +96,12 @@
                         </div>
                     </div>
 
+                    <!-- Título e introducción del perfil de intereses (entre Datos e Interpretación) -->
+                    <div class="intro-perfil">
+                        <h3 class="titulo-perfil">Perfil de intereses</h3>
+                        <p>El test CHASIDE identifica tus intereses vocacionales y te muestra las áreas con mayor afinidad, para que tomes decisiones más conscientes sobre tu futuro.</p>
+                    </div>
+
                     <!-- TARJETA: Interpretación del resultado -->
                     <div class="tarjeta-interpretacion">
                         <div class="icono-avatar icono-interpretacion"><i class="fas fa-lightbulb"></i></div>
@@ -112,8 +118,6 @@
 
                 <!-- PERFIL DE INTERESES (Top 3 con tolerancia a empates) -->
                 <div class="seccion-perfil">
-                    <h3 class="titulo-perfil">Perfil de intereses</h3>
-
                     <!-- Caso: todos los puntajes de interés son cero -->
                     <div th:if="${interesCero}" class="aviso-cero">
                         <i class="fas fa-circle-info"></i>

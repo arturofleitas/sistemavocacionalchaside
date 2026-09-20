@@ -36,6 +36,12 @@
                     </div>
                 </div>
 
+                <!-- Título e introducción del perfil de intereses (arriba de Interpretación, igual en todas las vistas) -->
+                <div class="intro-perfil">
+                    <h3 class="titulo-perfil">Perfil de intereses</h3>
+                    <p>El test CHASIDE identifica tus intereses vocacionales y te muestra las áreas con mayor afinidad, para que tomes decisiones más conscientes sobre tu futuro.</p>
+                </div>
+
                 <!--
                     Vista de invitado: NO hay tarjeta "Datos del estudiante" (no hay Usuario
                     autenticado con nombre/edad). Se va directo a la Interpretación.
@@ -53,8 +59,6 @@
 
                 <!-- PERFIL DE INTERESES (top 3, mismo diseño que la vista de estudiante registrado) -->
                 <div class="seccion-perfil">
-                    <h3 class="titulo-perfil">Perfil de intereses</h3>
-
                     <div th:if="${interesCero}" class="aviso-cero">
                         <i class="fas fa-circle-info"></i>
                         No se identificaron intereses predominantes: los puntajes de intereses son todos
