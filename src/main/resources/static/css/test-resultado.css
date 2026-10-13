@@ -186,12 +186,12 @@
     margin-right: 8px;
 }
 
-/* Exactamente 3 tarjetas (el template ya limita la iteración a 3): en
-   escritorio se muestran en una sola fila de 3 columnas para aprovechar el
-   ancho y no alargar la página; en mobile se apilan (ver media query). */
+/* Ranking apilado en UNA sola columna, siempre (escritorio, mobile e
+   impresión). Muestra el Top 3 o, si hay empates que superan el podio,
+   todas las áreas empatadas (ver fragments/carreras.html). */
 .ranking-intereses {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: 1fr;
     gap: 14px;
     margin-bottom: 18px;
 }
@@ -199,10 +199,117 @@
 .tarjeta-rank {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 8px;
     border-radius: 16px;
     padding: 16px 18px;
+}
+
+/* Cabecera de cada tarjeta: insignia + nombre + puntaje. En escritorio va
+   en una fila; en mobile se apila. */
+.rank-cabecera {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+@media (min-width: 769px) {
+    .rank-cabecera {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 14px;
+    }
+    .rank-cabecera .tarjeta-rank-cuerpo {
+        flex: 1;
+        min-width: 0;
+    }
+}
+
+.nota-ranking-empates {
+    font-size: 0.82rem;
+    color: #475569;
+    margin: -6px 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* ===== ACORDEÓN DE CARRERAS RECOMENDADAS ===== */
+.ver-carreras-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    align-self: flex-start;
+    border: none;
+    background: none;
+    padding: 4px 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.ver-carreras-btn i {
+    font-size: 0.75rem;
+    transition: transform 0.2s;
+}
+
+.ver-carreras-btn[aria-expanded="true"] i {
+    transform: rotate(180deg);
+}
+
+.ver-carreras-btn:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    border-radius: 6px;
+}
+
+.tarjeta-rank.rank-1 .ver-carreras-btn { color: #1e40af; }
+.tarjeta-rank.rank-2 .ver-carreras-btn { color: #065f46; }
+.tarjeta-rank.rank-3 .ver-carreras-btn { color: #5b21b6; }
+
+/* Truco de grid (0fr -> 1fr) para animar la altura sin conocerla. */
+.acordeon-body {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.22s ease;
+}
+
+.acordeon-body.abierto {
+    grid-template-rows: 1fr;
+}
+
+.acordeon-body > div {
+    overflow: hidden;
+    min-height: 0;
+}
+
+.carreras-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 6px;
+}
+
+.chip-carrera {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    color: #1e293b;
+    font-size: 0.82rem;
+    line-height: 1.3;
+    padding: 6px 12px;
+    border-radius: 20px;
+}
+
+.tarjeta-rank.rank-1 .chip-carrera { border-color: #bfdbfe; }
+.tarjeta-rank.rank-2 .chip-carrera { border-color: #a7f3d0; }
+.tarjeta-rank.rank-3 .chip-carrera { border-color: #ddd6fe; }
+
+@media (prefers-reduced-motion: reduce) {
+    .acordeon-body,
+    .ver-carreras-btn i {
+        transition: none;
+    }
 }
 
 .badge-rank {
@@ -423,10 +530,6 @@
         overflow-wrap: anywhere;
     }
 
-    .ranking-intereses {
-        grid-template-columns: 1fr;
-    }
-
     .tarjeta-rank {
         padding: 14px;
     }
@@ -526,13 +629,36 @@
         text-align: left !important;
         width: auto !important;
     }
-    /* El Top 3 de intereses va uno debajo del otro al imprimir (no en 3
-       columnas como en la pantalla de escritorio). */
+    /* El ranking va en una sola columna también al imprimir. */
     .ranking-intereses {
         grid-template-columns: 1fr !important;
     }
     .tarjeta-rank {
         padding: 12px 14px !important;
+        break-inside: avoid;
+    }
+    .rank-cabecera {
+        flex-direction: row !important;
+        align-items: flex-start !important;
+        gap: 14px !important;
+    }
+
+    /* Carreras recomendadas: en la impresión SIEMPRE salen expandidas (como si
+       "Ver carreras recomendadas" estuviera presionado) y sin el botón. */
+    .ver-carreras-btn {
+        display: none !important;
+    }
+    .acordeon-body {
+        grid-template-rows: 1fr !important;
+        transition: none !important;
+    }
+    .acordeon-body > div {
+        overflow: visible !important;
+    }
+    .chip-carrera {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        color-adjust: exact !important;
     }
 
     /*

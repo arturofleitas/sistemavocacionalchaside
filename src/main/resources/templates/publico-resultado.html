@@ -20,14 +20,7 @@
 <body>
     <div class="main-container sidebar-collapsed">
         <div class="content">
-            <div class="container-resultado"
-                 th:with="categoriaMap=${ {'C':'Administrativas y Contables',
-                                            'H':'Humanísticas, Ciencias Jurídicas y Sociales',
-                                            'A':'Artísticas',
-                                            'S':'Ciencias de la Salud',
-                                            'I':'Ingenierías, Carreras Técnicas y Computación',
-                                            'D':'Defensa y Seguridad',
-                                            'E':'Ciencias Agrarias, de la Naturaleza, Zoológicas y Biológicas'} }">
+            <div class="container-resultado">
 
                 <div class="header-resultado">
                     <div class="header-resultado-titulo">
@@ -66,23 +59,10 @@
                         consultá con un profesional de orientación vocacional.
                     </div>
 
-                    <div th:unless="${interesCero}" class="ranking-intereses">
-                        <div th:each="letra, iterLetra : ${topIntereses}"
-                             th:if="${iterLetra.index < 3}"
-                             th:with="miPuntaje=${puntajesInteres.get(letra)},
-                                      empatado=${iterLetra.index > 0 and miPuntaje == puntajesInteres.get(topIntereses[iterLetra.index - 1])}"
-                             class="tarjeta-rank"
-                             th:classappend="${iterLetra.index == 0} ? 'rank-1' : (${iterLetra.index == 1} ? 'rank-2' : 'rank-3')">
-                            <span class="badge-rank" th:text="${iterLetra.count} + '.° LUGAR'">1.° LUGAR</span>
-                            <div class="tarjeta-rank-cuerpo">
-                                <h4 th:text="${categoriaMap.get(letra)}">Ciencias de la Salud</h4>
-                                <span class="subtitulo-rank" th:text="'Puntaje: ' + ${miPuntaje} + '/10'">Puntaje: 9/10</span>
-                                <div th:if="${empatado}" class="nota-empate">
-                                    <i class="fas fa-equals"></i> Empatado en puntaje con el puesto anterior
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                    <!-- Ranking + carreras recomendadas (fragmento compartido con estudiante y detalle) -->
+                    <th:block th:unless="${interesCero}">
+                        <div th:replace="~{fragments/carreras :: ranking(${topIntereses}, ${puntajesInteres})}"></div>
+                    </th:block>
                 </div>
 
                 <div class="total-preguntas">
@@ -139,5 +119,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:src="@{/js/carreras-acordeon.js}"></script>
 </body>
 </html>

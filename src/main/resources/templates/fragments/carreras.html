@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!--
+    Ranking de intereses con carreras recomendadas (acordeón). Fragmento ÚNICO
+    usado por test-resultado.html (estudiante), publico-resultado.html (invitado)
+    y detalle-test.html (detalle/admin), para que las tres vistas sean idénticas.
+
+    Parámetros:
+      listaTop     -> lista de letras ordenada (model "topIntereses"), ya con
+                      los empates incluidos por CalculoTestService.topConEmpates.
+      mapaPuntajes -> Map letra -> puntaje (model "puntajesInteres").
+
+    Regla de cuántas áreas se muestran (CarrerasChaside.recortarTop): SIEMPRE el
+    Top 3 como máximo, aunque el 3.° empate con el 4.° o más; única excepción,
+    cuando las 7 categorías tienen el mismo puntaje se muestran todas.
+
+    Uso:
+      <th:block th:unless="${interesCero}">
+          <div th:replace="~{fragments/carreras :: ranking(${topIntereses}, ${puntajesInteres})}"></div>
+      </th:block>
+-->
+<div th:fragment="ranking(listaTop, mapaPuntajes)">
+
+    <div class="ranking-intereses">
+        <div th:each="letra, iterLetra : ${@carrerasChaside.recortarTop(listaTop, mapaPuntajes)}"
+             th:with="miPuntaje=${mapaPuntajes.get(letra)},
+                      empatado=${iterLetra.index > 0 and miPuntaje == mapaPuntajes.get(listaTop[iterLetra.index - 1])},
+                      idAcordeon=${'carreras-' + iterLetra.index},
+                      carreras=${@carrerasChaside.carreras(letra)}"
+             class="tarjeta-rank"
+             th:classappend="${iterLetra.index == 0} ? 'rank-1' : (${iterLetra.index == 1} ? 'rank-2' : 'rank-3')">
+
+            <div class="rank-cabecera">
+                <span class="badge-rank" th:text="${iterLetra.count} + '.° LUGAR'">1.° LUGAR</span>
+                <div class="tarjeta-rank-cuerpo">
+                    <h4 th:text="${@carrerasChaside.nombre(letra)}">Ciencias de la Salud</h4>
+                    <span class="subtitulo-rank" th:text="'Puntaje: ' + ${miPuntaje} + '/10'">Puntaje: 9/10</span>
+                    <div th:if="${empatado}" class="nota-empate">
+                        <i class="fas fa-equals"></i> Empatado en puntaje con el <span th:text="${iterLetra.index} + '.° lugar'">2.° lugar</span>
+                    </div>
+                </div>
+            </div>
+
+            <th:block th:if="${!carreras.isEmpty()}">
+                <button type="button" class="ver-carreras-btn" aria-expanded="false"
+                        th:attr="aria-controls=${idAcordeon}" data-carreras-toggle>
+                    <span class="ver-carreras-texto">Ver carreras recomendadas</span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+                <div class="acordeon-body" th:id="${idAcordeon}">
+                    <div>
+                        <div class="carreras-grid">
+                            <span class="chip-carrera" th:each="carrera : ${carreras}" th:text="${carrera}">Carrera</span>
+                        </div>
+                    </div>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
