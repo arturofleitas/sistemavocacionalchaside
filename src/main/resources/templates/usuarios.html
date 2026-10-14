@@ -37,6 +37,9 @@
     <link rel="stylesheet"
           th:href="@{/css/usuarios.css} + '?v=' + ${#dates.createNow().getTime()}">
 
+    <!-- Check "Mostrar contraseña" -->
+    <link rel="stylesheet" th:href="@{/css/mostrar-password.css} + '?v=' + ${#dates.createNow().getTime()}">
+
     <!-- Estilos unificados de gestión -->
     <link rel="stylesheet"
           th:href="@{/css/gestion.css} + '?v=' + ${#dates.createNow().getTime()}">
@@ -273,9 +276,13 @@
                                     <option th:value="false">Inactivo</option>
                                 </select>
                             </div>
-                            <div class="col-12">
+                            <div class="col-12 campo-password">
                                 <label class="form-label small mb-1">Contraseña</label>
-                                <input type="password" class="form-control form-control-sm" th:field="*{password}" minlength="5" placeholder="Mínimo 5 caracteres">
+                                <input type="password" class="form-control form-control-sm" th:field="*{password}" minlength="5" placeholder="Mínimo 5 caracteres" data-password>
+                                <div class="form-check mostrar-pass">
+                                    <input class="form-check-input" type="checkbox" id="verPasswordUsuario" data-mostrar-pass>
+                                    <label class="form-check-label" for="verPasswordUsuario">Mostrar contraseña</label>
+                                </div>
                                 <small class="text-muted d-block mt-1" style="font-size: 10px;">En edición, vacío = conservar la actual.</small>
                             </div>
                         </div>
@@ -326,16 +333,23 @@
                             Las preguntas del test y los datos de otros usuarios <strong>no</strong> se verán afectados.
                         </p>
 
-                        <label for="eliminarPassword" class="form-label small mb-1">
-                            Confirma tu contraseña (administrador) para continuar
-                        </label>
-                        <input type="password"
-                               id="eliminarPassword"
-                               name="password"
-                               class="form-control form-control-sm"
-                               autocomplete="current-password"
-                               placeholder="Tu contraseña"
-                               required>
+                        <div class="campo-password">
+                            <label for="eliminarPassword" class="form-label small mb-1">
+                                Confirma tu contraseña (administrador) para continuar
+                            </label>
+                            <input type="password"
+                                   id="eliminarPassword"
+                                   name="password"
+                                   class="form-control form-control-sm"
+                                   autocomplete="current-password"
+                                   placeholder="Tu contraseña"
+                                   data-password
+                                   required>
+                            <div class="form-check mostrar-pass">
+                                <input class="form-check-input" type="checkbox" id="verPasswordEliminar" data-mostrar-pass>
+                                <label class="form-check-label" for="verPasswordEliminar">Mostrar contraseña</label>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer py-2">
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
@@ -357,6 +371,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script th:src="@{/js/sidebar.js}"></script>
+    <script th:src="@{/js/mostrar-password.js}"></script>
     <script th:src="@{/js/usuarios.js} + '?v=' + ${#dates.createNow().getTime()}"></script>
 
 </body>

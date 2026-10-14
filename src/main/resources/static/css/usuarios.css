@@ -372,3 +372,10 @@
         font-weight: 600 !important;
     }
 }
+
+/* Ventana "Nuevo / Editar usuario": un poco más ancha en escritorio (por defecto 500px) */
+@media (min-width: 992px) {
+    #modalUsuario .modal-dialog {
+        max-width: 580px;
+    }
+}
